@@ -53,11 +53,11 @@ namespace JifBot.Modules.Public
             await ReplyAsync("", false, embed);
         }
 
-        [Command("neko")]
-        [Remarks("A command to celebrate NekoWaifu.\nUsage: ~neko")]
+        [Command("neeko")]
+        [Remarks("A command to celebrate Neeko.\nUsage: ~neeko")]
         public async Task Neko()
         {
-            await ReplyAsync("neko neko nii~\n https://giphy.com/gifs/nico-5cmZN7Py5MI24");
+            await Context.Channel.SendFileAsync("reactions/neeko.jpg");
         }
 
         [Command("wtf")]
@@ -923,6 +923,26 @@ namespace JifBot.Modules.Public
         public async Task RolliCat([Remainder] string useless = "")
         {
             await ReplyAsync("<:gentlecat:302907277571260418> <:rightcat:455100361066283035> <:bottomcat:455100361120940032> <:leftcat:455100361187786752> <:gentlecat:302907277571260418>");
+        }
+
+        [Command("meancount")]
+        [Remarks("Reports the number of times Jif has said \"I mean\"\nUsage: ~rolligentle")]
+        public async Task meanCountt([Remainder] string useless = "")
+        {
+            string file = "references/mean.txt";
+            Int32 num = Convert.ToInt32(File.ReadAllText(file));
+            await ReplyAsync("I mean, I've said it " + num + " times since 12/13/18.");
+        }
+
+        [Command("imean")]
+        [Remarks("Adds a tally to the number of times Jif has said \"I mean\"\nUsage: ~rolligentle")]
+        public async Task iMean([Remainder] string useless = "")
+        {
+            string file = "references/mean.txt";
+            Int32 num = Convert.ToInt32(File.ReadAllText(file));
+            num++;
+            await ReplyAsync("<@150084781864910848> you've said \"I mean\" " + num + " times.");
+            File.WriteAllText(file, Convert.ToString(num));
         }
 
 

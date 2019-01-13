@@ -202,6 +202,15 @@ namespace JifBot.CommandHandler
             if (words.ToLower().Contains("@here") || words.ToLower().Contains("@everyone"))
                 await msg.Channel.SendMessageAsync("<:ping:377208255132467233>");
 
+            if (words.ToLower().Contains("i mean") && msg.Author.Id == 150084781864910848)
+            {
+                string file = "references/mean.txt";
+                Int32 num = Convert.ToInt32(File.ReadAllText(file));
+                num++;
+                await msg.Channel.SendMessageAsync("<@150084781864910848> you've said \"I mean\" " + num + " times.");
+                File.WriteAllText(file, Convert.ToString(num));
+            }
+
 
             var mentionedUsers = msg.MentionedUsers;
             foreach (SocketUser mention in mentionedUsers)
