@@ -33,6 +33,7 @@
     <None Remove="reactions\honk.jpg" />
     <None Remove="reactions\kms.png" />
     <None Remove="reactions\nani.jpg" />
+    <None Remove="reactions\neeko.jpg" />
     <None Remove="reactions\rammus.png" />
     <None Remove="reactions\shrug.png" />
     <None Remove="reactions\stale.png" />
@@ -44,6 +45,7 @@
     <None Remove="references\CommandTemplate.txt" />
     <None Remove="references\hello.txt" />
     <None Remove="references\LoadInformation.txt" />
+    <None Remove="references\mean.txt" />
     <None Remove="references\messages.txt" />
     <None Remove="references\quotes.txt" />
     <None Remove="references\signatures.txt" />
@@ -131,6 +133,9 @@
     <Content Include="reactions\nani.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="reactions\neeko.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="reactions\rammus.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -162,6 +167,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="references\LoadInformation.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="references\mean.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="references\messages.txt">
