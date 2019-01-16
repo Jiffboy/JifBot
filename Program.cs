@@ -7,6 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using JifBot.Config;
 using JifBot.CommandHandler;
 using System.IO;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.ML.Transforms.Text;
+using Microsoft.ML.Core.Data;
 
 namespace JIfBot
 {
@@ -18,8 +22,15 @@ namespace JIfBot
         private DiscordSocketClient client;
         private CommandHandler handler;
 
+        static readonly string _trainDataPath = Path.Combine(Environment.CurrentDirectory, "Data", "wikipedia-detox-250-line-data.tsv");
+        static readonly string _testDataPath = Path.Combine(Environment.CurrentDirectory, "Data", "wikipedia-detox-250-line-test.tsv");
+        static readonly string _modelPath = Path.Combine(Environment.CurrentDirectory, "Data", "Model.zip");
+        static TextLoader _textLoader;
+
         public async Task Start()
         {
+            BuildModel();
+
             CreateJSON(); // create a JSON file to run from
 
             client = new DiscordSocketClient(new DiscordSocketConfig
@@ -100,6 +111,46 @@ namespace JIfBot
             return provider;
         }
 
+        public void BuildModel()
+        {
+            MLContext mlContext = new MLContext(seed: 0);
+            _textLoader = mlContext.Data.CreateTextReader(new TextLoader.Arguments()
+                {
+                    Separator = "tab",
+                    HasHeader = true,
+                    Column = new[]
+                        {
+                            new TextLoader.Column("Label", DataKind.Bool, 0),
+                            new TextLoader.Column("SentimentText", DataKind.Text, 1)
+                        }
+                }
+            ); //end CreateTextReader
+            var model = TrainModel(mlContext, _trainDataPath);
 
+            SaveModelAsFile(mlContext, model);
+        }
+
+        public static ITransformer TrainModel(MLContext mlContext, string dataPath)
+        {
+            IDataView dataView = _textLoader.Read(dataPath);
+            var pipeline = mlContext.Transforms.Text.FeaturizeText("SentimentText", "Features")
+                //These numbers are literally magic
+                .Append(mlContext.BinaryClassification.Trainers.FastTree(numLeaves: 50, numTrees: 50, minDatapointsInLeaves: 20));
+
+            return pipeline.Fit(dataView);
+        }
+
+        public static CalibratedBinaryClassificationMetrics EvaluateModel(MLContext mlContext, ITransformer model)
+        {
+            IDataView dataView = _textLoader.Read(_testDataPath);
+            var predictions = model.Transform(dataView);
+            return mlContext.BinaryClassification.Evaluate(predictions, "Label");
+        }
+
+        private static void SaveModelAsFile(MLContext mlContext, ITransformer model)
+        {
+            using (var fs = new FileStream(_modelPath, FileMode.Create, FileAccess.Write, FileShare.Write))
+                mlContext.Model.Save(model, fs);
+        }
     }
 }
