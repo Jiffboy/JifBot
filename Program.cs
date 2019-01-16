@@ -20,15 +20,18 @@ namespace JIfBot
             new Program().Start().GetAwaiter().GetResult();
 
         private DiscordSocketClient client;
+        public static MLContext mLContext;
         private CommandHandler handler;
 
         static readonly string _trainDataPath = Path.Combine(Environment.CurrentDirectory, "Data", "wikipedia-detox-250-line-data.tsv");
         static readonly string _testDataPath = Path.Combine(Environment.CurrentDirectory, "Data", "wikipedia-detox-250-line-test.tsv");
-        static readonly string _modelPath = Path.Combine(Environment.CurrentDirectory, "Data", "Model.zip");
-        static TextLoader _textLoader;
+        public static readonly string _recordedDataPath = Path.Combine(Environment.CurrentDirectory, "Data", "our_friends_are_fucking_weapons.tsv");
+        public static readonly string _modelPath = Path.Combine(Environment.CurrentDirectory, "Data", "Model.zip");
+        public static TextLoader _textLoader;
 
         public async Task Start()
         {
+            mLContext = new MLContext(seed: 0);
             BuildModel();
 
             CreateJSON(); // create a JSON file to run from
@@ -106,15 +109,12 @@ namespace JIfBot
             var provider = new DefaultServiceProviderFactory().CreateServiceProvider(services);
 
 
-
-
             return provider;
         }
 
         public void BuildModel()
         {
-            MLContext mlContext = new MLContext(seed: 0);
-            _textLoader = mlContext.Data.CreateTextReader(new TextLoader.Arguments()
+            _textLoader = mLContext.Data.CreateTextReader(new TextLoader.Arguments()
                 {
                     Separator = "tab",
                     HasHeader = true,
@@ -125,9 +125,9 @@ namespace JIfBot
                         }
                 }
             ); //end CreateTextReader
-            var model = TrainModel(mlContext, _trainDataPath);
+            var model = TrainModel(mLContext, _trainDataPath);
 
-            SaveModelAsFile(mlContext, model);
+            SaveModelAsFile(mLContext, model);
         }
 
         public static ITransformer TrainModel(MLContext mlContext, string dataPath)

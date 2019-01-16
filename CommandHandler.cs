@@ -8,6 +8,9 @@ using System.IO;
 using JifBot.Config;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using JIfBot;
+using Microsoft.ML.Core.Data;
+using Microsoft.ML;
 
 namespace JifBot.CommandHandler
 {
@@ -140,6 +143,35 @@ namespace JifBot.CommandHandler
             if (msg.Author.IsBot)
                 return;
             string words = msg.Content.ToString();
+
+            #region Machine Learning
+            /*ITransformer loadedModel;
+            using (var stream = new FileStream(Program._modelPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                loadedModel = Program.mLContext.Model.Load(stream);
+            }
+            var predictionFunction = loadedModel.CreatePredictionEngine<SentimentData, SentimentPrediction>(Program.mLContext);
+
+            SentimentData checkStatement = new SentimentData
+            {
+                SentimentText = msg.Content.ToString()
+            };
+
+            var resultprediction = predictionFunction.Predict(checkStatement);
+
+            if(resultprediction.Probability > 0.94 && resultprediction.Prediction)
+            {
+                await msg.Channel.SendMessageAsync("So fucking toxic");
+            }*/
+
+            //msg.Channel.SendMessageAsync($"{resultprediction.Probability * 100}% chance of {(resultprediction.Prediction ? "Toxic" : "Not Toxic")}");
+
+            if(msg.Content.ToString().Length > 64)
+            {
+                File.AppendAllTextAsync(Program._recordedDataPath, $"0\t{msg.Content.ToString()}\n");
+            }
+
+            #endregion
 
             if (words.ToLower().Contains("delet this") || words.ToLower().Contains("delete this"))
                 await msg.Channel.SendFileAsync("reactions/deletthis.jpg");
