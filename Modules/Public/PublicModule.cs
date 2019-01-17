@@ -321,6 +321,31 @@ namespace JifBot.Modules.Public
             await ReplyAsync("removed message: \"" + temp + "\" from user: " + name);
         }
 
+        [Command("ffish")]
+        [Remarks("")]
+        public async Task ffish([Remainder] string fish)
+        {
+            var embed = new EmbedBuilder();
+            embed.WithColor(new Color(0x42ebf4));
+            fish = fish.Replace(" ", "_");
+            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
+            string html = "";
+            try
+            {
+                html = await client.GetStringAsync("https://ffxiv.gamerescape.com/wiki/" + fish);
+            }
+            catch
+            {
+                await ReplyAsync("Invalid Fish");
+                return;
+            }
+            embed.ThumbnailUrl = "https://ffxiv.gamerescape.com/w/images/e/e5/" + fish + "_Icon.png";
+
+            embed.WithFooter("Made with love");
+            embed.WithCurrentTimestamp();
+            await ReplyAsync("", false, embed);
+        }
+
         [Command("mock")]
         [Remarks("Deletes your command call to keep anonymity and then mocks the message that you give it. If you do not specify any message, it will mock the most recent message sent in the text channel.\nUsage: ~mock message")]
         public async Task Mock([Remainder] string words = "")
@@ -781,6 +806,13 @@ namespace JifBot.Modules.Public
             html = html.Remove(0, html.IndexOf("?v=") + 3);
             html = html.Remove(html.IndexOf("\""));
             await ReplyAsync("https://www.youtube.com/watch?v=" + html);
+        }
+
+        [Command("gnomed")]
+        [Remarks("I'm gnot a gnelf...\nUsage: ~gnomed")]
+        public async Task Gnomed()
+        {
+            await ReplyAsync("https://www.youtube.com/watch?v=6n3pFFPSlW4");
         }
 
         [Command("mastery")]
