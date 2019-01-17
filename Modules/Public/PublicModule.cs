@@ -783,6 +783,13 @@ namespace JifBot.Modules.Public
             await ReplyAsync("https://www.youtube.com/watch?v=" + html);
         }
 
+        [Command("gnomed")]
+        [Remarks("I'm gnot a gnelf...\nUsage: ~gnomed")]
+        public async Task Gnomed()
+        {
+            await ReplyAsync("https://www.youtube.com/watch?v=6n3pFFPSlW4");
+        }
+
         [Command("mastery")]
         [Remarks("Gives the number of mastery points for the top 10 most played champions for a user on any server.\nUsage ~mastery region username")]
         public async Task Mastery(string region, [Remainder]string name)
