@@ -1,2 +1,4 @@
-!
-NDQ3OTEyMTEyODM3MjMwNjAy.DeOebQ.gN8LrvFa9ZRUzKe-enkEQGV-wGg
+(command pre-string)
+(bot token)
+(dictionary key)
+(dictionary token)

@@ -139,6 +139,8 @@ namespace JifBot.CommandHandler
         {
             if (msg.Author.IsBot)
                 return;
+            if (msg.Channel.Id == 532437794530787328 || msg.Channel.Id == 534141269870510110 || msg.Channel.Id == 532968642183299082 || msg.Channel.Id == 543961887914721290)
+                return;
             string words = msg.Content.ToString();
 
             if (words.ToLower().Contains("delet this") || words.ToLower().Contains("delete this"))
