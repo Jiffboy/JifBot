@@ -5,9 +5,12 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Net;
+using System.Net.Http;
+using System.Globalization;
+using System.Threading;
 using Discord;
-using Discord.WebSocket;
 using Discord.Commands;
+using Newtonsoft.Json.Linq;
 
 namespace JifBot.Modules.Public
 {
@@ -372,45 +375,109 @@ namespace JifBot.Modules.Public
                 contents = contents.Remove(spot);
                 if (copy[0] == ' ')
                     copy = copy.Remove(0, 1);
-                IGuildUser test = null;
+                IGuildUser dm = null;
                 var list = Context.Guild.GetUsersAsync();
                 for (int i = 0; i < list.Result.Count; i++)
                 {
                     if (list.Result.ElementAt(i).Username.ToLower() == contents.ToLower())
-                        test = list.Result.ElementAt(i);
+                        dm = list.Result.ElementAt(i);
                 }
-                if (test == null)
+                if (dm == null)
                 {
                     await ReplyAsync("That is not a name for anybody on this server. Your message was not sent");
                     Console.WriteLine(user + " attempted to send \"" + copy + "\" to " + contents);
                 }
                 else
                 {
-                    await test.SendMessageAsync(copy);
+                    await dm.SendMessageAsync(copy);
                     Console.WriteLine(user + " successfully sent \"" + copy + "\" to " + contents);
                 }
             }
         }
         [Command("define")]
-        [Remarks("Defines any SINGLE word in the English language. Will not define proper nouns.\nUsage: ~define word")]
-        public async Task Define(string word, [Remainder]string word2 = "")
+        [Remarks("Defines any word in the Oxford English dictionary. For multiple definitions, use -m at the end of the command\nUsage: ~define word OR ~define word -m")]
+        public async Task Define([Remainder]string word)
         {
-            if (word2 != "")
-                await ReplyAsync("__**NOTE**__: This command only works with single words. Defining for: " + word);
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            string source = "";
-            source = await client.GetStringAsync("http://dictionary.com/browse/" + word);
-            word = word.First().ToString().ToUpper() + word.Substring(1);
-            string search = word + " definition,";
-            source = source.Remove(0, source.IndexOf(search) + search.Length);
-            if(source.Contains("See more.\">"))
-                source = source.Remove(source.IndexOf("See more.\">"));
-            else
+            bool multiple = false;
+            string inFile = File.ReadAllText("configuration/config.json");
+            var inReader = JObject.Parse(inFile);
+            string key = (string)inReader.SelectToken("DictKey");
+            string id = (string)inReader.SelectToken("DictId");
+
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri("https://od-api.oxforddictionaries.com/api/v1/entries/en/");
+            client.DefaultRequestHeaders.Add("app_id", id);
+            client.DefaultRequestHeaders.Add("app_key", key);
+            if (word.EndsWith(" -m"))
             {
-                await ReplyAsync("https://i.imgur.com/dwBlFY5.jpg");
+                word = word.Replace(" -m", "");
+                multiple = true;
+            }
+            HttpResponseMessage response =  await client.GetAsync(word);
+            if(response.StatusCode.ToString() == "NotFound")
+            {
+                await Context.Channel.SendFileAsync("reactions/damage.png");
                 return;
             }
-            await ReplyAsync(source);
+
+            if(response.StatusCode.ToString() == "Forbidden")
+            {
+                await ReplyAsync("Unable to retrieve definition");
+                return;
+            }
+            HttpContent content = response.Content;
+            string stuff = await content.ReadAsStringAsync();
+            var json = JObject.Parse(stuff);
+            if(multiple)
+            {
+                var embed = new EmbedBuilder();
+                embed.WithColor(new Color(0x42ebf4));
+                string def = "1.) " + (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].definitions[0]");
+                string example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].examples[0].text");
+                if (example == null)
+                {
+                    example = "(no example available)";
+                }
+                embed.AddField(def, example);
+                for (int i = 0; i < 4; i++)
+                {
+                    def =  (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].subsenses[" + i.ToString() + "].definitions[0]");
+                    example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].subsenses[" + i.ToString() + "].examples[0].text");
+                    if (def != null)
+                    {
+                        def = (i + 2).ToString() + ".) " + def;
+                        if (example == null)
+                        {
+                            example = "(no example available)";
+                        }
+                        embed.AddField(def, example);
+                    }
+                }
+                embed.WithFooter("Made with love");
+                embed.WithCurrentTimestamp();
+                await ReplyAsync("", false, embed);
+            }
+            else
+            {
+                CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
+                TextInfo textInfo = cultureInfo.TextInfo;
+                string name = textInfo.ToTitleCase(word);
+                string type = (string)json.SelectToken("results[0].lexicalEntries[0].lexicalCategory");
+                string spelling = (string)json.SelectToken("results[0].lexicalEntries[0].pronunciations[0].phoneticSpelling");
+                string definition = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].definitions[0]");
+                string example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].examples[0].text");
+                string message = name + " (" + type + ")";
+                if(spelling != null)
+                {
+                    message += "     /" + spelling + "/";
+                }
+                message += "\n**Definition: **" + definition;
+                if(example != null)
+                {
+                    message += "\n**Example: **" + example;
+                }
+                await ReplyAsync(message);
+            }
         }
 
         [Command("udefine")]
@@ -933,7 +1000,7 @@ namespace JifBot.Modules.Public
         }
 
         [Command("meancount")]
-        [Remarks("Reports the number of times Jif has said \"I mean\"\nUsage: ~rolligentle")]
+        [Remarks("Reports the number of times Jif has said \"I mean\"\nUsage: ~meancount")]
         public async Task meanCountt([Remainder] string useless = "")
         {
             string file = "references/mean.txt";
@@ -942,7 +1009,7 @@ namespace JifBot.Modules.Public
         }
 
         [Command("imean")]
-        [Remarks("Adds a tally to the number of times Jif has said \"I mean\"\nUsage: ~rolligentle")]
+        [Remarks("Adds a tally to the number of times Jif has said \"I mean\"\nUsage: ~imean")]
         public async Task iMean([Remainder] string useless = "")
         {
             string file = "references/mean.txt";
@@ -951,7 +1018,6 @@ namespace JifBot.Modules.Public
             await ReplyAsync("<@150084781864910848> you've said \"I mean\" " + num + " times.");
             File.WriteAllText(file, Convert.ToString(num));
         }
-
 
         async Task<bool> RemoteFileExists(string url)
         {
