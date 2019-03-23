@@ -992,6 +992,18 @@ namespace JifBot.Modules.Public
             await Context.Channel.SendFileAsync("tiltycat.png");
         }
 
+        [Command("tiltydog")]
+        [Remarks("Creates a dog at any angle you specify.\nUsage: ~tiltydog degree\n\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_dog/(degree).png``` where (degree) is the desired angle")]
+        public async Task TiltyDat(int degree, [Remainder] string useless = "")
+        {
+            string temp = "http://www.writeonlymedia.com/tilty_dog/" + degree + ".png";
+            using (WebClient client = new WebClient())
+            {
+                client.DownloadFile(new Uri(temp), "tiltydog.png");
+            }
+            await Context.Channel.SendFileAsync("tiltydog.png");
+        }
+
         [Command("rolligentle")]
         [Remarks("Makes the Gentlecat do a rollie\nUsage: ~rolligentle")]
         public async Task RolliCat([Remainder] string useless = "")
