@@ -801,29 +801,47 @@ namespace JifBot.Modules.Public
         }
 
         [Command("choose")]
-        [Remarks("Randomly makes a choice for you. You can use as many choices as you want, but seperate all choices using \"\".\nUsage: ~choose \"option 1\" \"option 2\"")]
+        [Remarks("Randomly makes a choice for you. You can use as many choices as you want, but seperate all choices using a space. If you wish for a choice to contain spaces, surround the choice with \"\"\nUsage: ~choose option1 \"option 2\" option3")]
         public async Task Choose([Remainder]string message)
         {
-            List<string> choices = new List<string>();
-            int count = 0;
-            if (message.IndexOf("\"") == -1)
+            int quotes = message.Split('\"').Length - 1;
+            if(quotes % 2 != 0)
             {
-                await ReplyAsync("Seperate your choices with \"\" or spaces, example: ~choose \"option 1\" \"option 2\"");
+                await ReplyAsync("please ensure all quotations are closed");
                 return;
             }
+
+            List<string> choices = new List<string>();
+            int count = 0;
+            message = message.TrimEnd();
             while (true)
             {
-                if (count != 0)
-                    message = message.Remove(0, message.IndexOf("\"") + 1);
-                if (message.IndexOf("\"") == -1)
-                    break;
-                message = message.Remove(0, message.IndexOf("\"") + 1);
-                if (message.IndexOf("\"") == -1)
+                message = message.TrimStart();
+                string choice;
+                if(message == "")
                 {
-                    await ReplyAsync("Make sure that every quotation has a beginning and end.");
-                    return;
+                    break;
                 }
-                choices.Add(message.Remove(message.IndexOf("\"")));
+                if(message[0] == '\"')
+                {
+                    message = message.Remove(0, 1);
+                    choice = message.Remove(message.IndexOf("\""));
+                    message = message.Remove(0, message.IndexOf("\"") + 1);
+                }
+                else
+                {
+                    if (message.Contains(" "))
+                    {
+                        choice = message.Remove(message.IndexOf(" "));
+                        message = message.Remove(0, message.IndexOf(" "));
+                    }
+                    else
+                    {
+                        choice = message;
+                        message = "";
+                    }
+                }
+                choices.Add(choice);
                 count++;
             }
 
