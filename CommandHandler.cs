@@ -42,6 +42,8 @@ namespace JifBot.CommandHandler
                     channel = await temp.GetTextChannelAsync(398305757784702977);
                 if (user.Guild.Id == 374014790793691137)
                     channel = await temp.GetTextChannelAsync(442745612908232734);
+                if (user.Guild.Id == 301897718824173570)
+                    channel = await temp.GetTextChannelAsync(566425762089926677);
                 {
                     embed.ThumbnailUrl = user.GetAvatarUrl();
                     embed.Title = $"**{user.Username} Left The Server:**";
@@ -83,6 +85,8 @@ namespace JifBot.CommandHandler
                 channel = await temp.GetTextChannelAsync(398305757784702977);
             if (user.Guild.Id == 374014790793691137)
                 channel = await temp.GetTextChannelAsync(442745612908232734);
+            if (user.Guild.Id == 301897718824173570)
+                channel = await temp.GetTextChannelAsync(566425762089926677);
 
             var embed = new EmbedBuilder();
             embed.ThumbnailUrl = user.GetAvatarUrl();
