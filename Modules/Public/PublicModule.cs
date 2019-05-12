@@ -801,7 +801,7 @@ namespace JifBot.Modules.Public
         }
 
         [Command("choose")]
-        [Remarks("Randomly makes a choice for you. You can use as many choices as you want, but seperate all choices using a space. If you wish for a choice to contain spaces, surround the choice with \"\"\nUsage: ~choose option1 \"option 2\" option3")]
+        [Remarks("Randomly makes a choice for you. You can use as many choices as you want, but seperate all choices using a space. If you wish for a choice to contain spaces, surround the choice with \"\"\nUsage: ~choose choice \"choice but with spaces\"")]
         public async Task Choose([Remainder]string message)
         {
             int quotes = message.Split('\"').Length - 1;
