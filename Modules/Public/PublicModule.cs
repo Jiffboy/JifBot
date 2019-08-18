@@ -325,16 +325,21 @@ namespace JifBot.Modules.Public
         }
 
         [Command("mock")]
-        [Remarks("Deletes your command call to keep anonymity and then mocks the message that you give it. If you do not specify any message, it will mock the most recent message sent in the text channel.\nUsage: ~mock message")]
+        [Remarks("Mocks the text you provide it. If you end your command call with -d, it will delete your message calling the bot. If you do not specify any message, it will mock the most recent message sent in the text channel, and delete your command call.\nUsage: ~mock, ~mock message, ~mock message -d")]
         public async Task Mock([Remainder] string words = "")
         {
-            await Context.Message.DeleteAsync();
             if (words == "")
             {
+                await Context.Message.DeleteAsync();
                 var msg = Context.Channel.GetMessagesAsync(2).Flatten().Result;
                 words = msg.ElementAt(0).Content;
-                if (words.ToLower() == "~mock")
+                if (words.ToLower() == "!mock")
                     words = msg.ElementAt(1).Content;
+            }
+            else if (words.EndsWith("-d"))
+            {
+                words = words.Remove(words.Length - 2);
+                await Context.Message.DeleteAsync();
             }
             string end = string.Empty;
             int i = 0;
@@ -734,10 +739,14 @@ namespace JifBot.Modules.Public
         }
 
         [Command("bigtext")]
-        [Remarks("Takes the user input for messages and turns it into large letters using emotes. Your command call is deleted upon use.\nUsage: ~bigtext phrase")]
+        [Remarks("Takes the user input for messages and turns it into large letters using emotes. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~bigtext phrase, ~bigtext phrase -d")]
         public async Task bigtext([Remainder]string orig)
         {
-            await Context.Message.DeleteAsync();
+            if (orig.EndsWith("-d"))
+            {
+                orig = orig.Remove(orig.Length - 2);
+                await Context.Message.DeleteAsync();
+            }
             string final = "";
             orig = orig.ToLower();
             for (int i = 0; i < orig.Length; i++)
@@ -752,10 +761,14 @@ namespace JifBot.Modules.Public
         }
 
         [Command("tinytext")]
-        [Remarks("Takes the user input for messages and turns it into small letters. Your command call is deleted upon use.\nUsage: ~tinytext phrase")]
+        [Remarks("Takes the user input for messages and turns it into small letters. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~tinytext phrase, ~tinytext phrase -d")]
         public async Task tinytext([Remainder]string orig)
         {
-            await Context.Message.DeleteAsync();
+            if (orig.EndsWith("-d"))
+            {
+                orig = orig.Remove(orig.Length - 2);
+                await Context.Message.DeleteAsync();
+            }
             string final = "";
             orig = orig.ToLower();
             for (int i = 0; i < orig.Length; i++)
@@ -769,10 +782,14 @@ namespace JifBot.Modules.Public
         }
 
         [Command("widetext")]
-        [Remarks("Takes the user input for messages and turns it into a ＷＩＤＥ  ＢＯＩ. Your command call is deleted upon use.\nUsage: ~widetext phrase")]
+        [Remarks("Takes the user input for messages and turns it into a ＷＩＤＥ  ＢＯＩ. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~widetext phrase, ~widetext phrase -d")]
         public async Task WideText([Remainder] string message)
         {
-            await Context.Message.DeleteAsync();
+            if (message.EndsWith("-d"))
+            {
+                message = message.Remove(message.Length - 2);
+                await Context.Message.DeleteAsync();
+            }
             message = message.Replace(" ", "   ");
             string alpha = "QWERTYUIOPASDFGHJKLÇZXCVBNMqwertyuiopasdfghjklçzxcvbnm,.-~+´«'0987654321!\"#$%&/()=?»*`^_:;";
             string fullwidth = "ＱＷＥＲＴＹＵＩＯＰＡＳＤＦＧＨＪＫＬÇＺＸＣＶＢＮＭｑｗｅｒｔｙｕｉｏｐａｓｄｆｇｈｊｋｌçｚｘｃｖｂｎｍ,.－~ ´«＇０９８７６５４３２１！＂＃＄％＆／（）＝？»＊`＾＿：；";
@@ -781,6 +798,28 @@ namespace JifBot.Modules.Public
             {
                 message = message.Replace(alpha[i], fullwidth[i]);
             }
+            await ReplyAsync(message);
+        }
+
+        [Command("owo")]
+        [Remarks("Takes the user input, and translates it into degenerate owo speak. If you end your command call with -d, it will delete your message calling the bot..\nUsage: ~owo phrase, ~owo phrase -d")]
+        public async Task Owo([Remainder] string message)
+        {
+            if (message.EndsWith("-d"))
+            {
+                message = message.Remove(message.Length-2);
+                await Context.Message.DeleteAsync();
+            }
+            string[] faces = new string[] { "(・ω・)", ";;w;;", "owo", "UwU", ">w<", "^w^" };
+            Random rnd = new Random();
+            message = Regex.Replace(message, @"(?:r|l)", "w");
+            message = Regex.Replace(message, @"(?:R|L)", "W");
+            message = Regex.Replace(message, @"n([aeiou])", @"ny$1");
+            message = Regex.Replace(message, @"N([aeiou])", @"Ny$1");
+            message = Regex.Replace(message, @"N([AEIOU])", @"NY$1");
+            message = Regex.Replace(message, @"ove", @"uv");
+            message = Regex.Replace(message, @"\!+", (match) => string.Format("{0}", " " + faces[rnd.Next(faces.Length)] + " "));
+
             await ReplyAsync(message);
         }
 

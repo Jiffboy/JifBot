@@ -32,6 +32,7 @@ whisper
 mock
 bigtext
 tinytext
+owo
 --Personalization
 setsignature
 resetsignature
