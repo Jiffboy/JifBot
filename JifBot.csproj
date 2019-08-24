@@ -42,7 +42,6 @@
     <None Remove="reactions\thot.jpg" />
     <None Remove="reactions\youve_been_gnomed_wmv.avi" />
     <None Remove="references\authors.txt" />
-    <None Remove="references\CommandTemplate.txt" />
     <None Remove="references\hello.txt" />
     <None Remove="references\LoadInformation.txt" />
     <None Remove="references\mean.txt" />
@@ -158,9 +157,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="references\authors.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="references\CommandTemplate.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="references\hello.txt">

@@ -1,0 +1,4 @@
+(command pre-string)
+(bot token)
+(dictionary key)
+(dictionary token)
