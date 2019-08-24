@@ -981,14 +981,23 @@ namespace JifBot.Modules.Public
         [Command("info")]
         [Remarks("Helper")]
         [Summary("Gets varying pieces of Discord information for one or more users. Mention a user to get their information, do not mention anyone to get your own. You can mention as many people as you like.\nUsage: ~info @person1 @person2")]
-        public async Task MyInfo([Remainder] string useless = "")
+        public async Task MyInfo([Remainder] string ids = "")
         {
             var mention = Context.Message.MentionedUserIds;
             if (mention.Count != 0)
             {
-                foreach (ulong temp in mention)
+                foreach (ulong id in mention)
                 {
-                    var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(temp));
+                    var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(id));
+                    await ReplyAsync("", false, embed);
+                }
+            }
+            else if (ids != "")
+            {
+                string[] idList = ids.Split(' ');
+                foreach (string id in idList)
+                {
+                    var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(Convert.ToUInt64(id)));
                     await ReplyAsync("", false, embed);
                 }
             }
@@ -1001,16 +1010,30 @@ namespace JifBot.Modules.Public
 
         [Command("avatar")]
         [Remarks("Helper")]
-        [Summary("Gets the avatar for one or more users. Mention a user to get their avatar, do not mention anyone to get your own. You can mention as many people as you like.\nUsage: ~avatar @person1 @person2")]
-        public async Task Avatar([Remainder] string useless = "")
+        [Summary("Gets the avatar for one or more users. Mention a user or provide their id to get their avatar, or do neither to get your own. To do more than 1 person, separate mentions/ids with spaces.\nUsage: ~avatar, ~avatar @person1 @person2, ~avatar person1id person2id")]
+        public async Task Avatar([Remainder] string ids = "")
         {
             var mention = Context.Message.MentionedUserIds;
             if (mention.Count != 0)
             {
-                foreach (ulong temp in mention)
+                foreach (ulong id in mention)
                 {
                     var embed = new EmbedBuilder();
-                    IGuildUser user = await Context.Guild.GetUserAsync(temp);
+                    IGuildUser user = await Context.Guild.GetUserAsync(id);
+                    string url = user.GetAvatarUrl();
+                    url = url.Remove(url.IndexOf("?size=128"));
+                    url = url + "?size=256";
+                    embed.ImageUrl = url;
+                    await ReplyAsync("", false, embed);
+                }
+            }
+            else if(ids != "")
+            {
+                string[] idList = ids.Split(' ');
+                foreach (string id in idList)
+                {
+                    var embed = new EmbedBuilder();
+                    IGuildUser user = await Context.Guild.GetUserAsync(Convert.ToUInt64(id));
                     string url = user.GetAvatarUrl();
                     url = url.Remove(url.IndexOf("?size=128"));
                     url = url + "?size=256";
