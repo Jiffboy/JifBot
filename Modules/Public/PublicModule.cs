@@ -980,7 +980,7 @@ namespace JifBot.Modules.Public
 
         [Command("info")]
         [Remarks("Helper")]
-        [Summary("Gets varying pieces of Discord information for one or more users. Mention a user to get their information, do not mention anyone to get your own. You can mention as many people as you like.\nUsage: ~info @person1 @person2")]
+        [Summary("Gets varying pieces of Discord information for one or more users. Mention a user or provide their id to get their information, or do neither to get your own. To do more than 1 person, separate mentions/ids with spaces.\nUsage: ~info, ~info @person1 @person2, ~info person1id person2id")]
         public async Task MyInfo([Remainder] string ids = "")
         {
             var mention = Context.Message.MentionedUserIds;
