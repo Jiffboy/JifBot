@@ -33,6 +33,7 @@
     <None Remove="reactions\honk.jpg" />
     <None Remove="reactions\kms.png" />
     <None Remove="reactions\nani.jpg" />
+    <None Remove="reactions\neeko.jpg" />
     <None Remove="reactions\rammus.png" />
     <None Remove="reactions\shrug.png" />
     <None Remove="reactions\stale.png" />
@@ -41,9 +42,9 @@
     <None Remove="reactions\thot.jpg" />
     <None Remove="reactions\youve_been_gnomed_wmv.avi" />
     <None Remove="references\authors.txt" />
-    <None Remove="references\CommandTemplate.txt" />
     <None Remove="references\hello.txt" />
     <None Remove="references\LoadInformation.txt" />
+    <None Remove="references\mean.txt" />
     <None Remove="references\messages.txt" />
     <None Remove="references\quotes.txt" />
     <None Remove="references\signatures.txt" />
@@ -131,6 +132,9 @@
     <Content Include="reactions\nani.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="reactions\neeko.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="reactions\rammus.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -155,13 +159,13 @@
     <Content Include="references\authors.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="references\CommandTemplate.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="references\hello.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="references\LoadInformation.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="references\mean.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="references\messages.txt">
@@ -177,8 +181,8 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="1.0.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
 
   <ItemGroup>

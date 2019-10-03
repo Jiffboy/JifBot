@@ -5,9 +5,12 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Net;
+using System.Net.Http;
+using System.Globalization;
+using System.Threading;
 using Discord;
-using Discord.WebSocket;
 using Discord.Commands;
+using Newtonsoft.Json.Linq;
 
 namespace JifBot.Modules.Public
 {
@@ -15,123 +18,104 @@ namespace JifBot.Modules.Public
     {
 
         [Command("reese")]
-        [Remarks("Prompts ladies to hit him up.\nUsage: ~reese")]
+        [Remarks("Basic")]
+        [Summary("Prompts ladies to hit him up.\nUsage: ~reese")]
         public async Task Reese()
         {
             await Context.Channel.SendMessageAsync("Ladies hmu");
         }
 
-        [Command("commands")]
-        [Remarks("Displays available commands.\nUsage: ~commands")]
-        public async Task Commands()
-        {
-            string file = "references/CommandTemplate.txt";
-            string temp = File.ReadAllText(file);
-            var embed = new EmbedBuilder();
-            embed.WithColor(new Color(0x42ebf4));
-            embed.Title = "All commands will begin with a tilde (~), for more information on individual commands, use: ~help commandName";
-            embed.Description = "Contact Jif#3952 with any suggestions for more commands";
-            embed.WithFooter("Made with love");
-            while (temp != "")
-            {
-                temp = temp.Remove(0, temp.IndexOf("--") + 2);
-                string cat = temp.Remove(temp.IndexOf("\r\n"));
-                string com = "";
-                temp = temp.Remove(0, temp.IndexOf("\r\n") + 2);
-                while (temp.IndexOf("--") != temp.IndexOf("\r\n") + 2 && temp != "")
-                {
-                    com = com + temp.Remove(temp.IndexOf("\r\n")) + ", ";
-                    temp = temp.Remove(0, temp.IndexOf("\r\n") + 2);
-                }
-                if (temp != "")
-                    com = com + temp.Remove(temp.IndexOf("\r\n"));
-                else
-                    com = com.Remove(com.Length - 2);
-                embed.AddField(cat, com);
-
-            }
-            await ReplyAsync("", false, embed);
-        }
-
-        [Command("neko")]
-        [Remarks("A command to celebrate NekoWaifu.\nUsage: ~neko")]
+        [Command("neeko")]
+        [Remarks("Basic")]
+        [Summary("A command to celebrate Neeko.\nUsage: ~neeko")]
         public async Task Neko()
         {
-            await ReplyAsync("neko neko nii~\n https://giphy.com/gifs/nico-5cmZN7Py5MI24");
+            await Context.Channel.SendFileAsync("reactions/neeko.jpg");
         }
 
         [Command("wtf")]
-        [Remarks("Shows your disbelief as to what your fellow server goers have just done.\nUsage: ~wtf")]
+        [Remarks("Basic")]
+        [Summary("Shows your disbelief as to what your fellow server goers have just done.\nUsage: ~wtf")]
         public async Task WTF()
         {
             await ReplyAsync("https://www.youtube.com/watch?v=wKbU8B-QVZk");
         }
 
         [Command("smoochie")]
-        [Remarks("Reese gives a smoochie.\nUsage: ~smoochie")]
+        [Remarks("Basic")]
+        [Summary("Reese gives a smoochie.\nUsage: ~smoochie")]
         public async Task Smoochie()
         {
             await ReplyAsync("https://gyazo.com/8c51b11102ceb47e8be54653c905b97f");
         }
 
         [Command("flat")]
-        [Remarks("Heralds the unseen truth.\nUsage: ~flat")]
+        [Remarks("Basic")]
+        [Summary("Heralds the unseen truth.\nUsage: ~flat")]
         public async Task Flat()
         {
             await ReplyAsync("https://prnt.sc/ht1d1v");
         }
 
         [Command("shrug")]
-        [Remarks("Shrugs.\nUsage: ~shrug")]
+        [Remarks("Basic")]
+        [Summary("Shrugs.\nUsage: ~shrug")]
         public async Task Shrug()
         {
             await Context.Channel.SendFileAsync("reactions/shrug.png");
         }
 
         [Command("attention")]
-        [Remarks("Gives Dee the attention she craves.\nUsage: ~attention")]
+        [Remarks("Basic")]
+        [Summary("Gives Dee the attention she craves.\nUsage: ~attention")]
         public async Task Attention()
         {
             await ReplyAsync("https://giphy.com/gifs/glass-milk-n0xHORz5gp904");
         }
 
         [Command("neener")]
-        [Remarks("Helps to prove your point that you were right.\nUsage: ~neener")]
+        [Remarks("Basic")]
+        [Summary("Helps to prove your point that you were right.\nUsage: ~neener")]
         public async Task ToldYou()
         {
             await ReplyAsync("https://giphy.com/gifs/kawaii-aegyo-4QxQgWZHbeYwM");
         }
 
         [Command("lunch")]
-        [Remarks("lunch.\nUsage: ~lunch")]
+        [Remarks("Hidden")]
+        [Summary("lunch.\nUsage: ~lunch")]
         public async Task Lunch()
         {
             await ReplyAsync("https://media.tenor.com/images/71b9ce5ea465c7fa0808553d1f9e8e3c/tenor.gif");
         }
 
         [Command("banterwtf")]
-        [Remarks("A video to be played when Banter does something stupid.\nUsage: ~banterwtf")]
+        [Remarks("Basic")]
+        [Summary("A video to be played when Banter does something stupid.\nUsage: ~banterwtf")]
         public async Task BanterWTF()
         {
             await ReplyAsync("https://www.youtube.com/watch?v=-qRsiHfWh1w");
         }
 
         [Command("bully")]
-        [Remarks("Reminds young rapscallions that this is a bully free zone.\nUsage ~bully")]
+        [Remarks("Basic")]
+        [Summary("Reminds young rapscallions that this is a bully free zone.\nUsage ~bully")]
         public async Task Bully()
         {
             await Context.Channel.SendFileAsync("reactions/bully.gif");
         }
 
         [Command("stfu")]
-        [Remarks("Tells someone to shut up.\nUsage ~stfu")]
+        [Remarks("Basic")]
+        [Summary("Tells someone to shut up.\nUsage ~stfu")]
         public async Task STFU()
         {
             await Context.Channel.SendFileAsync("reactions/stfu.jpg");
         }
 
         [Command("rammus")]
-        [Remarks("PRAISE RAMMUS.\nUsage ~rammus")]
+        [Remarks("Basic")]
+        [Summary("PRAISE RAMMUS.\nUsage ~rammus")]
         public async Task Rammus()
         {
             await Context.Channel.SendFileAsync("reactions/rammus.png");
@@ -139,21 +123,24 @@ namespace JifBot.Modules.Public
         }
 
         [Command("edgy")]
-        [Remarks("Informs someone that their prior sent comment was perhaps a tad too mischievous.\nUsage ~edgy")]
+        [Remarks("Basic")]
+        [Summary("Informs someone that their prior sent comment was perhaps a tad too mischievous.\nUsage ~edgy")]
         public async Task Edgy()
         {
             await Context.Channel.SendFileAsync("reactions/edgy.jpg");
         }
 
         [Command("invitelink")]
-        [Remarks("Provides a link which can be used should you want to spread Jif Bot to another server.\nUsage ~invitelink")]
+        [Remarks("Basic")]
+        [Summary("Provides a link which can be used should you want to spread Jif Bot to another server.\nUsage ~invitelink")]
         public async Task InviteLink()
         {
             await ReplyAsync("The following is a link to add me to another server. NOTE: You must have permissions on the server in order to add. Once on the server I must be given permission to send and delete messages, otherwise I will not work.\nhttps://discordapp.com/oauth2/authorize?client_id=315569278101225483&scope=bot");
         }
 
         [Command("streamers")]
-        [Remarks("Displays everybody on the server who is currently streaming\nUsage ~streamers")]
+        [Remarks("Helper")]
+        [Summary("Displays everybody on the server who is currently streaming\nUsage ~streamers")]
         public async Task Stream()
         {
             bool found = false;
@@ -175,21 +162,24 @@ namespace JifBot.Modules.Public
         }
 
         [Command("sorry")]
-        [Remarks("A command to help you to articulate your regret for your actions.\nUsage: ~sorry")]
+        [Remarks("Basic")]
+        [Summary("A command to help you to articulate your regret for your actions.\nUsage: ~sorry")]
         public async Task Sorry()
         {
             await ReplyAsync("I'm writing this message cause I feel really bad, thinking about the way I hurt you makes me really sad. I'm sorry for all the hurt I've caused you and I regret the things I've done. I've lost the 1 girl I've ever loved and it was cause of the things I've done. Baby I feel so bad right now, cause I tore your world apart, and now all I can think about is how I broke your heart. These tears that run down my cheek are filled with sadness and hurt, because I loved you so much and now I know that it will never work :( I messed up and now I see that you mean the absolute world to me. I know sorry's not enough because I'm such a screw up.. But for whatever its worth I wanted to say, that you cross my mind every single day...The thought of you makes me smile, and I know our love was real, so I'm writing you this letter so that you know how I truly feel. What I really want to say is that I'm sorry, I know that you didn't deserve to be hurt like that, and I know that you will find someone who will love you and treat you right, they will make you happy and that person won't hurt you like I did.");
         }
 
         [Command("doghouse")]
-        [Remarks("A command to be used when someone has been enslaved by their female counterpart.\nUsage: ~doghouse name")]
+        [Remarks("Basic")]
+        [Summary("A command to be used when someone has been enslaved by their female counterpart.\nUsage: ~doghouse name")]
         public async Task Doghouse([Remainder]string name)
         {
             await ReplyAsync("<:doghouse:305246514467438602> Oh no! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> Freedom is down the drain! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> That's right! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> " + name + " is in the doghouse again! <:doghouse:305246514467438602>");
         }
 
         [Command("cheer")]
-        [Remarks("Displays one of several gifs of cute characters cheering you on.\nUsage: ~cheer")]
+        [Remarks("Basic")]
+        [Summary("Displays one of several gifs of cute characters cheering you on.\nUsage: ~cheer")]
         public async Task Cheer()
         {
             Random rnd = new Random();
@@ -199,7 +189,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("lewd")]
-        [Remarks("Displays a random image to react to someones lewd comment.\nUsage: ~lewd")]
+        [Remarks("Basic")]
+        [Summary("Displays a random image to react to someones lewd comment.\nUsage: ~lewd")]
         public async Task Lewd()
         {
             Random rnd = new Random();
@@ -209,7 +200,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("setmessage")]
-        [Remarks("Allows you to set a message that can be displayed at any time using the ~message command.\nUsage: ~setmessage write your message here")]
+        [Remarks("Personalization")]
+        [Summary("Allows you to set a message that can be displayed at any time using the ~message command.\nUsage: ~setmessage write your message here")]
         public async Task SetMessage([Remainder]string mess)
         {
             string file = "references/messages.txt";
@@ -227,7 +219,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("setsignature")]
-        [Remarks("Sets for a specific emote to be reacted to every message you send. NOTE: Jif Bot does NOT have nitro, this will only work with emotes that are available on this server. \nUsage: ~setmessage :poop:")]
+        [Remarks("Personalization")]
+        [Summary("Sets for a specific emote to be reacted to every message you send. NOTE: Jif Bot does NOT have nitro, this will only work with emotes that are available on this server. \nUsage: ~setmessage :poop:")]
         public async Task SetSignature(string mess, [Remainder]string nogo = "")
         {
             string messOrig = mess;
@@ -250,7 +243,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("resetsignature")]
-        [Remarks("Removes your signature. If you do not have a signature, use the ~setsignature command\nUsage: ~resetmessage")]
+        [Remarks("Personalization")]
+        [Summary("Removes your signature. If you do not have a signature, use the ~setsignature command\nUsage: ~resetmessage")]
         public async Task ResetSignature()
         {
             string name = Context.User.Username + "#" + Context.User.Discriminator;
@@ -275,7 +269,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("message")]
-        [Remarks("Displays your previously set message. To set a message, use the ~setmessage command.\nUsage: ~message")]
+        [Remarks("Personalization")]
+        [Summary("Displays your previously set message. To set a message, use the ~setmessage command.\nUsage: ~message")]
         public async Task Message()
         {
             string file = "references/messages.txt";
@@ -297,7 +292,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("resetmessage")]
-        [Remarks("Deletes your currently set message. If you do not have a message, use the ~setmessage command\nUsage: ~resetmessage")]
+        [Remarks("Personalization")]
+        [Summary("Deletes your currently set message. If you do not have a message, use the ~setmessage command\nUsage: ~resetmessage")]
         public async Task ResetMessage()
         {
             string name = Context.User.Username + "#" + Context.User.Discriminator;
@@ -322,16 +318,22 @@ namespace JifBot.Modules.Public
         }
 
         [Command("mock")]
-        [Remarks("Deletes your command call to keep anonymity and then mocks the message that you give it. If you do not specify any message, it will mock the most recent message sent in the text channel.\nUsage: ~mock message")]
+        [Remarks("Annoyances")]
+        [Summary("Mocks the text you provide it. If you end your command call with -d, it will delete your message calling the bot. If you do not specify any message, it will mock the most recent message sent in the text channel, and delete your command call.\nUsage: ~mock, ~mock message, ~mock message -d")]
         public async Task Mock([Remainder] string words = "")
         {
-            await Context.Message.DeleteAsync();
             if (words == "")
             {
+                await Context.Message.DeleteAsync();
                 var msg = Context.Channel.GetMessagesAsync(2).Flatten().Result;
                 words = msg.ElementAt(0).Content;
-                if (words.ToLower() == "~mock")
+                if (words.ToLower() == "!mock")
                     words = msg.ElementAt(1).Content;
+            }
+            else if (words.EndsWith("-d"))
+            {
+                words = words.Remove(words.Length - 2);
+                await Context.Message.DeleteAsync();
             }
             string end = string.Empty;
             int i = 0;
@@ -356,7 +358,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("whisper")]
-        [Remarks("Sends a private message to someone on the server. The message containing your command call will be deleted for anonymity. NOTE: the \"name\" is the person's Discord username without the numbers.\nUsage: ~whisper \"name\" message")]
+        [Remarks("Annoyances")]
+        [Summary("Sends a private message to someone on the server. The message containing your command call will be deleted for anonymity. NOTE: the \"name\" is the person's Discord username without the numbers.\nUsage: ~whisper \"name\" message")]
         public async Task Whisper([Remainder]string contents)
         {
             int spot = contents.IndexOf("\"");
@@ -372,49 +375,115 @@ namespace JifBot.Modules.Public
                 contents = contents.Remove(spot);
                 if (copy[0] == ' ')
                     copy = copy.Remove(0, 1);
-                IGuildUser test = null;
+                IGuildUser dm = null;
                 var list = Context.Guild.GetUsersAsync();
                 for (int i = 0; i < list.Result.Count; i++)
                 {
                     if (list.Result.ElementAt(i).Username.ToLower() == contents.ToLower())
-                        test = list.Result.ElementAt(i);
+                        dm = list.Result.ElementAt(i);
                 }
-                if (test == null)
+                if (dm == null)
                 {
                     await ReplyAsync("That is not a name for anybody on this server. Your message was not sent");
                     Console.WriteLine(user + " attempted to send \"" + copy + "\" to " + contents);
                 }
                 else
                 {
-                    await test.SendMessageAsync(copy);
+                    await dm.SendMessageAsync(copy);
                     Console.WriteLine(user + " successfully sent \"" + copy + "\" to " + contents);
                 }
             }
         }
         [Command("define")]
-        [Remarks("Defines any SINGLE word in the English language. Will not define proper nouns.\nUsage: ~define word")]
-        public async Task Define(string word, [Remainder]string word2 = "")
+        [Remarks("Helper")]
+        [Summary("Defines any word in the Oxford English dictionary. For multiple definitions, use -m at the end of the command\nUsage: ~define word OR ~define word -m")]
+        public async Task Define([Remainder]string word)
         {
-            if (word2 != "")
-                await ReplyAsync("__**NOTE**__: This command only works with single words. Defining for: " + word);
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            string source = "";
-            source = await client.GetStringAsync("http://dictionary.com/browse/" + word);
-            word = word.First().ToString().ToUpper() + word.Substring(1);
-            string search = word + " definition,";
-            source = source.Remove(0, source.IndexOf(search) + search.Length);
-            if(source.Contains("See more.\">"))
-                source = source.Remove(source.IndexOf("See more.\">"));
-            else
+            bool multiple = false;
+            string inFile = File.ReadAllText("configuration/config.json");
+            var inReader = JObject.Parse(inFile);
+            string key = (string)inReader.SelectToken("DictKey");
+            string id = (string)inReader.SelectToken("DictId");
+
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri("https://od-api.oxforddictionaries.com/api/v1/entries/en/");
+            client.DefaultRequestHeaders.Add("app_id", id);
+            client.DefaultRequestHeaders.Add("app_key", key);
+            if (word.EndsWith(" -m"))
             {
-                await ReplyAsync("https://i.imgur.com/dwBlFY5.jpg");
+                word = word.Replace(" -m", "");
+                multiple = true;
+            }
+            HttpResponseMessage response =  await client.GetAsync(word);
+            if(response.StatusCode.ToString() == "NotFound")
+            {
+                await Context.Channel.SendFileAsync("reactions/damage.png");
                 return;
             }
-            await ReplyAsync(source);
+
+            if(response.StatusCode.ToString() == "Forbidden")
+            {
+                await ReplyAsync("Unable to retrieve definition");
+                return;
+            }
+            HttpContent content = response.Content;
+            string stuff = await content.ReadAsStringAsync();
+            var json = JObject.Parse(stuff);
+            if(multiple)
+            {
+                var embed = new EmbedBuilder();
+                embed.WithColor(new Color(0x42ebf4));
+                string def = "1.) " + (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].definitions[0]");
+                string example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].examples[0].text");
+                if (example == null)
+                {
+                    example = "(no example available)";
+                }
+                embed.AddField(def, example);
+                for (int i = 0; i < 4; i++)
+                {
+                    def =  (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].subsenses[" + i.ToString() + "].definitions[0]");
+                    example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].subsenses[" + i.ToString() + "].examples[0].text");
+                    if (def != null)
+                    {
+                        def = (i + 2).ToString() + ".) " + def;
+                        if (example == null)
+                        {
+                            example = "(no example available)";
+                        }
+                        embed.AddField(def, example);
+                    }
+                }
+                embed.WithFooter("Made with love");
+                embed.WithCurrentTimestamp();
+                await ReplyAsync("", false, embed);
+            }
+            else
+            {
+                CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
+                TextInfo textInfo = cultureInfo.TextInfo;
+                string name = textInfo.ToTitleCase(word);
+                string type = (string)json.SelectToken("results[0].lexicalEntries[0].lexicalCategory");
+                string spelling = (string)json.SelectToken("results[0].lexicalEntries[0].pronunciations[0].phoneticSpelling");
+                string definition = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].definitions[0]");
+                string example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].examples[0].text");
+                string message = name + " (" + type + ")";
+                if(spelling != null)
+                {
+                    message += "     /" + spelling + "/";
+                }
+                message += "\n**Definition: **" + definition;
+                if(example != null)
+                {
+                    message += "\n**Example: **" + example;
+                }
+                await ReplyAsync(message);
+            }
         }
 
         [Command("udefine")]
-        [Remarks("Gives the top definition for the term from urbandictionary.com\nUsage: ~udefine phrase")]
+        [Remarks("Helper")]
+        [Summary("Gives the top definition for the term from urbandictionary.com\nUsage: ~udefine phrase")]
         public async Task DefineUrban([Remainder]string phrase)
         {
             phrase = phrase.Replace(" ", "+");
@@ -492,7 +561,8 @@ namespace JifBot.Modules.Public
             await ReplyAsync(sendstr);
         }
         [Command("stats")]
-        [Remarks("Gives the stats for a league player on any region. The region name is the abbreviated verson of the region name. Example: na = North America\nUsage ~stats region username")]
+        [Remarks("Helper")]
+        [Summary("Gives the stats for a league player on any region. The region name is the abbreviated verson of the region name. Example: na = North America\nUsage ~stats region username")]
         public async Task Stats(string region, [Remainder]string name)
         {
             name = name.Replace(" ", string.Empty);
@@ -613,7 +683,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("joke")]
-        [Remarks("Tells a joke\nUsage: ~joke")]
+        [Remarks("Helper")]
+        [Summary("Tells a joke\nUsage: ~joke")]
         public async Task Joke()
         {
             System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
@@ -635,7 +706,8 @@ namespace JifBot.Modules.Public
 
 
         [Command("inspire")]
-        [Remarks("Gives an inspirational quote\nUsage: ~inspire")]
+        [Remarks("Helper")]
+        [Summary("Gives an inspirational quote\nUsage: ~inspire")]
         public async Task Inspire()
         {
             string file1 = "references/quotes.txt";
@@ -667,10 +739,15 @@ namespace JifBot.Modules.Public
         }
 
         [Command("bigtext")]
-        [Remarks("Takes the user input for messages and turns it into large letters using emotes. Your command call is deleted upon use.\nUsage: ~bigtext phrase")]
+        [Remarks("Annoyances")]
+        [Summary("Takes the user input for messages and turns it into large letters using emotes. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~bigtext phrase, ~bigtext phrase -d")]
         public async Task bigtext([Remainder]string orig)
         {
-            await Context.Message.DeleteAsync();
+            if (orig.EndsWith("-d"))
+            {
+                orig = orig.Remove(orig.Length - 2);
+                await Context.Message.DeleteAsync();
+            }
             string final = "";
             orig = orig.ToLower();
             for (int i = 0; i < orig.Length; i++)
@@ -685,10 +762,15 @@ namespace JifBot.Modules.Public
         }
 
         [Command("tinytext")]
-        [Remarks("Takes the user input for messages and turns it into small letters. Your command call is deleted upon use.\nUsage: ~tinytext phrase")]
+        [Remarks("Annoyances")]
+        [Summary("Takes the user input for messages and turns it into small letters. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~tinytext phrase, ~tinytext phrase -d")]
         public async Task tinytext([Remainder]string orig)
         {
-            await Context.Message.DeleteAsync();
+            if (orig.EndsWith("-d"))
+            {
+                orig = orig.Remove(orig.Length - 2);
+                await Context.Message.DeleteAsync();
+            }
             string final = "";
             orig = orig.ToLower();
             for (int i = 0; i < orig.Length; i++)
@@ -702,10 +784,15 @@ namespace JifBot.Modules.Public
         }
 
         [Command("widetext")]
-        [Remarks("Takes the user input for messages and turns it into a ＷＩＤＥ  ＢＯＩ. Your command call is deleted upon use.\nUsage: ~widetext phrase")]
+        [Remarks("Annoyances")]
+        [Summary("Takes the user input for messages and turns it into a ＷＩＤＥ  ＢＯＩ. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~widetext phrase, ~widetext phrase -d")]
         public async Task WideText([Remainder] string message)
         {
-            await Context.Message.DeleteAsync();
+            if (message.EndsWith("-d"))
+            {
+                message = message.Remove(message.Length - 2);
+                await Context.Message.DeleteAsync();
+            }
             message = message.Replace(" ", "   ");
             string alpha = "QWERTYUIOPASDFGHJKLÇZXCVBNMqwertyuiopasdfghjklçzxcvbnm,.-~+´«'0987654321!\"#$%&/()=?»*`^_:;";
             string fullwidth = "ＱＷＥＲＴＹＵＩＯＰＡＳＤＦＧＨＪＫＬÇＺＸＣＶＢＮＭｑｗｅｒｔｙｕｉｏｐａｓｄｆｇｈｊｋｌçｚｘｃｖｂｎｍ,.－~ ´«＇０９８７６５４３２１！＂＃＄％＆／（）＝？»＊`＾＿：；";
@@ -717,8 +804,33 @@ namespace JifBot.Modules.Public
             await ReplyAsync(message);
         }
 
+        [Command("owo")]
+        [Alias("uwu")]
+        [Remarks("Annoyances")]
+        [Summary("Takes the user input, and translates it into degenerate owo speak. If you end your command call with -d, it will delete your message calling the bot..\nUsage: ~owo phrase, ~owo phrase -d")]
+        public async Task Owo([Remainder] string message)
+        {
+            if (message.EndsWith("-d"))
+            {
+                message = message.Remove(message.Length-2);
+                await Context.Message.DeleteAsync();
+            }
+            string[] faces = new string[] { "(・ω・)", ";;w;;", "owo", "UwU", ">w<", "^w^" };
+            Random rnd = new Random();
+            message = Regex.Replace(message, @"(?:r|l)", "w");
+            message = Regex.Replace(message, @"(?:R|L)", "W");
+            message = Regex.Replace(message, @"n([aeiou])", @"ny$1");
+            message = Regex.Replace(message, @"N([aeiou])", @"Ny$1");
+            message = Regex.Replace(message, @"N([AEIOU])", @"NY$1");
+            message = Regex.Replace(message, @"ove", @"uv");
+            message = Regex.Replace(message, @"\!+", (match) => string.Format("{0}", " " + faces[rnd.Next(faces.Length)] + " "));
+
+            await ReplyAsync(message);
+        }
+
         [Command("timer")]
-        [Remarks("Sets a reminder to ping you after a certain number of minutes has passed. A message can be specified along with the time to be printed back to you at the end of the timer.\nUsage: ~timer minutes message")]
+        [Remarks("Helper")]
+        [Summary("Sets a reminder to ping you after a certain number of minutes has passed. A message can be specified along with the time to be printed back to you at the end of the timer.\nUsage: ~timer minutes message")]
         public async Task Timer(int time, [Remainder]string message = "")
         {
             if (time <= 0)
@@ -734,29 +846,48 @@ namespace JifBot.Modules.Public
         }
 
         [Command("choose")]
-        [Remarks("Randomly makes a choice for you. You can use as many choices as you want, but seperate all choices using \"\".\nUsage: ~choose \"option 1\" \"option 2\"")]
+        [Remarks("Helper")]
+        [Summary("Randomly makes a choice for you. You can use as many choices as you want, but seperate all choices using a space. If you wish for a choice to contain spaces, surround the choice with \"\"\nUsage: ~choose choice \"choice but with spaces\"")]
         public async Task Choose([Remainder]string message)
         {
-            List<string> choices = new List<string>();
-            int count = 0;
-            if (message.IndexOf("\"") == -1)
+            int quotes = message.Split('\"').Length - 1;
+            if(quotes % 2 != 0)
             {
-                await ReplyAsync("Seperate your choices with \"\" or spaces, example: ~choose \"option 1\" \"option 2\"");
+                await ReplyAsync("please ensure all quotations are closed");
                 return;
             }
+
+            List<string> choices = new List<string>();
+            int count = 0;
+            message = message.TrimEnd();
             while (true)
             {
-                if (count != 0)
-                    message = message.Remove(0, message.IndexOf("\"") + 1);
-                if (message.IndexOf("\"") == -1)
-                    break;
-                message = message.Remove(0, message.IndexOf("\"") + 1);
-                if (message.IndexOf("\"") == -1)
+                message = message.TrimStart();
+                string choice;
+                if(message == "")
                 {
-                    await ReplyAsync("Make sure that every quotation has a beginning and end.");
-                    return;
+                    break;
                 }
-                choices.Add(message.Remove(message.IndexOf("\"")));
+                if(message[0] == '\"')
+                {
+                    message = message.Remove(0, 1);
+                    choice = message.Remove(message.IndexOf("\""));
+                    message = message.Remove(0, message.IndexOf("\"") + 1);
+                }
+                else
+                {
+                    if (message.Contains(" "))
+                    {
+                        choice = message.Remove(message.IndexOf(" "));
+                        message = message.Remove(0, message.IndexOf(" "));
+                    }
+                    else
+                    {
+                        choice = message;
+                        message = "";
+                    }
+                }
+                choices.Add(choice);
                 count++;
             }
 
@@ -772,7 +903,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("youtube")]
-        [Remarks("Takes whatever you give it and searches for it on YouTube, it will return the first search result that appears.\nUsage: ~youtube video title")]
+        [Remarks("Helper")]
+        [Summary("Takes whatever you give it and searches for it on YouTube, it will return the first search result that appears.\nUsage: ~youtube video title")]
         public async Task Youtube([Remainder]string vid)
         {
             vid = "https://www.youtube.com/results?search_query=" + vid.Replace(" ", "+");
@@ -783,8 +915,17 @@ namespace JifBot.Modules.Public
             await ReplyAsync("https://www.youtube.com/watch?v=" + html);
         }
 
+        [Command("gnomed")]
+        [Remarks("Hidden")]
+        [Summary("I'm gnot a gnelf...\nUsage: ~gnomed")]
+        public async Task Gnomed()
+        {
+            await ReplyAsync("https://www.youtube.com/watch?v=6n3pFFPSlW4");
+        }
+
         [Command("mastery")]
-        [Remarks("Gives the number of mastery points for the top 10 most played champions for a user on any server.\nUsage ~mastery region username")]
+        [Remarks("Helper")]
+        [Summary("Gives the number of mastery points for the top 10 most played champions for a user on any server.\nUsage ~mastery region username")]
         public async Task Mastery(string region, [Remainder]string name)
         {
             var embed = new EmbedBuilder();
@@ -838,15 +979,25 @@ namespace JifBot.Modules.Public
         }
 
         [Command("info")]
-        [Remarks("Gets varying pieces of Discord information for one or more users. Mention a user to get their information, do not mention anyone to get your own. You can mention as many people as you like.\nUsage: ~info @person1 @person2")]
-        public async Task MyInfo([Remainder] string useless = "")
+        [Remarks("Helper")]
+        [Summary("Gets varying pieces of Discord information for one or more users. Mention a user or provide their id to get their information, or do neither to get your own. To do more than 1 person, separate mentions/ids with spaces.\nUsage: ~info, ~info @person1 @person2, ~info person1id person2id")]
+        public async Task MyInfo([Remainder] string ids = "")
         {
             var mention = Context.Message.MentionedUserIds;
             if (mention.Count != 0)
             {
-                foreach (ulong temp in mention)
+                foreach (ulong id in mention)
                 {
-                    var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(temp));
+                    var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(id));
+                    await ReplyAsync("", false, embed);
+                }
+            }
+            else if (ids != "")
+            {
+                string[] idList = ids.Split(' ');
+                foreach (string id in idList)
+                {
+                    var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(Convert.ToUInt64(id)));
                     await ReplyAsync("", false, embed);
                 }
             }
@@ -858,16 +1009,31 @@ namespace JifBot.Modules.Public
         }
 
         [Command("avatar")]
-        [Remarks("Gets the avatar for one or more users. Mention a user to get their avatar, do not mention anyone to get your own. You can mention as many people as you like.\nUsage: ~avatar @person1 @person2")]
-        public async Task Avatar([Remainder] string useless = "")
+        [Remarks("Helper")]
+        [Summary("Gets the avatar for one or more users. Mention a user or provide their id to get their avatar, or do neither to get your own. To do more than 1 person, separate mentions/ids with spaces.\nUsage: ~avatar, ~avatar @person1 @person2, ~avatar person1id person2id")]
+        public async Task Avatar([Remainder] string ids = "")
         {
             var mention = Context.Message.MentionedUserIds;
             if (mention.Count != 0)
             {
-                foreach (ulong temp in mention)
+                foreach (ulong id in mention)
                 {
                     var embed = new EmbedBuilder();
-                    IGuildUser user = await Context.Guild.GetUserAsync(temp);
+                    IGuildUser user = await Context.Guild.GetUserAsync(id);
+                    string url = user.GetAvatarUrl();
+                    url = url.Remove(url.IndexOf("?size=128"));
+                    url = url + "?size=256";
+                    embed.ImageUrl = url;
+                    await ReplyAsync("", false, embed);
+                }
+            }
+            else if(ids != "")
+            {
+                string[] idList = ids.Split(' ');
+                foreach (string id in idList)
+                {
+                    var embed = new EmbedBuilder();
+                    IGuildUser user = await Context.Guild.GetUserAsync(Convert.ToUInt64(id));
                     string url = user.GetAvatarUrl();
                     url = url.Remove(url.IndexOf("?size=128"));
                     url = url + "?size=256";
@@ -887,7 +1053,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("8ball")]
-        [Remarks("asks the magic 8 ball a question.\nUsage: ~8ball")]
+        [Remarks("Helper")]
+        [Summary("asks the magic 8 ball a question.\nUsage: ~8ball")]
         public async Task eightBall([Remainder] string useless = "")
         {
             string[] responses = new string[] { "it is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful" };
@@ -897,7 +1064,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("s8ball")]
-        [Remarks("asks the sassy 8 ball a question.\nUsage: ~s8ball")]
+        [Remarks("Helper")]
+        [Summary("asks the sassy 8 ball a question.\nUsage: ~s8ball")]
         public async Task SeightBall([Remainder] string useless = "")
         {
             string[] responses = new string[] { "Fuck yeah.", "Sure, why not?", "Well, duh.", "Do bears shit in the woods?", "Is water wet?", "I mean, I guess.", "If it gets you to fuck off, then sure.", "011110010110010101110011", "Whatever floats your boat.", "Fine, sure, whatever.", "Fuck you.", "Why do you feel the need to ask a BOT for validation?", "Figure it out yourself.", "Does it really matter?", "Leave me alone.", "Fuck no.", "Why would you even consider that a possibility?", "It's cute you think that could happen.", "Not a chance shitlord.", "Not in a million years." };
@@ -907,7 +1075,8 @@ namespace JifBot.Modules.Public
         }
 
         [Command("tiltycat")]
-        [Remarks("Creates a cat at any angle you specify.\nUsage: ~tiltycat degree\n\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_cat/(degree).png``` where (degree) is the desired angle")]
+        [Remarks("Helper")]
+        [Summary("Creates a cat at any angle you specify.\nUsage: ~tiltycat degree\n\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_cat/(degree).png``` where (degree) is the desired angle")]
         public async Task TiltyCat(int degree, [Remainder] string useless = "")
         {
             string temp = "http://www.writeonlymedia.com/tilty_cat/" + degree + ".png";
@@ -918,13 +1087,48 @@ namespace JifBot.Modules.Public
             await Context.Channel.SendFileAsync("tiltycat.png");
         }
 
+        [Command("tiltydog")]
+        [Remarks("Helper")]
+        [Summary("Creates a dog at any angle you specify.\nUsage: ~tiltydog degree\n\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_dog/(degree).png``` where (degree) is the desired angle")]
+        public async Task TiltyDat(int degree, [Remainder] string useless = "")
+        {
+            string temp = "http://www.writeonlymedia.com/tilty_dog/" + degree + ".png";
+            using (WebClient client = new WebClient())
+            {
+                client.DownloadFile(new Uri(temp), "tiltydog.png");
+            }
+            await Context.Channel.SendFileAsync("tiltydog.png");
+        }
+
         [Command("rolligentle")]
-        [Remarks("Makes the Gentlecat do a rollie\nUsage: ~rolligentle")]
+        [Remarks("Hidden")]
+        [Summary("Makes the Gentlecat do a rollie\nUsage: ~rolligentle")]
         public async Task RolliCat([Remainder] string useless = "")
         {
             await ReplyAsync("<:gentlecat:302907277571260418> <:rightcat:455100361066283035> <:bottomcat:455100361120940032> <:leftcat:455100361187786752> <:gentlecat:302907277571260418>");
         }
 
+        [Command("meancount")]
+        [Remarks("Annoyances")]
+        [Summary("Reports the number of times Jif has said \"I mean\"\nUsage: ~meancount")]
+        public async Task meanCountt([Remainder] string useless = "")
+        {
+            string file = "references/mean.txt";
+            Int32 num = Convert.ToInt32(File.ReadAllText(file));
+            await ReplyAsync("I mean, I've said it " + num + " times since 12/13/18.");
+        }
+
+        [Command("imean")]
+        [Remarks("Hidden")]
+        [Summary("Adds a tally to the number of times Jif has said \"I mean\"\nUsage: ~imean")]
+        public async Task iMean([Remainder] string useless = "")
+        {
+            string file = "references/mean.txt";
+            Int32 num = Convert.ToInt32(File.ReadAllText(file));
+            num++;
+            await ReplyAsync("<@150084781864910848> you've said \"I mean\" " + num + " times.");
+            File.WriteAllText(file, Convert.ToString(num));
+        }
 
         async Task<bool> RemoteFileExists(string url)
         {

@@ -42,6 +42,8 @@ namespace JifBot.CommandHandler
                     channel = await temp.GetTextChannelAsync(398305757784702977);
                 if (user.Guild.Id == 374014790793691137)
                     channel = await temp.GetTextChannelAsync(442745612908232734);
+                if (user.Guild.Id == 301897718824173570)
+                    channel = await temp.GetTextChannelAsync(566425762089926677);
                 {
                     embed.ThumbnailUrl = user.GetAvatarUrl();
                     embed.Title = $"**{user.Username} Left The Server:**";
@@ -83,6 +85,8 @@ namespace JifBot.CommandHandler
                 channel = await temp.GetTextChannelAsync(398305757784702977);
             if (user.Guild.Id == 374014790793691137)
                 channel = await temp.GetTextChannelAsync(442745612908232734);
+            if (user.Guild.Id == 301897718824173570)
+                channel = await temp.GetTextChannelAsync(566425762089926677);
 
             var embed = new EmbedBuilder();
             embed.ThumbnailUrl = user.GetAvatarUrl();
@@ -120,8 +124,10 @@ namespace JifBot.CommandHandler
             {
                 if (message.Author.IsBot)
                     return;
-                if (message.HasStringPrefix("~help", ref argPos))
+                if (message.HasStringPrefix(BotConfig.Load().Prefix + "help", ref argPos))
                     await tryHelp(message);
+                if (message.HasStringPrefix(BotConfig.Load().Prefix + "commands", ref argPos))
+                    await printCommands(message);
                 //Execute the command, store the result
                 var result = await commands.ExecuteAsync(context, argPos, map);
 
@@ -138,6 +144,8 @@ namespace JifBot.CommandHandler
         public async Task CheckKeyword(SocketUserMessage msg)
         {
             if (msg.Author.IsBot)
+                return;
+            if (msg.Channel.Id == 532437794530787328 || msg.Channel.Id == 534141269870510110 || msg.Channel.Id == 532968642183299082 || msg.Channel.Id == 543961887914721290)
                 return;
             string words = msg.Content.ToString();
 
@@ -201,6 +209,15 @@ namespace JifBot.CommandHandler
 
             if (words.ToLower().Contains("@here") || words.ToLower().Contains("@everyone"))
                 await msg.Channel.SendMessageAsync("<:ping:377208255132467233>");
+
+            if (words.ToLower().Contains("i mean") && msg.Author.Id == 150084781864910848)
+            {
+                string file = "references/mean.txt";
+                Int32 num = Convert.ToInt32(File.ReadAllText(file));
+                num++;
+                await msg.Channel.SendMessageAsync("<@150084781864910848> you've said \"I mean\" " + num + " times.");
+                File.WriteAllText(file, Convert.ToString(num));
+            }
 
 
             var mentionedUsers = msg.MentionedUsers;
@@ -278,21 +295,62 @@ namespace JifBot.CommandHandler
             commandName = commandName.ToLower();
             commandName = commandName.Remove(0, 5);
             commandName = commandName.Replace(" ", string.Empty);
-            if (commandName == "help")
-                desc = "Used to get the descriptions of other commands.\nUsage: ~help CommandName";
             if (commandName == "")
             {
-                desc = "please supply a command name.\nFor a list of available commands, type: ~commands";
+                await printCommands(msg);
+                return;
             }
+
+            else if (commandName == "help")
+                desc = "Used to get the descriptions of other commands.\nUsage: ~help CommandName";
+
+            else if (commandName == "commands")
+                desc = "Shows all available commands.\nUsage: ~commands";
+
             else foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
             {
                 if (c.Name == commandName)
                 {
-                    desc = c.Remarks;
+                    desc = c.Summary;
                 }
             }
+
             await msg.Channel.SendMessageAsync(desc);
             return;
+        }
+
+        public async Task printCommands(SocketUserMessage msg)
+        {
+            var categories = new Dictionary<string, List<string>>();
+            foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
+            {
+                if (c.Remarks == "Hidden")
+                    continue;
+                else if (!categories.ContainsKey(c.Remarks))
+                {
+                    List<string> temp = new List<string>();
+                    temp.Add(c.Name);
+                    categories.Add(c.Remarks, temp);
+                }
+                else
+                    categories[c.Remarks].Add(c.Name);
+            }
+
+            var embed = new EmbedBuilder();
+            embed.WithColor(new Color(0x42ebf4));
+            embed.Title = "All commands will begin with a tilde (~), for more information on individual commands, use: ~help commandName";
+            embed.Description = "Contact Jif#3952 with any suggestions for more commands";
+            embed.WithFooter("Made with love");
+
+            foreach (var category in categories)
+            {
+                string commands = "";
+                foreach(string command in category.Value)
+                    commands += command + ", ";
+                commands = commands.Remove(commands.Length - 2);
+                embed.AddField(category.Key, commands);
+            }
+            await msg.Channel.SendMessageAsync("", false, embed);
         }
 
         public async Task StreamCycle()

@@ -78,9 +78,13 @@ namespace JIfBot
             var config = new BotConfig();               // Create a new configuration object.
             System.IO.StreamReader file = new System.IO.StreamReader("references/LoadInformation.txt");
 
-            config.Prefix = file.ReadLine();              // Read the bot prefix from console.
+            config.Prefix = file.ReadLine();
 
-            config.Token = file.ReadLine();              // Read the bot token from console.
+            config.Token = file.ReadLine();
+
+            config.DictKey = file.ReadLine();
+
+            config.DictId = file.ReadLine();
 
             config.Save();                                  // Save the new configuration object to file.
             Console.WriteLine("Configuration has been loaded");

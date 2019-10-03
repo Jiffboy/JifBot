@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.271
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JifBot", "JifBot.csproj", "{91844ABD-97B4-448A-846C-81A6D622C7EE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{91844ABD-97B4-448A-846C-81A6D622C7EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91844ABD-97B4-448A-846C-81A6D622C7EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91844ABD-97B4-448A-846C-81A6D622C7EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91844ABD-97B4-448A-846C-81A6D622C7EE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {474777B6-F6BB-4659-A813-7D7CD91DDC36}
+	EndGlobalSection
+EndGlobal

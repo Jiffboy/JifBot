@@ -11,6 +11,8 @@ namespace JifBot.Config
 
         public string Prefix { get; set; }
         public string Token { get; set; }
+        public string DictKey { get; set; }
+        public string DictId { get; set; }
 
         public void Save(string dir = "configuration/config.json")
         {
