@@ -11,6 +11,8 @@ using System.Threading;
 using Discord;
 using Discord.Commands;
 using Newtonsoft.Json.Linq;
+using System.Web;
+using Newtonsoft.Json;
 
 namespace JifBot.Modules.Public
 {
@@ -484,82 +486,125 @@ namespace JifBot.Modules.Public
         [Command("udefine")]
         [Remarks("Helper")]
         [Summary("Gives the top definition for the term from urbandictionary.com\nUsage: ~udefine phrase")]
-        public async Task DefineUrban([Remainder]string phrase)
+        public async Task DefineUrbanDictionary([Remainder]string phrase)
         {
-            phrase = phrase.Replace(" ", "+");
-            string source = "";
-            string start = "property=\"fb:app_id\"><meta content=\"";
-            string end = "\" name=\"Description\" property=\"og:description\"";
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            if (await RemoteFileExists("https://www.urbandictionary.com/define.php?term=" + phrase))
-                source = await client.GetStringAsync("https://www.urbandictionary.com/define.php?term=" + phrase);
+            string URBAN_DICTIONARY_ENDPOINT = "http://api.urbandictionary.com/v0/define?term=";
+
+            string encodedSearchTerm = HttpUtility.UrlEncode(phrase);
+            List<UrbanDictionaryDefinition> definitionList = new List<UrbanDictionaryDefinition>();
+
+            using (HttpClient client = new HttpClient())
+            {
+                using (var response = await client.GetAsync(URBAN_DICTIONARY_ENDPOINT + encodedSearchTerm))
+                {
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+                    try
+                    {
+                        UrbanDictionaryResult udefineResult = JsonConvert.DeserializeObject<UrbanDictionaryResult>(jsonResponse);
+                        definitionList = udefineResult.List;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }
+            }
+
+            if (definitionList.Count > 0)
+            {
+                // Urban Dictionary uses square brackets for links in its markup; they'll never appear as part of the definition text.
+                var cleanDefinition = definitionList[0].Definition.Replace("[", "").Replace("]", "");
+                var cleanExample = definitionList[0].Example.Replace("[", "").Replace("]", "");
+
+                await ReplyAsync($"Definition:\n{cleanDefinition}\n\nExample:\n{cleanExample}");
+            }
             else
             {
-                await ReplyAsync("\"" + phrase.Replace("+", " ") + "\" is not an existing word/phrase");
-                return;
-            }
-            if (source.Contains("<p>There aren't any definitions for <i>"))
-            {
-                await ReplyAsync("there are no entries for \"" + phrase.Replace("+", " ") + "\"");
-                return;
-            }
-            string def = "";
-            string ex = "";
-            string sendstr = "";
-            if (source.Contains(start))
-            {
-                def = source.Remove(0, source.IndexOf(start) + start.Length);
-                def = def.Remove(def.IndexOf(end));
-                start = "</div><div class=\"example\">";
-                end = "</div><div class=\"tags\">";
-                ex = source.Remove(0, source.IndexOf(start) + start.Length);
-                if (ex.Contains(end))
-                    ex = ex.Remove(ex.IndexOf(end));
-            }
-            else
-            {
-                def = source.Remove(0, source.IndexOf("<div class='meaning'>") + "<div class='meaning'>".Length);
-                def = def.Remove(def.IndexOf("</div>"));
-                ex = source.Remove(0, source.IndexOf("<div class='example'>") + "<div class='example'>".Length);
-                ex = ex.Remove(ex.IndexOf("</div>"));
+                await ReplyAsync($"{phrase} is not an existing word/phrase");
             }
 
-            sendstr = "Definition:\n" + def + "\n\nExample:\n" + ex;
-
-            sendstr = sendstr.Replace("&quot;", "\"");
-            sendstr = sendstr.Replace("<br/>", "\n");
-            sendstr = sendstr.Replace("&apos;", "'");
-            sendstr = sendstr.Replace("&amp;", "&");
-            sendstr = sendstr.Replace("&lt;", "<");
-            sendstr = sendstr.Replace("&gt;", ">");
-            sendstr = sendstr.Replace("quot;", "\"");
-            sendstr = sendstr.Replace("&#39;", "'");
-
-            if (sendstr.Contains("</div><div class=\"contributor\">"))
-                sendstr = sendstr.Remove(sendstr.IndexOf("</div><div class=\"contributor\">"));
-
-            while (sendstr.Contains("<a class=") && sendstr.Contains("\">"))
-                sendstr = sendstr.Remove(sendstr.IndexOf("<a class="), sendstr.IndexOf("\">") + 2 - sendstr.IndexOf("<a class="));
-            while (sendstr.Contains("<a href=") && sendstr.Contains("\">"))
-            {
-                if (sendstr.Contains("</div><div class="))
-                    sendstr = sendstr.Remove(sendstr.IndexOf("</div><div class="), sendstr.IndexOf("</a></div>") + 10 - sendstr.IndexOf("</div><div class="));
-                else
-                    sendstr = sendstr.Remove(sendstr.IndexOf("<a href="), sendstr.IndexOf("\">") + 2 - sendstr.IndexOf("<a href="));
-            }
-
-            sendstr = sendstr.Replace("</a>", string.Empty);
-            if (sendstr.Replace(" ", string.Empty).EndsWith("Example:\n"))
-                sendstr = sendstr.Remove(sendstr.IndexOf("\n\nExample:\n"));
-
-            while (sendstr.Length >= 2000)
-            {
-                await ReplyAsync(sendstr.Remove(2000));
-                sendstr = sendstr.Remove(0, 2000);
-            }
-
-            await ReplyAsync(sendstr);
         }
+
+        //[Command("udefine")]
+        //[Remarks("Helper")]
+        //[Summary("Gives the top definition for the term from urbandictionary.com\nUsage: ~udefine phrase")]
+        //public async Task DefineUrban([Remainder]string phrase)
+        //{
+        //    phrase = phrase.Replace(" ", "+");
+        //    string source = "";
+        //    string start = "property=\"fb:app_id\"><meta content=\"";
+        //    string end = "\" name=\"Description\" property=\"og:description\"";
+        //    System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
+        //    if (await RemoteFileExists("https://www.urbandictionary.com/define.php?term=" + phrase))
+        //        source = await client.GetStringAsync("https://www.urbandictionary.com/define.php?term=" + phrase);
+        //    else
+        //    {
+        //        await ReplyAsync("\"" + phrase.Replace("+", " ") + "\" is not an existing word/phrase");
+        //        return;
+        //    }
+        //    if (source.Contains("<p>There aren't any definitions for <i>"))
+        //    {
+        //        await ReplyAsync("there are no entries for \"" + phrase.Replace("+", " ") + "\"");
+        //        return;
+        //    }
+        //    string def = "";
+        //    string ex = "";
+        //    string sendstr = "";
+        //    if (source.Contains(start))
+        //    {
+        //        def = source.Remove(0, source.IndexOf(start) + start.Length);
+        //        def = def.Remove(def.IndexOf(end));
+        //        start = "</div><div class=\"example\">";
+        //        end = "</div><div class=\"tags\">";
+        //        ex = source.Remove(0, source.IndexOf(start) + start.Length);
+        //        if (ex.Contains(end))
+        //            ex = ex.Remove(ex.IndexOf(end));
+        //    }
+        //    else
+        //    {
+        //        def = source.Remove(0, source.IndexOf("<div class='meaning'>") + "<div class='meaning'>".Length);
+        //        def = def.Remove(def.IndexOf("</div>"));
+        //        ex = source.Remove(0, source.IndexOf("<div class='example'>") + "<div class='example'>".Length);
+        //        ex = ex.Remove(ex.IndexOf("</div>"));
+        //    }
+
+        //    sendstr = "Definition:\n" + def + "\n\nExample:\n" + ex;
+
+        //    sendstr = sendstr.Replace("&quot;", "\"");
+        //    sendstr = sendstr.Replace("<br/>", "\n");
+        //    sendstr = sendstr.Replace("&apos;", "'");
+        //    sendstr = sendstr.Replace("&amp;", "&");
+        //    sendstr = sendstr.Replace("&lt;", "<");
+        //    sendstr = sendstr.Replace("&gt;", ">");
+        //    sendstr = sendstr.Replace("quot;", "\"");
+        //    sendstr = sendstr.Replace("&#39;", "'");
+
+        //    if (sendstr.Contains("</div><div class=\"contributor\">"))
+        //        sendstr = sendstr.Remove(sendstr.IndexOf("</div><div class=\"contributor\">"));
+
+        //    while (sendstr.Contains("<a class=") && sendstr.Contains("\">"))
+        //        sendstr = sendstr.Remove(sendstr.IndexOf("<a class="), sendstr.IndexOf("\">") + 2 - sendstr.IndexOf("<a class="));
+        //    while (sendstr.Contains("<a href=") && sendstr.Contains("\">"))
+        //    {
+        //        if (sendstr.Contains("</div><div class="))
+        //            sendstr = sendstr.Remove(sendstr.IndexOf("</div><div class="), sendstr.IndexOf("</a></div>") + 10 - sendstr.IndexOf("</div><div class="));
+        //        else
+        //            sendstr = sendstr.Remove(sendstr.IndexOf("<a href="), sendstr.IndexOf("\">") + 2 - sendstr.IndexOf("<a href="));
+        //    }
+
+        //    sendstr = sendstr.Replace("</a>", string.Empty);
+        //    if (sendstr.Replace(" ", string.Empty).EndsWith("Example:\n"))
+        //        sendstr = sendstr.Remove(sendstr.IndexOf("\n\nExample:\n"));
+
+        //    while (sendstr.Length >= 2000)
+        //    {
+        //        await ReplyAsync(sendstr.Remove(2000));
+        //        sendstr = sendstr.Remove(0, 2000);
+        //    }
+
+        //    await ReplyAsync(sendstr);
+        //}
+
         [Command("stats")]
         [Remarks("Helper")]
         [Summary("Gives the stats for a league player on any region. The region name is the abbreviated verson of the region name. Example: na = North America\nUsage ~stats region username")]
@@ -1320,5 +1365,16 @@ namespace JifBot.Modules.Public
             embed.WithCurrentTimestamp();
             return embed;
         }
+    }
+
+    class UrbanDictionaryDefinition
+    {
+        public string Definition { get; set; }
+        public string Example { get; set; }
+    }
+
+    class UrbanDictionaryResult
+    {
+        public List<UrbanDictionaryDefinition> List { get; set; }
     }
 }
