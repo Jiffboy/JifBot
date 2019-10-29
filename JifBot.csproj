@@ -6,41 +6,41 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="cheer\cheer0.gif" />
-    <None Remove="cheer\cheer1.gif" />
-    <None Remove="cheer\cheer2.gif" />
-    <None Remove="cheer\cheer3.gif" />
-    <None Remove="cheer\cheer4.gif" />
-    <None Remove="cheer\cheer5.gif" />
-    <None Remove="cheer\cheer6.gif" />
-    <None Remove="cheer\cheer7.gif" />
-    <None Remove="cheer\cheer8.gif" />
-    <None Remove="cheer\cheer9.gif" />
-    <None Remove="lewd\0.png" />
-    <None Remove="lewd\1.png" />
-    <None Remove="lewd\2.png" />
-    <None Remove="lewd\3.png" />
-    <None Remove="lewd\4.png" />
-    <None Remove="lewd\5.png" />
-    <None Remove="lewd\6.png" />
-    <None Remove="lewd\7.png" />
-    <None Remove="reactions\bamboozle.png" />
-    <None Remove="reactions\banter.mp3" />
-    <None Remove="reactions\bully.gif" />
-    <None Remove="reactions\deletthis.jpg" />
-    <None Remove="reactions\edgy.jpg" />
-    <None Remove="reactions\fiora.jpg" />
-    <None Remove="reactions\honk.jpg" />
-    <None Remove="reactions\kms.png" />
-    <None Remove="reactions\nani.jpg" />
-    <None Remove="reactions\neeko.jpg" />
-    <None Remove="reactions\rammus.png" />
-    <None Remove="reactions\shrug.png" />
-    <None Remove="reactions\stale.png" />
-    <None Remove="reactions\stfu.jpg" />
-    <None Remove="reactions\stop.png" />
-    <None Remove="reactions\thot.jpg" />
-    <None Remove="reactions\youve_been_gnomed_wmv.avi" />
+    <None Remove="media\cheer\cheer0.gif" />
+    <None Remove="media\cheer\cheer1.gif" />
+    <None Remove="media\cheer\cheer2.gif" />
+    <None Remove="media\cheer\cheer3.gif" />
+    <None Remove="media\cheer\cheer4.gif" />
+    <None Remove="media\cheer\cheer5.gif" />
+    <None Remove="media\cheer\cheer6.gif" />
+    <None Remove="media\cheer\cheer7.gif" />
+    <None Remove="media\cheer\cheer8.gif" />
+    <None Remove="media\cheer\cheer9.gif" />
+    <None Remove="media\lewd\0.png" />
+    <None Remove="media\lewd\1.png" />
+    <None Remove="media\lewd\2.png" />
+    <None Remove="media\lewd\3.png" />
+    <None Remove="media\lewd\4.png" />
+    <None Remove="media\lewd\5.png" />
+    <None Remove="media\lewd\6.png" />
+    <None Remove="media\lewd\7.png" />
+    <None Remove="media\bamboozle.png" />
+    <None Remove="media\banter.mp3" />
+    <None Remove="media\bully.gif" />
+    <None Remove="media\deletthis.jpg" />
+    <None Remove="media\edgy.jpg" />
+    <None Remove="media\fiora.jpg" />
+    <None Remove="media\honk.jpg" />
+    <None Remove="media\kms.png" />
+    <None Remove="media\nani.jpg" />
+    <None Remove="media\neeko.jpg" />
+    <None Remove="media\rammus.png" />
+    <None Remove="media\shrug.png" />
+    <None Remove="media\stale.png" />
+    <None Remove="media\stfu.jpg" />
+    <None Remove="media\stop.png" />
+    <None Remove="media\thot.jpg" />
+    <None Remove="media\youve_been_gnomed_wmv.avi" />
     <None Remove="references\authors.txt" />
     <None Remove="references\hello.txt" />
     <None Remove="references\LoadInformation.txt" />
@@ -51,109 +51,109 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="cheer\cheer0.gif">
+    <Content Include="media\cheer\cheer0.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="cheer\cheer1.gif">
+    <Content Include="media\cheer\cheer1.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="cheer\cheer2.gif">
+    <Content Include="media\cheer\cheer2.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="cheer\cheer3.gif">
+    <Content Include="media\cheer\cheer3.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="cheer\cheer4.gif">
+    <Content Include="media\cheer\cheer4.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="cheer\cheer5.gif">
+    <Content Include="media\cheer\cheer5.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="cheer\cheer6.gif">
+    <Content Include="media\cheer\cheer6.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="cheer\cheer7.gif">
+    <Content Include="media\cheer\cheer7.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="cheer\cheer8.gif">
+    <Content Include="media\cheer\cheer8.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="cheer\cheer9.gif">
+    <Content Include="media\cheer\cheer9.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="lewd\0.png">
+    <Content Include="media\lewd\0.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="lewd\1.png">
+    <Content Include="media\lewd\1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="lewd\2.png">
+    <Content Include="media\lewd\2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="lewd\3.png">
+    <Content Include="media\lewd\3.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="lewd\4.png">
+    <Content Include="media\lewd\4.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="lewd\5.png">
+    <Content Include="media\lewd\5.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="lewd\6.png">
+    <Content Include="media\lewd\6.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="lewd\7.png">
+    <Content Include="media\lewd\7.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\bamboozle.png">
+    <Content Include="media\bamboozle.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\banter.mp3">
+    <Content Include="media\banter.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\bully.gif">
+    <Content Include="media\bully.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\deletthis.jpg">
+    <Content Include="media\deletthis.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\edgy.jpg">
+    <Content Include="media\edgy.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\fiora.jpg">
+    <Content Include="media\fiora.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\honk.jpg">
+    <Content Include="media\honk.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\kms.png">
+    <Content Include="media\kms.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\nani.jpg">
+    <Content Include="media\nani.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\neeko.jpg">
+    <Content Include="media\neeko.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\rammus.png">
+    <Content Include="media\rammus.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\shrug.png">
+    <Content Include="media\shrug.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\stale.png">
+    <Content Include="media\stale.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\stfu.jpg">
+    <Content Include="media\stfu.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\stop.png">
+    <Content Include="media\stop.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\thot.jpg">
+    <Content Include="media\thot.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="reactions\youve_been_gnomed_wmv.avi">
+    <Content Include="media\youve_been_gnomed_wmv.avi">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="references\authors.txt">

@@ -150,25 +150,25 @@ namespace JifBot.CommandHandler
             string words = msg.Content.ToString();
 
             if (words.ToLower().Contains("delet this") || words.ToLower().Contains("delete this"))
-                await msg.Channel.SendFileAsync("reactions/deletthis.jpg");
+                await msg.Channel.SendFileAsync("media/deletthis.jpg");
 
             if (words.ToLower().Equals(":o") || words.Equals(":0"))
                 await msg.Channel.SendMessageAsync(":O");
 
             if (words.ToLower().Contains("fiora"))
             {
-                await msg.Channel.SendFileAsync("reactions/fiora.jpg");
+                await msg.Channel.SendFileAsync("media/fiora.jpg");
                 await msg.Channel.SendMessageAsync("**Salty Reese activated**");
             }
 
             if (words.ToLower().Contains(" nani ") || words.ToLower().Equals("nani") || words.ToLower().StartsWith("nani ") || words.ToLower().EndsWith(" nani"))
             {
-                await msg.Channel.SendFileAsync("reactions/nani.jpg");
+                await msg.Channel.SendFileAsync("media/nani.jpg");
                 await msg.Channel.SendMessageAsync("**NANI?!?!**");
             }
 
             if (words.ToLower().Contains("be") && words.ToLower().Contains("gone") && words.ToLower().Contains("thot"))
-                await msg.Channel.SendFileAsync("reactions/thot.jpg");
+                await msg.Channel.SendFileAsync("media/thot.jpg");
 
             if (words.ToLower().Contains("kys"))
             {
@@ -181,14 +181,14 @@ namespace JifBot.CommandHandler
 
             if (words.ToLower().Contains("kms"))
             {
-                await msg.Channel.SendFileAsync("reactions/kms.png");
+                await msg.Channel.SendFileAsync("media/kms.png");
             }
 
             if (words.ToLower().Equals("stop"))
-                await msg.Channel.SendFileAsync("reactions/stop.png");
+                await msg.Channel.SendFileAsync("media/stop.png");
 
             if (words.ToLower().Contains("bamboozle"))
-                await msg.Channel.SendFileAsync("reactions/bamboozle.png");
+                await msg.Channel.SendFileAsync("media/bamboozle.png");
 
             if (words.ToLower().Equals("hi") || words.ToLower().Equals("hello") || words.ToLower().Equals("hey") || words.ToLower().Equals("yo") || words.ToLower().Equals("henlo"))
             {
@@ -236,11 +236,11 @@ namespace JifBot.CommandHandler
 
 
             if (words.ToLower().Equals("stale"))
-                await msg.Channel.SendFileAsync("reactions/stale.png");
+                await msg.Channel.SendFileAsync("media/stale.png");
 
             if (words.ToLower().Contains(" honk ") || words.ToLower().Equals("honk") || words.ToLower().StartsWith("honk ") || words.ToLower().EndsWith(" honk"))
             {
-                await msg.Channel.SendFileAsync("reactions/honk.jpg");
+                await msg.Channel.SendFileAsync("media/honk.jpg");
                 await msg.Channel.SendMessageAsync("**HONK**");
             }
 

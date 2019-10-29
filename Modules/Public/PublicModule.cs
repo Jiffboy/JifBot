@@ -32,7 +32,7 @@ namespace JifBot.Modules.Public
         [Summary("A command to celebrate Neeko.\nUsage: ~neeko")]
         public async Task Neko()
         {
-            await Context.Channel.SendFileAsync("reactions/neeko.jpg");
+            await Context.Channel.SendFileAsync("media/neeko.jpg");
         }
 
         [Command("wtf")]
@@ -48,7 +48,7 @@ namespace JifBot.Modules.Public
         [Summary("Reese gives a smoochie.\nUsage: ~smoochie")]
         public async Task Smoochie()
         {
-            await ReplyAsync("https://gyazo.com/8c51b11102ceb47e8be54653c905b97f");
+            await Context.Channel.SendFileAsync("media/smoochie.mp4");
         }
 
         [Command("flat")]
@@ -56,7 +56,7 @@ namespace JifBot.Modules.Public
         [Summary("Heralds the unseen truth.\nUsage: ~flat")]
         public async Task Flat()
         {
-            await ReplyAsync("https://prnt.sc/ht1d1v");
+            await Context.Channel.SendFileAsync("media/flat.png");
         }
 
         [Command("shrug")]
@@ -64,7 +64,7 @@ namespace JifBot.Modules.Public
         [Summary("Shrugs.\nUsage: ~shrug")]
         public async Task Shrug()
         {
-            await Context.Channel.SendFileAsync("reactions/shrug.png");
+            await Context.Channel.SendFileAsync("media/shrug.png");
         }
 
         [Command("attention")]
@@ -72,7 +72,7 @@ namespace JifBot.Modules.Public
         [Summary("Gives Dee the attention she craves.\nUsage: ~attention")]
         public async Task Attention()
         {
-            await ReplyAsync("https://giphy.com/gifs/glass-milk-n0xHORz5gp904");
+            await Context.Channel.SendFileAsync("media/attention.gif");
         }
 
         [Command("neener")]
@@ -80,7 +80,7 @@ namespace JifBot.Modules.Public
         [Summary("Helps to prove your point that you were right.\nUsage: ~neener")]
         public async Task ToldYou()
         {
-            await ReplyAsync("https://giphy.com/gifs/kawaii-aegyo-4QxQgWZHbeYwM");
+            await Context.Channel.SendFileAsync("media/neener.gif");
         }
 
         [Command("lunch")]
@@ -88,7 +88,7 @@ namespace JifBot.Modules.Public
         [Summary("lunch.\nUsage: ~lunch")]
         public async Task Lunch()
         {
-            await ReplyAsync("https://media.tenor.com/images/71b9ce5ea465c7fa0808553d1f9e8e3c/tenor.gif");
+            await Context.Channel.SendFileAsync("media/lunch.gif");
         }
 
         [Command("banterwtf")]
@@ -104,7 +104,7 @@ namespace JifBot.Modules.Public
         [Summary("Reminds young rapscallions that this is a bully free zone.\nUsage ~bully")]
         public async Task Bully()
         {
-            await Context.Channel.SendFileAsync("reactions/bully.gif");
+            await Context.Channel.SendFileAsync("media/bully.gif");
         }
 
         [Command("stfu")]
@@ -112,7 +112,7 @@ namespace JifBot.Modules.Public
         [Summary("Tells someone to shut up.\nUsage ~stfu")]
         public async Task STFU()
         {
-            await Context.Channel.SendFileAsync("reactions/stfu.jpg");
+            await Context.Channel.SendFileAsync("media/stfu.jpg");
         }
 
         [Command("rammus")]
@@ -120,7 +120,7 @@ namespace JifBot.Modules.Public
         [Summary("PRAISE RAMMUS.\nUsage ~rammus")]
         public async Task Rammus()
         {
-            await Context.Channel.SendFileAsync("reactions/rammus.png");
+            await Context.Channel.SendFileAsync("media/rammus.png");
             await ReplyAsync("**P  R  A  I  S  E          R  A  M  M  U  S**");
         }
 
@@ -129,7 +129,7 @@ namespace JifBot.Modules.Public
         [Summary("Informs someone that their prior sent comment was perhaps a tad too mischievous.\nUsage ~edgy")]
         public async Task Edgy()
         {
-            await Context.Channel.SendFileAsync("reactions/edgy.jpg");
+            await Context.Channel.SendFileAsync("media/edgy.jpg");
         }
 
         [Command("invitelink")]
@@ -186,7 +186,7 @@ namespace JifBot.Modules.Public
         {
             Random rnd = new Random();
             int num = rnd.Next(10);
-            string gif = "cheer/cheer" + num + ".gif";
+            string gif = "media/cheer/cheer" + num + ".gif";
             await Context.Channel.SendFileAsync(gif);
         }
 
@@ -197,7 +197,7 @@ namespace JifBot.Modules.Public
         {
             Random rnd = new Random();
             int num = rnd.Next(8);
-            string png = "lewd/" + num + ".png";
+            string png = "media/lewd/" + num + ".png";
             await Context.Channel.SendFileAsync(png);
         }
 
@@ -408,7 +408,7 @@ namespace JifBot.Modules.Public
             string id = (string)inReader.SelectToken("DictId");
 
             HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri("https://od-api.oxforddictionaries.com/api/v1/entries/en/");
+            client.BaseAddress = new Uri("https://od-api.oxforddictionaries.com/api/v2/entries/en/");
             client.DefaultRequestHeaders.Add("app_id", id);
             client.DefaultRequestHeaders.Add("app_key", key);
             if (word.EndsWith(" -m"))
@@ -419,7 +419,7 @@ namespace JifBot.Modules.Public
             HttpResponseMessage response =  await client.GetAsync(word);
             if(response.StatusCode.ToString() == "NotFound")
             {
-                await Context.Channel.SendFileAsync("reactions/damage.png");
+                await Context.Channel.SendFileAsync("media/damage.png");
                 return;
             }
 
@@ -807,6 +807,7 @@ namespace JifBot.Modules.Public
         }
 
         [Command("tinytext")]
+        [Alias("smalltext")]
         [Remarks("Annoyances")]
         [Summary("Takes the user input for messages and turns it into small letters. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~tinytext phrase, ~tinytext phrase -d")]
         public async Task tinytext([Remainder]string orig)
