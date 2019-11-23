@@ -313,17 +313,17 @@ namespace JifBot.CommandHandler
                 {
                     desc = c.Summary;
                     if(c.Aliases.Count > 1)
+                    {
+                        desc += "\nAlso works for ";
+                        foreach(string alias in c.Aliases)
                         {
-                            desc += "\nAlso works for ";
-                            foreach(string alias in c.Aliases)
+                            if(alias == commandName)
                             {
-                                if(alias == commandName)
-                                {
-                                    continue;
-                                }
-                                desc += "~" + alias + " ";
+                                continue;
                             }
+                            desc += "~" + alias + " ";
                         }
+                    }
                 }
             }
 
