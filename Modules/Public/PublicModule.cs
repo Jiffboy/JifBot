@@ -1131,6 +1131,17 @@ namespace JifBot.Modules.Public
             File.WriteAllText(file, Convert.ToString(num));
         }
 
+        [Command("beefact")]
+        [Remarks("Helper")]
+        [Alias("bee", "beefacts", "bees")]
+        [Summary("Provides a fact about bees\nUsage: ~beefact")]
+        public async Task beeFact([Remainder] string useless = "")
+        {
+            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
+            string fact = await client.GetStringAsync("http://thebuzz.writeonlymedia.com/api");
+            await ReplyAsync(fact.TrimStart('\"').TrimEnd('\"'));
+        }
+
         async Task<bool> RemoteFileExists(string url)
         {
             System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
