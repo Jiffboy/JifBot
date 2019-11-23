@@ -312,6 +312,18 @@ namespace JifBot.CommandHandler
                 if (c.Name == commandName)
                 {
                     desc = c.Summary;
+                    if(c.Aliases.Count > 1)
+                    {
+                        desc += "\nAlso works for ";
+                        foreach(string alias in c.Aliases)
+                        {
+                            if(alias == commandName)
+                            {
+                                continue;
+                            }
+                            desc += "~" + alias + " ";
+                        }
+                    }
                 }
             }
 
