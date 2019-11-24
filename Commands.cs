@@ -14,9 +14,9 @@ using Newtonsoft.Json.Linq;
 using System.Web;
 using Newtonsoft.Json;
 
-namespace JifBot.Modules.Public
+namespace JifBot.Commands
 {
-    public class PublicModule : ModuleBase
+    public class Commands : ModuleBase
     {
 
         [Command("reese")]
