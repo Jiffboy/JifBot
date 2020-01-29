@@ -465,7 +465,7 @@ namespace JifBot.Commands
                 CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
                 TextInfo textInfo = cultureInfo.TextInfo;
                 string name = textInfo.ToTitleCase(word);
-                string type = (string)json.SelectToken("results[0].lexicalEntries[0].lexicalCategory");
+                var type = json.SelectToken("results[0].lexicalEntries[0].lexicalCategory.text");
                 string spelling = (string)json.SelectToken("results[0].lexicalEntries[0].pronunciations[0].phoneticSpelling");
                 string definition = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].definitions[0]");
                 string example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].examples[0].text");
