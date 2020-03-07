@@ -8,6 +8,7 @@ using System.IO;
 using JifBot.Config;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace JifBot.CommandHandler
 {
@@ -219,7 +220,11 @@ namespace JifBot.CommandHandler
                 File.WriteAllText(file, Convert.ToString(num));
             }
 
-
+            if(Regex.IsMatch(words.ToLower(), "fuck y?o?u jif ?bot"))
+            {
+               await msg.DeleteAsync();
+               await msg.Channel.SendMessageAsync("Know your place, trash.");
+            }
             var mentionedUsers = msg.MentionedUsers;
             foreach (SocketUser mention in mentionedUsers)
             {
