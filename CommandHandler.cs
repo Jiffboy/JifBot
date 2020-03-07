@@ -17,7 +17,6 @@ namespace JifBot.CommandHandler
         public CommandService commands;
         private DiscordSocketClient bot;
         private IServiceProvider map;
-        private bool cycle = false;
 
         public CommandHandler(IServiceProvider provider)
         {
@@ -106,12 +105,6 @@ namespace JifBot.CommandHandler
 
         public async Task HandleCommand(SocketMessage pMsg)
         {
-            if (!cycle)
-            {
-                cycle = true;
-                Task.Run(() => StreamCycle());
-            }
-
             //Don't handle the command if it is a system message
             var message = pMsg as SocketUserMessage;
             if (message == null)
@@ -368,47 +361,6 @@ namespace JifBot.CommandHandler
                 embed.AddField(category.Key, commands);
             }
             await msg.Channel.SendMessageAsync("", false, embed);
-        }
-
-        public async Task StreamCycle()
-        {
-            List<ulong> noted = new List<ulong>();
-            var timeElapsed = new Dictionary<ulong,int>();
-            IGuild server = bot.GetGuild(301918679262691330);
-            SocketTextChannel channel = (SocketTextChannel)await server.GetChannelAsync(403569198615232522);
-            while (true)
-            {
-                var people = server.GetUsersAsync();
-                foreach (IGuildUser person in people.Result)
-                {
-                    if (person.Game != null && person.Game.Value.StreamUrl != null)
-                    {
-                        if (!noted.Contains(person.Id))
-                        {
-                            await channel.SendMessageAsync(person.Username + " is currently streaming at " + person.Game.Value.StreamUrl);
-                            noted.Add(person.Id);
-                        }
-                        if (timeElapsed.ContainsKey(person.Id))
-                            timeElapsed.Remove(person.Id);
-                    }
-
-                    else if (noted.Contains(person.Id))
-                    {
-                        if (timeElapsed.ContainsKey(person.Id))
-                        {
-                            timeElapsed[person.Id]++;
-                            if(timeElapsed[person.Id] > 120)
-                            {
-                                noted.Remove(person.Id);
-                                timeElapsed.Remove(person.Id);
-                            }
-                        }
-                        else
-                            timeElapsed.Add(person.Id, 0);
-                    }
-                }
-                System.Threading.Thread.Sleep(60 * 1000);
-            }
         }
     }
 }
