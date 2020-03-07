@@ -240,6 +240,10 @@ namespace JifBot.CommandHandler
             {
                 await msg.Channel.SendFileAsync("media/honk.jpg");
                 await msg.Channel.SendMessageAsync("**HONK**");
+                string file = "references/honk.txt";
+                Int32 num = Convert.ToInt32(File.ReadAllText(file));
+                num++;
+                File.WriteAllText(file, Convert.ToString(num));
             }
 
             if (words.ToLower().Contains("~announce") && msg.Author.Id == 150084781864910848)
