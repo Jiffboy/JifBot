@@ -1338,11 +1338,11 @@ namespace JifBot.Commands
 
         public string FormatTime(DateTimeOffset orig)
         {
+            orig = orig.AddMinutes(-5);
             string str = "";
-            str = str + orig.DayOfWeek + ",";
-            str = str + orig.LocalDateTime;
-            str = str.Insert(str.IndexOf(" "), " at");
-            str = str.Insert(str.IndexOf(",") + 1, " ");
+            str = str + orig.LocalDateTime.DayOfWeek + ", ";
+            str = str + orig.LocalDateTime.Month + "/" + orig.LocalDateTime.Day + "/" + orig.LocalDateTime.Year;
+            str = str + " at " + orig.LocalDateTime.Hour + ":" + orig.LocalDateTime.Minute + " CST";
             return str;
         }
 
