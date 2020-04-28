@@ -101,7 +101,7 @@ namespace JifBot.CommandHandler
         public async Task ConfigureAsync()
         {
             await commands.AddModulesAsync(Assembly.GetEntryAssembly());
-            await bot.SetGameAsync("~commands");
+            await bot.SetGameAsync(BotConfig.Load().Prefix + "commands");
         }
 
         public async Task HandleCommand(SocketMessage pMsg)
@@ -252,7 +252,7 @@ namespace JifBot.CommandHandler
                 File.WriteAllText(file, Convert.ToString(num));
             }
 
-            if (words.ToLower().Contains("~announce") && msg.Author.Id == 150084781864910848)
+            if (words.ToLower().Contains(BotConfig.Load().Prefix + "announce") && msg.Author.Id == 150084781864910848)
             {
                 words = words.Remove(0, 9);
                 foreach (IGuild temp in this.bot.Guilds)
@@ -310,30 +310,30 @@ namespace JifBot.CommandHandler
             }
 
             else if (commandName == "help")
-                desc = "Used to get the descriptions of other commands.\nUsage: ~help CommandName";
+                desc = "Used to get the descriptions of other commands.\nUsage: " + BotConfig.Load().Prefix + "help CommandName";
 
             else if (commandName == "commands")
-                desc = "Shows all available commands.\nUsage: ~commands";
+                desc = "Shows all available commands.\nUsage: " + BotConfig.Load().Prefix + "commands";
 
             else foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
+            {
+                if (c.Name == commandName)
                 {
-                    if (c.Name == commandName)
+                    desc = c.Summary;
+                    if (c.Aliases.Count > 1)
                     {
-                        desc = c.Summary;
-                        if (c.Aliases.Count > 1)
+                        desc += "\nAlso works for ";
+                        foreach (string alias in c.Aliases)
                         {
-                            desc += "\nAlso works for ";
-                            foreach (string alias in c.Aliases)
+                            if (alias == commandName)
                             {
-                                if (alias == commandName)
-                                {
-                                    continue;
-                                }
-                                desc += "~" + alias + " ";
+                                continue;
                             }
+                            desc += BotConfig.Load().Prefix + alias + " ";
                         }
                     }
                 }
+            }
 
             await msg.Channel.SendMessageAsync(desc);
             return;
@@ -358,7 +358,7 @@ namespace JifBot.CommandHandler
 
             var embed = new EmbedBuilder();
             embed.WithColor(new Color(0x42ebf4));
-            embed.Title = "All commands will begin with a tilde (~), for more information on individual commands, use: ~help commandName";
+            embed.Title = "All commands will begin with a " + BotConfig.Load().Prefix + " , for more information on individual commands, use: " + BotConfig.Load().Prefix + "help commandName";
             embed.Description = "Contact Jif#3952 with any suggestions for more commands";
             embed.WithFooter("Made with love");
 
