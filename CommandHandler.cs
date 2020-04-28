@@ -9,6 +9,7 @@ using JifBot.Config;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace JifBot.CommandHandler
 {
@@ -53,7 +54,7 @@ namespace JifBot.CommandHandler
                 }
             }
         }
-        public async Task Audit(Cacheable<IMessage,ulong> cache, ISocketMessageChannel channel)
+        public async Task Audit(Cacheable<IMessage, ulong> cache, ISocketMessageChannel channel)
         {
             var message = await cache.GetOrDownloadAsync();
             var embed = new EmbedBuilder();
@@ -64,12 +65,12 @@ namespace JifBot.CommandHandler
             }
             IUser user = bot.GetUser(186584509226024960);
             ISocketMessageChannel mod = server.GetTextChannel(457250924318949378);
-            
+
             embed.WithColor(new Color(0x13e89d));
             embed.Title = "A message has been deleted";
             embed.Description = "in " + channel.Name;
             embed.WithCurrentTimestamp();
-            embed.AddField("\"" + message.Content + "\"","sent by: " + message.Author);
+            embed.AddField("\"" + message.Content + "\"", "sent by: " + message.Author);
             embed.ThumbnailUrl = message.Author.GetAvatarUrl();
             await user.SendMessageAsync("", false, embed);
             await mod.SendMessageAsync("", false, embed);
@@ -122,6 +123,11 @@ namespace JifBot.CommandHandler
                     await tryHelp(message);
                 if (message.HasStringPrefix(BotConfig.Load().Prefix + "commands", ref argPos))
                     await printCommands(message);
+                if (message.HasStringPrefix(BotConfig.Load().Prefix + "printjson", ref argPos))
+                {
+                    await printCommandsToJSON("commands.json");
+                    await pMsg.Channel.SendMessageAsync("Done!");
+                }
                 //Execute the command, store the result
                 var result = await commands.ExecuteAsync(context, argPos, map);
 
@@ -213,10 +219,10 @@ namespace JifBot.CommandHandler
                 File.WriteAllText(file, Convert.ToString(num));
             }
 
-            if(Regex.IsMatch(words.ToLower(), "fuck y?o?u jif ?bot"))
+            if (Regex.IsMatch(words.ToLower(), "fuck y?o?u jif ?bot"))
             {
-               await msg.DeleteAsync();
-               await msg.Channel.SendMessageAsync("Know your place, trash.");
+                await msg.DeleteAsync();
+                await msg.Channel.SendMessageAsync("Know your place, trash.");
             }
             var mentionedUsers = msg.MentionedUsers;
             foreach (SocketUser mention in mentionedUsers)
@@ -226,7 +232,7 @@ namespace JifBot.CommandHandler
                     if (words.ToLower().Contains("play despacito"))
                         await msg.Channel.SendMessageAsync("https://www.youtube.com/watch?v=kJQP7kiw5Fk");
                     else if (msg.Author.Id == 186584509226024960)
-                            await msg.Channel.SendMessageAsync("you're pretty ❤");
+                        await msg.Channel.SendMessageAsync("you're pretty ❤");
                     else
                         await msg.Channel.SendMessageAsync("<:ping:377208255132467233>");
                 }
@@ -310,24 +316,24 @@ namespace JifBot.CommandHandler
                 desc = "Shows all available commands.\nUsage: ~commands";
 
             else foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
-            {
-                if (c.Name == commandName)
                 {
-                    desc = c.Summary;
-                    if(c.Aliases.Count > 1)
+                    if (c.Name == commandName)
                     {
-                        desc += "\nAlso works for ";
-                        foreach(string alias in c.Aliases)
+                        desc = c.Summary;
+                        if (c.Aliases.Count > 1)
                         {
-                            if(alias == commandName)
+                            desc += "\nAlso works for ";
+                            foreach (string alias in c.Aliases)
                             {
-                                continue;
+                                if (alias == commandName)
+                                {
+                                    continue;
+                                }
+                                desc += "~" + alias + " ";
                             }
-                            desc += "~" + alias + " ";
                         }
                     }
                 }
-            }
 
             await msg.Channel.SendMessageAsync(desc);
             return;
@@ -359,12 +365,38 @@ namespace JifBot.CommandHandler
             foreach (var category in categories)
             {
                 string commands = "";
-                foreach(string command in category.Value)
+                foreach (string command in category.Value)
                     commands += command + ", ";
                 commands = commands.Remove(commands.Length - 2);
                 embed.AddField(category.Key, commands);
             }
             await msg.Channel.SendMessageAsync("", false, embed);
+        }
+
+        public async Task printCommandsToJSON(string file)
+        {
+            using (StreamWriter fileStream = File.CreateText(file))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Formatting = Formatting.Indented;
+                serializer.DefaultValueHandling = DefaultValueHandling.Ignore;
+                foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
+                {
+                    string aliases = "";
+                    if (c.Aliases.Count > 1)
+                    {
+                        foreach (string alias in c.Aliases)
+                        {
+                            aliases = aliases + alias + ",";
+                        }
+                        aliases = aliases.Remove(0, aliases.IndexOf(",") + 1);
+                        aliases = aliases.Remove(aliases.LastIndexOf(","));
+                    }
+                    CommandJSON command = new CommandJSON(c.Name, aliases, c.Remarks, c.Summary);
+
+                    serializer.Serialize(fileStream, command);
+                }
+            }
         }
     }
 }
