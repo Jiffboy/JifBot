@@ -13,13 +13,21 @@ namespace JIfBot
     public class Program
     {
         public static void Main(string[] args) =>
-            new Program().Start().GetAwaiter().GetResult();
+            new Program().Start(args).GetAwaiter().GetResult();
 
         private DiscordSocketClient client;
         private CommandHandler handler;
+        private ulong timerLaunchId = 0;
+        private string timerLaunchMessage = "";
 
-        public async Task Start()
+        public async Task Start(string[] args)
         {
+            if (args.Length == 2)
+            {
+                timerLaunchId = Convert.ToUInt64(args[0]);
+                timerLaunchMessage = args[1];
+            }
+
             CreateJSON(); // create a JSON file to run from
 
             client = new DiscordSocketClient(new DiscordSocketConfig
@@ -28,17 +36,35 @@ namespace JIfBot
                 MessageCacheSize = 500,
                 LogLevel = LogSeverity.Verbose
             });
+
             client.Log += Logger;
+            client.Ready += OnReady;
+
             await client.LoginAsync(TokenType.Bot, BotConfig.Load().Token);
             await client.StartAsync();
+            await client.SetGameAsync(BotConfig.Load().Prefix + "commands");
 
             var serviceProvider = ConfigureServices();
             handler = new CommandHandler(serviceProvider);
             await handler.ConfigureAsync();
 
+
             //Block this program untill it is closed
             await Task.Delay(-1);
         }
+
+        private Task OnReady()
+        {
+            if (timerLaunchId > 0)
+            {
+                var channel = client.GetChannel(timerLaunchId) as IMessageChannel;
+                if (channel != null)
+                    channel.SendMessageAsync(timerLaunchMessage);
+                System.Environment.Exit(0);
+            }
+            return Task.CompletedTask;
+        }
+
         private static Task Logger(LogMessage lmsg)
         {
             var cc = Console.ForegroundColor;
