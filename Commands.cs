@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Globalization;
 using System.Threading;
+using System.Diagnostics;
 using Discord;
 using Discord.Commands;
 using Newtonsoft.Json.Linq;
@@ -525,86 +526,6 @@ namespace JifBot.Commands
 
         }
 
-        //[Command("udefine")]
-        //[Remarks("Helper")]
-        //[Summary("Gives the top definition for the term from urbandictionary.com\nUsage: ~udefine phrase")]
-        //public async Task DefineUrban([Remainder]string phrase)
-        //{
-        //    phrase = phrase.Replace(" ", "+");
-        //    string source = "";
-        //    string start = "property=\"fb:app_id\"><meta content=\"";
-        //    string end = "\" name=\"Description\" property=\"og:description\"";
-        //    System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-        //    if (await RemoteFileExists("https://www.urbandictionary.com/define.php?term=" + phrase))
-        //        source = await client.GetStringAsync("https://www.urbandictionary.com/define.php?term=" + phrase);
-        //    else
-        //    {
-        //        await ReplyAsync("\"" + phrase.Replace("+", " ") + "\" is not an existing word/phrase");
-        //        return;
-        //    }
-        //    if (source.Contains("<p>There aren't any definitions for <i>"))
-        //    {
-        //        await ReplyAsync("there are no entries for \"" + phrase.Replace("+", " ") + "\"");
-        //        return;
-        //    }
-        //    string def = "";
-        //    string ex = "";
-        //    string sendstr = "";
-        //    if (source.Contains(start))
-        //    {
-        //        def = source.Remove(0, source.IndexOf(start) + start.Length);
-        //        def = def.Remove(def.IndexOf(end));
-        //        start = "</div><div class=\"example\">";
-        //        end = "</div><div class=\"tags\">";
-        //        ex = source.Remove(0, source.IndexOf(start) + start.Length);
-        //        if (ex.Contains(end))
-        //            ex = ex.Remove(ex.IndexOf(end));
-        //    }
-        //    else
-        //    {
-        //        def = source.Remove(0, source.IndexOf("<div class='meaning'>") + "<div class='meaning'>".Length);
-        //        def = def.Remove(def.IndexOf("</div>"));
-        //        ex = source.Remove(0, source.IndexOf("<div class='example'>") + "<div class='example'>".Length);
-        //        ex = ex.Remove(ex.IndexOf("</div>"));
-        //    }
-
-        //    sendstr = "Definition:\n" + def + "\n\nExample:\n" + ex;
-
-        //    sendstr = sendstr.Replace("&quot;", "\"");
-        //    sendstr = sendstr.Replace("<br/>", "\n");
-        //    sendstr = sendstr.Replace("&apos;", "'");
-        //    sendstr = sendstr.Replace("&amp;", "&");
-        //    sendstr = sendstr.Replace("&lt;", "<");
-        //    sendstr = sendstr.Replace("&gt;", ">");
-        //    sendstr = sendstr.Replace("quot;", "\"");
-        //    sendstr = sendstr.Replace("&#39;", "'");
-
-        //    if (sendstr.Contains("</div><div class=\"contributor\">"))
-        //        sendstr = sendstr.Remove(sendstr.IndexOf("</div><div class=\"contributor\">"));
-
-        //    while (sendstr.Contains("<a class=") && sendstr.Contains("\">"))
-        //        sendstr = sendstr.Remove(sendstr.IndexOf("<a class="), sendstr.IndexOf("\">") + 2 - sendstr.IndexOf("<a class="));
-        //    while (sendstr.Contains("<a href=") && sendstr.Contains("\">"))
-        //    {
-        //        if (sendstr.Contains("</div><div class="))
-        //            sendstr = sendstr.Remove(sendstr.IndexOf("</div><div class="), sendstr.IndexOf("</a></div>") + 10 - sendstr.IndexOf("</div><div class="));
-        //        else
-        //            sendstr = sendstr.Remove(sendstr.IndexOf("<a href="), sendstr.IndexOf("\">") + 2 - sendstr.IndexOf("<a href="));
-        //    }
-
-        //    sendstr = sendstr.Replace("</a>", string.Empty);
-        //    if (sendstr.Replace(" ", string.Empty).EndsWith("Example:\n"))
-        //        sendstr = sendstr.Remove(sendstr.IndexOf("\n\nExample:\n"));
-
-        //    while (sendstr.Length >= 2000)
-        //    {
-        //        await ReplyAsync(sendstr.Remove(2000));
-        //        sendstr = sendstr.Remove(0, 2000);
-        //    }
-
-        //    await ReplyAsync(sendstr);
-        //}
-
         [Command("stats")]
         [Remarks("Helper")]
         [Summary("Gives the stats for a league player on any region. The region name is the abbreviated verson of the region name. Example: na = North America\nUsage ~stats region username")]
@@ -877,18 +798,38 @@ namespace JifBot.Commands
         [Command("timer")]
         [Remarks("Helper")]
         [Summary("Sets a reminder to ping you after a certain number of minutes has passed. A message can be specified along with the time to be printed back to you at the end of the timer.\nUsage: ~timer minutes message")]
-        public async Task Timer(int time, [Remainder]string message = "")
+        public async Task Timer([Remainder]string message = "")
         {
-            if (time <= 0)
+            int waitTime = 0;
+
+            if (Regex.IsMatch(message, @"-m *[0-9]+"))
+                waitTime += Convert.ToInt32(Regex.Match(message, @"-m *[0-9]+").Value.Replace("-m", ""));
+
+            if (Regex.IsMatch(message, @"-h *[0-9]+"))
+                waitTime += Convert.ToInt32(Regex.Match(message, @"-h *[0-9]+").Value.Replace("-h", "")) * 60;
+
+            if (Regex.IsMatch(message, @"-h *[0-9]+"))
+                waitTime += Convert.ToInt32(Regex.Match(message, @"-d *[0-9]+").Value.Replace("-d", "")) * 1440;
+
+            if(waitTime == 0)
             {
-                await ReplyAsync("Please use a time of 1 minute or longer.");
+                await ReplyAsync("Please provide an amount of time to wait for. For assistance, use ~help.");
                 return;
             }
-            if (time == 1)
-                await ReplyAsync("Setting timer for " + time + " minute from now.");
+            
+            message = Regex.Replace(message, @"-[m,h,d] *[0-9]+", "");
+            if (message.Replace(" ", "") == "")
+                message = "Times up!";
+            Process proc = new System.Diagnostics.Process();
+            proc.StartInfo.FileName = "/bin/bash";
+            proc.StartInfo.Arguments = "../../../scripts/sendmessage.sh " + Context.Channel.Id + " \"" + Context.User.Mention + " " + message + "\" " + waitTime;
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.Start();
+            if (waitTime == 1)
+                await ReplyAsync("Setting timer for " + Convert.ToString(waitTime) + " minute from now.");
             else
-                await ReplyAsync("Setting timer for " + time + " minutes from now.");
-            Task.Run(() => SendReminder(time, message));
+                await ReplyAsync("Setting timer for " + Convert.ToString(waitTime) + " minutes from now.");
         }
 
         [Command("choose")]
@@ -1335,15 +1276,6 @@ namespace JifBot.Commands
                     return "  ";
             }
             return Convert.ToString(orig);
-        }
-
-        public async Task SendReminder(int time, string message)
-        {
-            System.Threading.Thread.Sleep(time * 60 * 1000);
-            if (message != "")
-                await ReplyAsync(Context.User.Mention + " your timer for \"" + message + "\" has ended");
-            else
-                await ReplyAsync(Context.User.Mention + " Times up!");
         }
 
         public string FormatTime(DateTimeOffset orig)
