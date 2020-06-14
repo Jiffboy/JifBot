@@ -123,9 +123,9 @@ namespace JifBot.CommandHandler
                     await tryHelp(message);
                 if (message.HasStringPrefix(BotConfig.Load().Prefix + "commands", ref argPos))
                     await printCommands(message);
-                if (message.HasStringPrefix(BotConfig.Load().Prefix + "printjson", ref argPos))
+                if (message.HasStringPrefix(BotConfig.Load().Prefix + "printjsfile", ref argPos))
                 {
-                    await printCommandsToJSON("commands.json");
+                    await printCommandsToJSON("commands.js");
                     await pMsg.Channel.SendMessageAsync("Done!");
                 }
                 //Execute the command, store the result
@@ -359,7 +359,7 @@ namespace JifBot.CommandHandler
             var embed = new EmbedBuilder();
             embed.WithColor(new Color(0x42ebf4));
             embed.Title = "All commands will begin with a " + BotConfig.Load().Prefix + " , for more information on individual commands, use: " + BotConfig.Load().Prefix + "help commandName";
-            embed.Description = "Contact Jif#3952 with any suggestions for more commands";
+            embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://vertigeux.github.io/jifbot.html";
             embed.WithFooter("Made with love");
 
             foreach (var category in categories)
@@ -378,7 +378,6 @@ namespace JifBot.CommandHandler
             using (StreamWriter fileStream = File.CreateText(file))
             {
                 JsonSerializer serializer = new JsonSerializer();
-                serializer.Formatting = Formatting.Indented;
                 serializer.DefaultValueHandling = DefaultValueHandling.Ignore;
                 foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
                 {
@@ -397,6 +396,12 @@ namespace JifBot.CommandHandler
                     serializer.Serialize(fileStream, command);
                 }
             }
+            string temp = File.ReadAllText(file);
+            temp = temp.Insert(0, "var jifBotCommands = [");
+            temp = temp += "];";
+            temp = temp.Replace("'", "\'");
+            temp = temp.Replace("}", "},");
+            File.WriteAllText(file, temp);
         }
     }
 }

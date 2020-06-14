@@ -1,4 +1,3 @@
-
 using System;
 using System.Threading.Tasks;
 using System.IO;
@@ -103,7 +102,7 @@ namespace JifBot.Commands
 
         [Command("bully")]
         [Remarks("Basic")]
-        [Summary("Reminds young rapscallions that this is a bully free zone.\nUsage ~bully")]
+        [Summary("Reminds young rapscallions that this is a bully free zone.\nUsage: ~bully")]
         public async Task Bully()
         {
             await Context.Channel.SendFileAsync("media/bully.gif");
@@ -111,7 +110,7 @@ namespace JifBot.Commands
 
         [Command("stfu")]
         [Remarks("Basic")]
-        [Summary("Tells someone to shut up.\nUsage ~stfu")]
+        [Summary("Tells someone to shut up.\nUsage: ~stfu")]
         public async Task STFU()
         {
             await Context.Channel.SendFileAsync("media/stfu.jpg");
@@ -119,7 +118,7 @@ namespace JifBot.Commands
 
         [Command("rammus")]
         [Remarks("Basic")]
-        [Summary("PRAISE RAMMUS.\nUsage ~rammus")]
+        [Summary("PRAISE RAMMUS.\nUsage: ~rammus")]
         public async Task Rammus()
         {
             await Context.Channel.SendFileAsync("media/rammus.png");
@@ -128,7 +127,7 @@ namespace JifBot.Commands
 
         [Command("edgy")]
         [Remarks("Basic")]
-        [Summary("Informs someone that their prior sent comment was perhaps a tad too mischievous.\nUsage ~edgy")]
+        [Summary("Informs someone that their prior sent comment was perhaps a tad too mischievous.\nUsage: ~edgy")]
         public async Task Edgy()
         {
             await Context.Channel.SendFileAsync("media/edgy.jpg");
@@ -136,7 +135,7 @@ namespace JifBot.Commands
 
         [Command("invitelink")]
         [Remarks("Basic")]
-        [Summary("Provides a link which can be used should you want to spread Jif Bot to another server.\nUsage ~invitelink")]
+        [Summary("Provides a link which can be used should you want to spread Jif Bot to another server.\nUsage: ~invitelink")]
         public async Task InviteLink()
         {
             await ReplyAsync("The following is a link to add me to another server. NOTE: You must have permissions on the server in order to add. Once on the server I must be given permission to send and delete messages, otherwise I will not work.\nhttps://discordapp.com/oauth2/authorize?client_id=315569278101225483&scope=bot");
@@ -144,7 +143,7 @@ namespace JifBot.Commands
 
         [Command("streamers")]
         [Remarks("Helper")]
-        [Summary("Displays everybody on the server who is currently streaming\nUsage ~streamers")]
+        [Summary("Displays everybody on the server who is currently streaming\nUsage: ~streamers")]
         public async Task Stream()
         {
             bool found = false;
@@ -529,7 +528,7 @@ namespace JifBot.Commands
 
         [Command("stats")]
         [Remarks("Helper")]
-        [Summary("Gives the stats for a league player on any region. The region name is the abbreviated verson of the region name. Example: na = North America\nUsage ~stats region username")]
+        [Summary("Gives the stats for a league player on any region. The region name is the abbreviated verson of the region name. Example: na = North America\nUsage: ~stats region username")]
         public async Task Stats(string region, [Remainder]string name)
         {
             name = name.Replace(" ", string.Empty);
@@ -913,7 +912,7 @@ namespace JifBot.Commands
 
         [Command("mastery")]
         [Remarks("Helper")]
-        [Summary("Gives the number of mastery points for the top 10 most played champions for a user on any server.\nUsage ~mastery region username")]
+        [Summary("Gives the number of mastery points for the top 10 most played champions for a user on any server.\nUsage: ~mastery region username")]
         public async Task Mastery(string region, [Remainder]string name)
         {
             var embed = new EmbedBuilder();
@@ -1064,7 +1063,7 @@ namespace JifBot.Commands
 
         [Command("tiltycat")]
         [Remarks("Helper")]
-        [Summary("Creates a cat at any angle you specify.\nUsage: ~tiltycat degree\n\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_cat/(degree).png``` where (degree) is the desired angle")]
+        [Summary("Creates a cat at any angle you specify.\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_cat/(degree).png``` where (degree) is the desired angle\nUsage: ~tiltycat degree")]
         public async Task TiltyCat(int degree, [Remainder] string useless = "")
         {
             string temp = "http://www.writeonlymedia.com/tilty_cat/" + degree + ".png";
@@ -1077,7 +1076,7 @@ namespace JifBot.Commands
 
         [Command("tiltydog")]
         [Remarks("Helper")]
-        [Summary("Creates a dog at any angle you specify.\nUsage: ~tiltydog degree\n\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_dog/(degree).png``` where (degree) is the desired angle")]
+        [Summary("Creates a dog at any angle you specify.\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_dog/(degree).png``` where (degree) is the desired angle\nUsage: ~tiltydog degree")]
         public async Task TiltyDat(int degree, [Remainder] string useless = "")
         {
             string temp = "http://www.writeonlymedia.com/tilty_dog/" + degree + ".png";
@@ -1108,7 +1107,7 @@ namespace JifBot.Commands
 
         [Command("honkcount")]
         [Remarks("Annoyances")]
-        [Summary("Reports the number of times the honk reaction has been used")]
+        [Summary("Reports the number of times the honk reaction has been used\"\nUsage: ~honkcount")]
         public async Task honkCount([Remainder] string useless = "")
         {
             string file = "references/honk.txt";
