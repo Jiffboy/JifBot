@@ -68,9 +68,9 @@ namespace JifBot.CommandHandler
 
             embed.WithColor(new Color(0x13e89d));
             embed.Title = "A message has been deleted";
-            embed.Description = "in " + channel.Name;
+            embed.Description = "\"" + message.Content + "\"";
             embed.WithCurrentTimestamp();
-            embed.AddField("\"" + message.Content + "\"", "sent by: " + message.Author);
+            embed.AddField("in " + channel.Name, "sent by: " + message.Author);
             embed.ThumbnailUrl = message.Author.GetAvatarUrl();
             await user.SendMessageAsync("", false, embed);
             await mod.SendMessageAsync("", false, embed);
