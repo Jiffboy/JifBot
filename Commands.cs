@@ -517,8 +517,12 @@ namespace JifBot.Commands
                 // Urban Dictionary uses square brackets for links in its markup; they'll never appear as part of the definition text.
                 var cleanDefinition = definitionList[0].Definition.Replace("[", "").Replace("]", "");
                 var cleanExample = definitionList[0].Example.Replace("[", "").Replace("]", "");
+                var year = definitionList[0].Written_On.Substring(0, definitionList[0].Written_On.IndexOf("-"));
+                var dayMonth = definitionList[0].Written_On.Substring(definitionList[0].Written_On.IndexOf("-")+1, 5);
+                var cleanDate = dayMonth.Replace("-", "/") + "/" + year;
+                var word = definitionList[0].Word;
 
-                await ReplyAsync($"**Definition:** {cleanDefinition}\n**Example:** {cleanExample}");
+                await ReplyAsync($"{word} - {cleanDate}\n**Definition:** {cleanDefinition}\n**Example:** {cleanExample}");
             }
             else
             {
@@ -1325,6 +1329,8 @@ namespace JifBot.Commands
     {
         public string Definition { get; set; }
         public string Example { get; set; }
+        public string Word { get; set; }
+        public string Written_On { get; set; }
     }
 
     class UrbanDictionaryResult
