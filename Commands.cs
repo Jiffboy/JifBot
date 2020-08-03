@@ -486,7 +486,8 @@ namespace JifBot.Commands
 
         [Command("udefine")]
         [Remarks("Helper")]
-        [Summary("Gives the top definition for the term from urbandictionary.com\nUsage: ~udefine phrase")]
+        [Alias("slang")]
+        [Summary("Gives the top definition for the term from urbandictionary.com\nUsage: ~udefine phrase, ~slang phrase")]
         public async Task DefineUrbanDictionary([Remainder]string phrase)
         {
             string URBAN_DICTIONARY_ENDPOINT = "http://api.urbandictionary.com/v0/define?term=";
@@ -517,7 +518,7 @@ namespace JifBot.Commands
                 var cleanDefinition = definitionList[0].Definition.Replace("[", "").Replace("]", "");
                 var cleanExample = definitionList[0].Example.Replace("[", "").Replace("]", "");
 
-                await ReplyAsync($"Definition:\n{cleanDefinition}\n\nExample:\n{cleanExample}");
+                await ReplyAsync($"**Definition:** {cleanDefinition}\n**Example:** {cleanExample}");
             }
             else
             {
@@ -1129,8 +1130,8 @@ namespace JifBot.Commands
 
         [Command("beefact")]
         [Remarks("Helper")]
-        [Alias("bee", "beefacts", "bees")]
-        [Summary("Provides a fact about bees\nUsage: ~beefact")]
+        [Alias("beefacts", "bee", "bees")]
+        [Summary("Provides a fact about bees\nUsage: ~beefact, ~beefacts, bee, bees")]
         public async Task beeFact([Remainder] string useless = "")
         {
             System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
