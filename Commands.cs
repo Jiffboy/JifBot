@@ -19,309 +19,222 @@ namespace JifBot.Commands
 {
     public class Commands : ModuleBase
     {
-
-        [Command("reese")]
-        [Remarks("Basic")]
-        [Summary("Prompts ladies to hit him up.\nUsage: ~reese")]
-        public async Task Reese()
-        {
-            await Context.Channel.SendMessageAsync("Ladies hmu");
-        }
-
-        [Command("neeko")]
-        [Remarks("Basic")]
-        [Summary("A command to celebrate Neeko.\nUsage: ~neeko")]
-        public async Task Neko()
-        {
-            await Context.Channel.SendFileAsync("media/neeko.jpg");
-        }
-
-        [Command("wtf")]
-        [Remarks("Basic")]
-        [Summary("Shows your disbelief as to what your fellow server goers have just done.\nUsage: ~wtf")]
-        public async Task WTF()
-        {
-            await ReplyAsync("https://www.youtube.com/watch?v=wKbU8B-QVZk");
-        }
-
-        [Command("smoochie")]
-        [Remarks("Basic")]
-        [Summary("Reese gives a smoochie.\nUsage: ~smoochie")]
-        public async Task Smoochie()
-        {
-            await Context.Channel.SendFileAsync("media/smoochie.mp4");
-        }
-
-        [Command("flat")]
-        [Remarks("Basic")]
-        [Summary("Heralds the unseen truth.\nUsage: ~flat")]
-        public async Task Flat()
-        {
-            await Context.Channel.SendFileAsync("media/flat.png");
-        }
-
-        [Command("shrug")]
-        [Remarks("Basic")]
-        [Summary("Shrugs.\nUsage: ~shrug")]
-        public async Task Shrug()
-        {
-            await Context.Channel.SendFileAsync("media/shrug.png");
-        }
-
-        [Command("attention")]
-        [Remarks("Basic")]
-        [Summary("Gives Dee the attention she craves.\nUsage: ~attention")]
-        public async Task Attention()
-        {
-            await Context.Channel.SendFileAsync("media/attention.gif");
-        }
-
-        [Command("neener")]
-        [Remarks("Basic")]
-        [Summary("Helps to prove your point that you were right.\nUsage: ~neener")]
-        public async Task ToldYou()
-        {
-            await Context.Channel.SendFileAsync("media/neener.gif");
-        }
-
-        [Command("lunch")]
-        [Remarks("Hidden")]
-        [Summary("lunch.\nUsage: ~lunch")]
-        public async Task Lunch()
-        {
-            await Context.Channel.SendFileAsync("media/lunch.gif");
-        }
-
-        [Command("banterwtf")]
-        [Remarks("Basic")]
-        [Summary("A video to be played when Banter does something stupid.\nUsage: ~banterwtf")]
-        public async Task BanterWTF()
-        {
-            await ReplyAsync("https://www.youtube.com/watch?v=-qRsiHfWh1w");
-        }
-
-        [Command("bully")]
-        [Remarks("Basic")]
-        [Summary("Reminds young rapscallions that this is a bully free zone.\nUsage: ~bully")]
-        public async Task Bully()
-        {
-            await Context.Channel.SendFileAsync("media/bully.gif");
-        }
-
-        [Command("stfu")]
-        [Remarks("Basic")]
-        [Summary("Tells someone to shut up.\nUsage: ~stfu")]
-        public async Task STFU()
-        {
-            await Context.Channel.SendFileAsync("media/stfu.jpg");
-        }
-
-        [Command("rammus")]
-        [Remarks("Basic")]
-        [Summary("PRAISE RAMMUS.\nUsage: ~rammus")]
-        public async Task Rammus()
-        {
-            await Context.Channel.SendFileAsync("media/rammus.png");
-            await ReplyAsync("**P  R  A  I  S  E          R  A  M  M  U  S**");
-        }
-
-        [Command("edgy")]
-        [Remarks("Basic")]
-        [Summary("Informs someone that their prior sent comment was perhaps a tad too mischievous.\nUsage: ~edgy")]
-        public async Task Edgy()
-        {
-            await Context.Channel.SendFileAsync("media/edgy.jpg");
-        }
-
-        [Command("invitelink")]
-        [Remarks("Basic")]
-        [Summary("Provides a link which can be used should you want to spread Jif Bot to another server.\nUsage: ~invitelink")]
-        public async Task InviteLink()
-        {
-            await ReplyAsync("The following is a link to add me to another server. NOTE: You must have permissions on the server in order to add. Once on the server I must be given permission to send and delete messages, otherwise I will not work.\nhttps://discordapp.com/oauth2/authorize?client_id=315569278101225483&scope=bot");
-        }
-
-        [Command("streamers")]
-        [Remarks("Helper")]
-        [Summary("Displays everybody on the server who is currently streaming\nUsage: ~streamers")]
-        public async Task Stream()
-        {
-            bool found = false;
-            var embed = new EmbedBuilder();
-            IGuild server = Context.Guild;
-            var people = server.GetUsersAsync();
-            foreach (IGuildUser person in people.Result)
-            {
-                if (person.Game != null && person.Game.Value.StreamUrl != null)
-                {
-                    embed.AddField(person.Username, "[" + person.Game + "](" + person.Game.Value.StreamUrl + ")");
-                    found = true;
-                }
-            }
-            if (!found)
-                await ReplyAsync("Nobody is streaming at this time.");
-            else
-                await ReplyAsync("", false, embed);
-        }
-
-        [Command("sorry")]
-        [Remarks("Basic")]
-        [Summary("A command to help you to articulate your regret for your actions.\nUsage: ~sorry")]
-        public async Task Sorry()
-        {
-            await ReplyAsync("I'm writing this message cause I feel really bad, thinking about the way I hurt you makes me really sad. I'm sorry for all the hurt I've caused you and I regret the things I've done. I've lost the 1 girl I've ever loved and it was cause of the things I've done. Baby I feel so bad right now, cause I tore your world apart, and now all I can think about is how I broke your heart. These tears that run down my cheek are filled with sadness and hurt, because I loved you so much and now I know that it will never work :( I messed up and now I see that you mean the absolute world to me. I know sorry's not enough because I'm such a screw up.. But for whatever its worth I wanted to say, that you cross my mind every single day...The thought of you makes me smile, and I know our love was real, so I'm writing you this letter so that you know how I truly feel. What I really want to say is that I'm sorry, I know that you didn't deserve to be hurt like that, and I know that you will find someone who will love you and treat you right, they will make you happy and that person won't hurt you like I did.");
-        }
-
         [Command("doghouse")]
-        [Remarks("Basic")]
+        [Remarks("Utility")]
         [Summary("A command to be used when someone has been enslaved by their female counterpart.\nUsage: ~doghouse name")]
         public async Task Doghouse([Remainder]string name)
         {
             await ReplyAsync("<:doghouse:305246514467438602> Oh no! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> Freedom is down the drain! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> That's right! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> " + name + " is in the doghouse again! <:doghouse:305246514467438602>");
         }
 
-        [Command("cheer")]
-        [Remarks("Basic")]
-        [Summary("Displays one of several gifs of cute characters cheering you on.\nUsage: ~cheer")]
-        public async Task Cheer()
+        [Command("invitelink")]
+        [Remarks("Utility")]
+        [Summary("Provides a link which can be used should you want to spread Jif Bot to another server.\nUsage: ~invitelink")]
+        public async Task InviteLink()
         {
+            await ReplyAsync("The following is a link to add me to another server. NOTE: You must have permissions on the server in order to add. Once on the server I must be given permission to send and delete messages, otherwise I will not work.\nhttps://discordapp.com/oauth2/authorize?client_id=315569278101225483&scope=bot");
+        }
+
+        [Command("bigtext")]
+        [Remarks("Utility")]
+        [Summary("Takes the user input for messages and turns it into large letters using emotes. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~bigtext phrase, ~bigtext phrase -d")]
+        public async Task bigtext([Remainder]string orig)
+        {
+            if (orig.EndsWith("-d"))
+            {
+                orig = orig.Remove(orig.Length - 2);
+                await Context.Message.DeleteAsync();
+            }
+            string final = "";
+            orig = orig.ToLower();
+            for (int i = 0; i < orig.Length; i++)
+            {
+                final += getBig(orig[i]);
+                final += " ";
+            }
+            if (final.Length > 2000)
+                await ReplyAsync("This command does not support messages of that length, please shorten your message.");
+            else
+                await ReplyAsync(final);
+        }
+
+        [Command("tinytext")]
+        [Alias("smalltext")]
+        [Remarks("Utility")]
+        [Summary("Takes the user input for messages and turns it into small letters. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~tinytext phrase, ~tinytext phrase -d")]
+        public async Task tinytext([Remainder]string orig)
+        {
+            if (orig.EndsWith("-d"))
+            {
+                orig = orig.Remove(orig.Length - 2);
+                await Context.Message.DeleteAsync();
+            }
+            string final = "";
+            orig = orig.ToLower();
+            for (int i = 0; i < orig.Length; i++)
+            {
+                final += getSmol(orig[i]);
+            }
+            if (final.Length > 2000)
+                await ReplyAsync("This command does not support messages of that length, please shorten your message.");
+            else
+                await ReplyAsync(final);
+        }
+
+        [Command("widetext")]
+        [Remarks("Utility")]
+        [Summary("Takes the user input for messages and turns it into a ＷＩＤＥ  ＢＯＩ. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~widetext phrase, ~widetext phrase -d")]
+        public async Task WideText([Remainder] string message)
+        {
+            if (message.EndsWith("-d"))
+            {
+                message = message.Remove(message.Length - 2);
+                await Context.Message.DeleteAsync();
+            }
+            message = message.Replace(" ", "   ");
+            string alpha = "QWERTYUIOPASDFGHJKLÇZXCVBNMqwertyuiopasdfghjklçzxcvbnm,.-~+´«'0987654321!\"#$%&/()=?»*`^_:;";
+            string fullwidth = "ＱＷＥＲＴＹＵＩＯＰＡＳＤＦＧＨＪＫＬÇＺＸＣＶＢＮＭｑｗｅｒｔｙｕｉｏｐａｓｄｆｇｈｊｋｌçｚｘｃｖｂｎｍ,.－~ ´«＇０９８７６５４３２１！＂＃＄％＆／（）＝？»＊`＾＿：；";
+
+            for (int i = 0; i < alpha.Length; i++)
+            {
+                message = message.Replace(alpha[i], fullwidth[i]);
+            }
+            await ReplyAsync(message);
+        }
+
+        [Command("owo")]
+        [Alias("uwu")]
+        [Remarks("Utility")]
+        [Summary("Takes the user input, and translates it into degenerate owo speak. If you end your command call with -d, it will delete your message calling the bot..\nUsage: ~owo phrase, ~owo phrase -d")]
+        public async Task Owo([Remainder] string message)
+        {
+            if (message.EndsWith("-d"))
+            {
+                message = message.Remove(message.Length - 2);
+                await Context.Message.DeleteAsync();
+            }
+            string[] faces = new string[] { "(・ω・)", ";;w;;", "owo", "UwU", ">w<", "^w^" };
             Random rnd = new Random();
-            int num = rnd.Next(10);
-            string gif = "media/cheer/cheer" + num + ".gif";
-            await Context.Channel.SendFileAsync(gif);
+            message = Regex.Replace(message, @"(?:r|l)", "w");
+            message = Regex.Replace(message, @"(?:R|L)", "W");
+            message = Regex.Replace(message, @"n([aeiou])", @"ny$1");
+            message = Regex.Replace(message, @"N([aeiou])", @"Ny$1");
+            message = Regex.Replace(message, @"N([AEIOU])", @"NY$1");
+            message = Regex.Replace(message, @"ove", @"uv");
+            message = Regex.Replace(message, @"\!+", (match) => string.Format("{0}", " " + faces[rnd.Next(faces.Length)] + " "));
+
+            await ReplyAsync(message);
         }
 
-        [Command("lewd")]
-        [Remarks("Basic")]
-        [Summary("Displays a random image to react to someones lewd comment.\nUsage: ~lewd")]
-        public async Task Lewd()
+        [Command("timer")]
+        [Remarks("Utility")]
+        [Summary("Sets a reminder to ping you after a certain amount of time has passed. A message can be specified along with the time to be printed back to you at the end of the timer. Times can be specified using any combination of -m[minutes], -h[hours], and -d[days] anywhere in the message.\nUsage: ~timer -h2 -m30 message")]
+        public async Task Timer([Remainder]string message = "")
         {
+            int waitTime = 0;
+
+            if (Regex.IsMatch(message, @"-m *[0-9]+"))
+                waitTime += Convert.ToInt32(Regex.Match(message, @"-m *[0-9]+").Value.Replace("-m", ""));
+
+            if (Regex.IsMatch(message, @"-h *[0-9]+"))
+                waitTime += Convert.ToInt32(Regex.Match(message, @"-h *[0-9]+").Value.Replace("-h", "")) * 60;
+
+            if (Regex.IsMatch(message, @"-h *[0-9]+"))
+                waitTime += Convert.ToInt32(Regex.Match(message, @"-d *[0-9]+").Value.Replace("-d", "")) * 1440;
+
+            if (waitTime == 0)
+            {
+                await ReplyAsync("Please provide an amount of time to wait for. For assistance, use ~help.");
+                return;
+            }
+
+            message = Regex.Replace(message, @"-[m,h,d] *[0-9]+", "");
+            if (message.Replace(" ", "") == "")
+                message = "Times up!";
+            Process proc = new System.Diagnostics.Process();
+            proc.StartInfo.FileName = "/bin/bash";
+            proc.StartInfo.Arguments = "../../../scripts/sendmessage.sh " + Context.Channel.Id + " \"" + Context.User.Mention + " " + message + "\" " + waitTime;
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.Start();
+            if (waitTime == 1)
+                await ReplyAsync("Setting timer for " + Convert.ToString(waitTime) + " minute from now.");
+            else
+                await ReplyAsync("Setting timer for " + Convert.ToString(waitTime) + " minutes from now.");
+        }
+
+        [Command("choose")]
+        [Remarks("Utility")]
+        [Summary("Randomly makes a choice for you. You can use as many choices as you want, but seperate all choices using a space. If you wish for a choice to contain spaces, surround the choice with \"\"\nUsage: ~choose choice \"choice but with spaces\"")]
+        public async Task Choose([Remainder]string message)
+        {
+            int quotes = message.Split('\"').Length - 1;
+            if (quotes % 2 != 0)
+            {
+                await ReplyAsync("please ensure all quotations are closed");
+                return;
+            }
+
+            List<string> choices = new List<string>();
+            int count = 0;
+            message = message.TrimEnd();
+            while (true)
+            {
+                message = message.TrimStart();
+                string choice;
+                if (message == "")
+                {
+                    break;
+                }
+                if (message[0] == '\"')
+                {
+                    message = message.Remove(0, 1);
+                    choice = message.Remove(message.IndexOf("\""));
+                    message = message.Remove(0, message.IndexOf("\"") + 1);
+                }
+                else
+                {
+                    if (message.Contains(" "))
+                    {
+                        choice = message.Remove(message.IndexOf(" "));
+                        message = message.Remove(0, message.IndexOf(" "));
+                    }
+                    else
+                    {
+                        choice = message;
+                        message = "";
+                    }
+                }
+                choices.Add(choice);
+                count++;
+            }
+
+            if (count < 2)
+            {
+                await ReplyAsync("Please provide at least two choices.");
+                return;
+            }
+
             Random rnd = new Random();
-            int num = rnd.Next(8);
-            string png = "media/lewd/" + num + ".png";
-            await Context.Channel.SendFileAsync(png);
+            int num = rnd.Next(count);
+            await ReplyAsync("The robot overlords have chosen: **" + choices[num] + "**");
         }
 
-        [Command("setmessage")]
-        [Remarks("Personalization")]
-        [Summary("Allows you to set a message that can be displayed at any time using the ~message command.\nUsage: ~setmessage write your message here")]
-        public async Task SetMessage([Remainder]string mess)
+        [Command("youtube")]
+        [Remarks("Utility")]
+        [Summary("Takes whatever you give it and searches for it on YouTube, it will return the first search result that appears.\nUsage: ~youtube video title")]
+        public async Task Youtube([Remainder]string vid)
         {
-            string file = "references/messages.txt";
-            string name = Context.User.Username + "#" + Context.User.Discriminator;
-            string id = Convert.ToString(Context.User.Id);
-            string temp = File.ReadAllText(file);
-            if (temp.IndexOf(id) != -1)
-            {
-                await ReplyAsync("This user already has a message!");
-                return;
-            }
-            temp = temp + id + " " + mess + "\r\n\r\n";
-            File.WriteAllText(file, temp);
-            await ReplyAsync("added message: \"" + mess + "\" for user: " + name);
-        }
-
-        [Command("setsignature")]
-        [Remarks("Personalization")]
-        [Summary("Sets for a specific emote to be reacted to every message you send. NOTE: Jif Bot does NOT have nitro, this will only work with emotes that are available on this server. \nUsage: ~setmessage :poop:")]
-        public async Task SetSignature(string mess, [Remainder]string nogo = "")
-        {
-            string messOrig = mess;
-            if (nogo != "")
-                await ReplyAsync("This currently only works for one emote, " + nogo + " will not be added.");
-            mess = mess.Replace("<", string.Empty);
-            mess = mess.Replace(">", string.Empty);
-            string file = "references/signatures.txt";
-            string name = Context.User.Username + "#" + Context.User.Discriminator;
-            string id = Convert.ToString(Context.User.Id);
-            string temp = File.ReadAllText(file);
-            if (temp.IndexOf(id) != -1)
-            {
-                await ReplyAsync("This user already has a signature!");
-                return;
-            }
-            temp = temp + id + " " + mess + "\r\n\r\n";
-            File.WriteAllText(file, temp);
-            await ReplyAsync("added signature: \"" + messOrig + "\" for user: " + name);
-        }
-
-        [Command("resetsignature")]
-        [Remarks("Personalization")]
-        [Summary("Removes your signature. If you do not have a signature, use the ~setsignature command\nUsage: ~resetmessage")]
-        public async Task ResetSignature()
-        {
-            string name = Context.User.Username + "#" + Context.User.Discriminator;
-            string id = Convert.ToString(Context.User.Id);
-            string file = "references/signatures.txt";
-            string source = File.ReadAllText(file);
-            string temp = source;
-            Int32 start = source.IndexOf(id);
-            if (start == -1)
-            {
-                await ReplyAsync("User does not have a signature");
-                return;
-            }
-            temp = temp.Remove(0, start);
-            string end = "\r\n\r\n";
-            Int32 finish = temp.IndexOf(end) + end.Length;
-            temp = temp.Remove(temp.IndexOf(end));
-            temp = temp.Remove(0, name.Length);
-            source = source.Remove(start, finish);
-            File.WriteAllText(file, source);
-            await ReplyAsync("removed signature: \"" + temp + "\" from user: " + name);
-        }
-
-        [Command("message")]
-        [Remarks("Personalization")]
-        [Summary("Displays your previously set message. To set a message, use the ~setmessage command.\nUsage: ~message")]
-        public async Task Message()
-        {
-            string file = "references/messages.txt";
-            string name = Context.User.Username + "#" + Context.User.Discriminator;
-            string id = Convert.ToString(Context.User.Id);
-            string temp = File.ReadAllText(file);
-            Int32 start = temp.IndexOf(id);
-            if (start == -1)
-            {
-                await ReplyAsync("User has not set a message yet! use ~setmessage [message] to set your message.");
-                return;
-            }
-            start = start + id.Length;
-            temp = temp.Remove(0, start);
-            string end = "\r\n\r\n";
-            start = temp.IndexOf(end);
-            temp = temp.Remove(start);
-            await ReplyAsync(temp);
-        }
-
-        [Command("resetmessage")]
-        [Remarks("Personalization")]
-        [Summary("Deletes your currently set message. If you do not have a message, use the ~setmessage command\nUsage: ~resetmessage")]
-        public async Task ResetMessage()
-        {
-            string name = Context.User.Username + "#" + Context.User.Discriminator;
-            string id = Convert.ToString(Context.User.Id);
-            string file = "references/messages.txt";
-            string source = File.ReadAllText(file);
-            string temp = source;
-            Int32 start = source.IndexOf(id);
-            if (start == -1)
-            {
-                await ReplyAsync("User does not have a message");
-                return;
-            }
-            temp = temp.Remove(0, start);
-            string end = "\r\n\r\n";
-            Int32 finish = temp.IndexOf(end) + end.Length;
-            temp = temp.Remove(temp.IndexOf(end));
-            temp = temp.Remove(0, id.Length);
-            source = source.Remove(start, finish);
-            File.WriteAllText(file, source);
-            await ReplyAsync("removed message: \"" + temp + "\" from user: " + name);
+            vid = "https://www.youtube.com/results?search_query=" + vid.Replace(" ", "+");
+            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
+            string html = await client.GetStringAsync(vid);
+            html = html.Remove(0, html.IndexOf("?v=") + 3);
+            html = html.Remove(html.IndexOf("\""));
+            await ReplyAsync("https://www.youtube.com/watch?v=" + html);
         }
 
         [Command("mock")]
-        [Remarks("Annoyances")]
+        [Remarks("Utility")]
         [Summary("Mocks the text you provide it. If you end your command call with -d, it will delete your message calling the bot. If you do not specify any message, it will mock the most recent message sent in the text channel, and delete your command call.\nUsage: ~mock, ~mock message, ~mock message -d")]
         public async Task Mock([Remainder] string words = "")
         {
@@ -360,45 +273,205 @@ namespace JifBot.Commands
             await ReplyAsync(end);
         }
 
-        [Command("whisper")]
-        [Remarks("Annoyances")]
-        [Summary("Sends a private message to someone on the server. The message containing your command call will be deleted for anonymity. NOTE: the \"name\" is the person's Discord username without the numbers.\nUsage: ~whisper \"name\" message")]
-        public async Task Whisper([Remainder]string contents)
+        [Command("8ball")]
+        [Remarks("Utility")]
+        [Summary("asks the magic 8 ball a question.\nUsage: ~8ball")]
+        public async Task eightBall([Remainder] string useless = "")
         {
-            int spot = contents.IndexOf("\"");
-            if (spot == -1)
-                await ReplyAsync("improper usage, please use: ~whisper \"username\" message. Do not include numbers with the user name.");
+            string[] responses = new string[] { "it is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful" };
+            Random rnd = new Random();
+            int num = rnd.Next(20);
+            await ReplyAsync(responses[num]);
+        }
+
+        [Command("s8ball")]
+        [Remarks("Utility")]
+        [Summary("asks the sassy 8 ball a question.\nUsage: ~s8ball")]
+        public async Task SeightBall([Remainder] string useless = "")
+        {
+            string[] responses = new string[] { "Fuck yeah.", "Sure, why not?", "Well, duh.", "Do bears shit in the woods?", "Is water wet?", "I mean, I guess.", "If it gets you to fuck off, then sure.", "011110010110010101110011", "Whatever floats your boat.", "Fine, sure, whatever.", "Fuck you.", "Why do you feel the need to ask a BOT for validation?", "Figure it out yourself.", "Does it really matter?", "Leave me alone.", "Fuck no.", "Why would you even consider that a possibility?", "It's cute you think that could happen.", "Not a chance shitlord.", "Not in a million years." };
+            Random rnd = new Random();
+            int num = rnd.Next(20);
+            await ReplyAsync(responses[num]);
+        }
+
+        [Command("tiltycat")]
+        [Remarks("Utility")]
+        [Summary("Creates a cat at any angle you specify.\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_cat/(degree).png``` where (degree) is the desired angle\nUsage: ~tiltycat degree")]
+        public async Task TiltyCat(int degree, [Remainder] string useless = "")
+        {
+            string temp = "http://www.writeonlymedia.com/tilty_cat/" + degree + ".png";
+            using (WebClient client = new WebClient())
+            {
+                client.DownloadFile(new Uri(temp), "tiltycat.png");
+            }
+            await Context.Channel.SendFileAsync("tiltycat.png");
+        }
+
+        [Command("tiltydog")]
+        [Remarks("Utility")]
+        [Summary("Creates a dog at any angle you specify.\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_dog/(degree).png``` where (degree) is the desired angle\nUsage: ~tiltydog degree")]
+        public async Task TiltyDat(int degree, [Remainder] string useless = "")
+        {
+            string temp = "http://www.writeonlymedia.com/tilty_dog/" + degree + ".png";
+            using (WebClient client = new WebClient())
+            {
+                client.DownloadFile(new Uri(temp), "tiltydog.png");
+            }
+            await Context.Channel.SendFileAsync("tiltydog.png");
+        }
+
+        [Command("joke")]
+        [Remarks("Utility")]
+        [Summary("Tells a joke\nUsage: ~joke")]
+        public async Task Joke()
+        {
+            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
+            string source = await client.GetStringAsync("http://www.rinkworks.com/jokes/random.cgi");
+            string ptr = "< div class='content'>";
+            source = source.Remove(0, source.IndexOf(ptr) + ptr.Length);
+            ptr = "</h2>";
+            source = source.Remove(0, source.IndexOf(ptr) + ptr.Length);
+            ptr = "</td><td class='ad'>";
+            source = source.Remove(source.IndexOf(ptr));
+            source = source.Replace("<p>", string.Empty);
+            source = source.Replace("</p>", "\n");
+            source = source.Replace("<ul>", "\n");
+            source = source.Replace("<li>", "\n");
+            source = source.Replace("</ul>", "\n");
+            source = source.Replace("</li>", "\n");
+            await ReplyAsync(source);
+        }
+
+
+        [Command("inspire")]
+        [Remarks("Utility")]
+        [Summary("Gives an inspirational quote\nUsage: ~inspire")]
+        public async Task Inspire()
+        {
+            string file1 = "references/quotes.txt";
+            string file2 = "references/authors.txt";
+            string allQuotes = File.ReadAllText(file1);
+            string allAuthors = File.ReadAllText(file2);
+            int count = Regex.Matches(allQuotes, "\",\"").Count + 1;
+            Random rnd = new Random();
+            int num = rnd.Next(count);
+            for (int i = 0; i < num; i++)
+            {
+                if (i == count - 1)
+                    break;
+                allQuotes = allQuotes.Remove(0, allQuotes.IndexOf("\",\"") + 3);
+                allAuthors = allAuthors.Remove(0, allAuthors.IndexOf("\",\"") + 3);
+            }
+            if (num != count)
+            {
+                allQuotes = allQuotes.Remove(allQuotes.IndexOf("\",\""));
+                allAuthors = allAuthors.Remove(allAuthors.IndexOf("\",\""));
+            }
             else
             {
-                IUser user = Context.User;
-                await Context.Message.DeleteAsync();
-                contents = contents.Remove(0, spot + 1);
-                spot = contents.IndexOf("\"");
-                string copy = contents.Remove(0, spot + 1);
-                contents = contents.Remove(spot);
-                if (copy[0] == ' ')
-                    copy = copy.Remove(0, 1);
-                IGuildUser dm = null;
-                var list = Context.Guild.GetUsersAsync();
-                for (int i = 0; i < list.Result.Count; i++)
+                allQuotes = allQuotes.Replace("\"", string.Empty);
+                allAuthors = allAuthors.Replace("\"", string.Empty);
+            }
+            await ReplyAsync("\"" + allQuotes + "\"\n-" + allAuthors);
+
+        }
+
+        [Command("wtf")]
+        [Remarks("Reaction")]
+        [Summary("Shows your disbelief as to what your fellow server goers have just done.\nUsage: ~wtf")]
+        public async Task WTF()
+        {
+            await ReplyAsync("https://www.youtube.com/watch?v=wKbU8B-QVZk");
+        }
+
+        [Command("neener")]
+        [Remarks("Reaction")]
+        [Summary("Helps to prove your point that you were right.\nUsage: ~neener")]
+        public async Task ToldYou()
+        {
+            await Context.Channel.SendFileAsync("media/neener.gif");
+        }
+
+        [Command("bully")]
+        [Remarks("Reaction")]
+        [Summary("Reminds young rapscallions that this is a bully free zone.\nUsage: ~bully")]
+        public async Task Bully()
+        {
+            await Context.Channel.SendFileAsync("media/bully.gif");
+        }
+
+        [Command("stfu")]
+        [Remarks("Reaction")]
+        [Summary("Tells someone to shut up.\nUsage: ~stfu")]
+        public async Task STFU()
+        {
+            await Context.Channel.SendFileAsync("media/stfu.jpg");
+        }
+
+        [Command("edgy")]
+        [Remarks("Reaction")]
+        [Summary("Informs someone that their prior sent comment was perhaps a tad too mischievous.\nUsage: ~edgy")]
+        public async Task Edgy()
+        {
+            await Context.Channel.SendFileAsync("media/edgy.jpg");
+        }
+
+        [Command("sorry")]
+        [Remarks("Reaction")]
+        [Summary("A command to help you to articulate your regret for your actions.\nUsage: ~sorry")]
+        public async Task Sorry()
+        {
+            await ReplyAsync("I'm writing this message cause I feel really bad, thinking about the way I hurt you makes me really sad. I'm sorry for all the hurt I've caused you and I regret the things I've done. I've lost the 1 girl I've ever loved and it was cause of the things I've done. Baby I feel so bad right now, cause I tore your world apart, and now all I can think about is how I broke your heart. These tears that run down my cheek are filled with sadness and hurt, because I loved you so much and now I know that it will never work :( I messed up and now I see that you mean the absolute world to me. I know sorry's not enough because I'm such a screw up.. But for whatever its worth I wanted to say, that you cross my mind every single day...The thought of you makes me smile, and I know our love was real, so I'm writing you this letter so that you know how I truly feel. What I really want to say is that I'm sorry, I know that you didn't deserve to be hurt like that, and I know that you will find someone who will love you and treat you right, they will make you happy and that person won't hurt you like I did.");
+        }
+
+        [Command("cheer")]
+        [Remarks("Reaction")]
+        [Summary("Displays one of several gifs of cute characters cheering you on.\nUsage: ~cheer")]
+        public async Task Cheer()
+        {
+            Random rnd = new Random();
+            int num = rnd.Next(10);
+            string gif = "media/cheer/cheer" + num + ".gif";
+            await Context.Channel.SendFileAsync(gif);
+        }
+
+        [Command("lewd")]
+        [Remarks("Reaction")]
+        [Summary("Displays a random image to react to someones lewd comment.\nUsage: ~lewd")]
+        public async Task Lewd()
+        {
+            Random rnd = new Random();
+            int num = rnd.Next(8);
+            string png = "media/lewd/" + num + ".png";
+            await Context.Channel.SendFileAsync(png);
+        }
+
+        [Command("streamers")]
+        [Remarks("Information")]
+        [Summary("Displays everybody on the server who is currently streaming\nUsage: ~streamers")]
+        public async Task Stream()
+        {
+            bool found = false;
+            var embed = new EmbedBuilder();
+            IGuild server = Context.Guild;
+            var people = server.GetUsersAsync();
+            foreach (IGuildUser person in people.Result)
+            {
+                if (person.Game != null && person.Game.Value.StreamUrl != null)
                 {
-                    if (list.Result.ElementAt(i).Username.ToLower() == contents.ToLower())
-                        dm = list.Result.ElementAt(i);
-                }
-                if (dm == null)
-                {
-                    await ReplyAsync("That is not a name for anybody on this server. Your message was not sent");
-                    Console.WriteLine(user + " attempted to send \"" + copy + "\" to " + contents);
-                }
-                else
-                {
-                    await dm.SendMessageAsync(copy);
-                    Console.WriteLine(user + " successfully sent \"" + copy + "\" to " + contents);
+                    embed.AddField(person.Username, "[" + person.Game + "](" + person.Game.Value.StreamUrl + ")");
+                    found = true;
                 }
             }
+            if (!found)
+                await ReplyAsync("Nobody is streaming at this time.");
+            else
+                await ReplyAsync("", false, embed);
         }
+
         [Command("define")]
-        [Remarks("Helper")]
+        [Remarks("Information")]
         [Summary("Defines any word in the Oxford English dictionary. For multiple definitions, use -m at the end of the command\nUsage: ~define word OR ~define word -m")]
         public async Task Define([Remainder]string word)
         {
@@ -417,14 +490,14 @@ namespace JifBot.Commands
                 word = word.Replace(" -m", "");
                 multiple = true;
             }
-            HttpResponseMessage response =  await client.GetAsync(word);
-            if(response.StatusCode.ToString() == "NotFound")
+            HttpResponseMessage response = await client.GetAsync(word);
+            if (response.StatusCode.ToString() == "NotFound")
             {
                 await Context.Channel.SendFileAsync("media/damage.png");
                 return;
             }
 
-            if(response.StatusCode.ToString() == "Forbidden")
+            if (response.StatusCode.ToString() == "Forbidden")
             {
                 await ReplyAsync("Unable to retrieve definition");
                 return;
@@ -432,7 +505,7 @@ namespace JifBot.Commands
             HttpContent content = response.Content;
             string stuff = await content.ReadAsStringAsync();
             var json = JObject.Parse(stuff);
-            if(multiple)
+            if (multiple)
             {
                 var embed = new EmbedBuilder();
                 embed.WithColor(new Color(0x42ebf4));
@@ -445,7 +518,7 @@ namespace JifBot.Commands
                 embed.AddField(def, example);
                 for (int i = 0; i < 4; i++)
                 {
-                    def =  (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].subsenses[" + i.ToString() + "].definitions[0]");
+                    def = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].subsenses[" + i.ToString() + "].definitions[0]");
                     example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].subsenses[" + i.ToString() + "].examples[0].text");
                     if (def != null)
                     {
@@ -471,12 +544,12 @@ namespace JifBot.Commands
                 string definition = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].definitions[0]");
                 string example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].examples[0].text");
                 string message = name + " (" + type + ")";
-                if(spelling != null)
+                if (spelling != null)
                 {
                     message += "     /" + spelling + "/";
                 }
                 message += "\n**Definition: **" + definition;
-                if(example != null)
+                if (example != null)
                 {
                     message += "\n**Example: **" + example;
                 }
@@ -485,7 +558,7 @@ namespace JifBot.Commands
         }
 
         [Command("udefine")]
-        [Remarks("Helper")]
+        [Remarks("Information")]
         [Alias("slang")]
         [Summary("Gives the top definition for the term from urbandictionary.com\nUsage: ~udefine phrase, ~slang phrase")]
         public async Task DefineUrbanDictionary([Remainder]string phrase)
@@ -518,7 +591,7 @@ namespace JifBot.Commands
                 var cleanDefinition = definitionList[0].Definition.Replace("[", "").Replace("]", "");
                 var cleanExample = definitionList[0].Example.Replace("[", "").Replace("]", "");
                 var year = definitionList[0].Written_On.Substring(0, definitionList[0].Written_On.IndexOf("-"));
-                var dayMonth = definitionList[0].Written_On.Substring(definitionList[0].Written_On.IndexOf("-")+1, 5);
+                var dayMonth = definitionList[0].Written_On.Substring(definitionList[0].Written_On.IndexOf("-") + 1, 5);
                 var cleanDate = dayMonth.Replace("-", "/") + "/" + year;
                 var word = definitionList[0].Word;
 
@@ -532,7 +605,7 @@ namespace JifBot.Commands
         }
 
         [Command("stats")]
-        [Remarks("Helper")]
+        [Remarks("Information")]
         [Summary("Gives the stats for a league player on any region. The region name is the abbreviated verson of the region name. Example: na = North America\nUsage: ~stats region username")]
         public async Task Stats(string region, [Remainder]string name)
         {
@@ -653,270 +726,8 @@ namespace JifBot.Commands
             }
         }
 
-        [Command("joke")]
-        [Remarks("Helper")]
-        [Summary("Tells a joke\nUsage: ~joke")]
-        public async Task Joke()
-        {
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            string source = await client.GetStringAsync("http://www.rinkworks.com/jokes/random.cgi");
-            string ptr = "< div class='content'>";
-            source = source.Remove(0, source.IndexOf(ptr) + ptr.Length);
-            ptr = "</h2>";
-            source = source.Remove(0, source.IndexOf(ptr) + ptr.Length);
-            ptr = "</td><td class='ad'>";
-            source = source.Remove(source.IndexOf(ptr));
-            source = source.Replace("<p>", string.Empty);
-            source = source.Replace("</p>", "\n");
-            source = source.Replace("<ul>", "\n");
-            source = source.Replace("<li>", "\n");
-            source = source.Replace("</ul>", "\n");
-            source = source.Replace("</li>", "\n");
-            await ReplyAsync(source);
-        }
-
-
-        [Command("inspire")]
-        [Remarks("Helper")]
-        [Summary("Gives an inspirational quote\nUsage: ~inspire")]
-        public async Task Inspire()
-        {
-            string file1 = "references/quotes.txt";
-            string file2 = "references/authors.txt";
-            string allQuotes = File.ReadAllText(file1);
-            string allAuthors = File.ReadAllText(file2);
-            int count = Regex.Matches(allQuotes, "\",\"").Count + 1;
-            Random rnd = new Random();
-            int num = rnd.Next(count);
-            for (int i = 0; i < num; i++)
-            {
-                if (i == count - 1)
-                    break;
-                allQuotes = allQuotes.Remove(0, allQuotes.IndexOf("\",\"") + 3);
-                allAuthors = allAuthors.Remove(0, allAuthors.IndexOf("\",\"") + 3);
-            }
-            if (num != count)
-            {
-                allQuotes = allQuotes.Remove(allQuotes.IndexOf("\",\""));
-                allAuthors = allAuthors.Remove(allAuthors.IndexOf("\",\""));
-            }
-            else
-            {
-                allQuotes = allQuotes.Replace("\"", string.Empty);
-                allAuthors = allAuthors.Replace("\"", string.Empty);
-            }
-            await ReplyAsync("\"" + allQuotes + "\"\n-" + allAuthors);
-
-        }
-
-        [Command("bigtext")]
-        [Remarks("Annoyances")]
-        [Summary("Takes the user input for messages and turns it into large letters using emotes. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~bigtext phrase, ~bigtext phrase -d")]
-        public async Task bigtext([Remainder]string orig)
-        {
-            if (orig.EndsWith("-d"))
-            {
-                orig = orig.Remove(orig.Length - 2);
-                await Context.Message.DeleteAsync();
-            }
-            string final = "";
-            orig = orig.ToLower();
-            for (int i = 0; i < orig.Length; i++)
-            {
-                final += getBig(orig[i]);
-                final += " ";
-            }
-            if (final.Length > 2000)
-                await ReplyAsync("This command does not support messages of that length, please shorten your message.");
-            else
-                await ReplyAsync(final);
-        }
-
-        [Command("tinytext")]
-        [Alias("smalltext")]
-        [Remarks("Annoyances")]
-        [Summary("Takes the user input for messages and turns it into small letters. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~tinytext phrase, ~tinytext phrase -d")]
-        public async Task tinytext([Remainder]string orig)
-        {
-            if (orig.EndsWith("-d"))
-            {
-                orig = orig.Remove(orig.Length - 2);
-                await Context.Message.DeleteAsync();
-            }
-            string final = "";
-            orig = orig.ToLower();
-            for (int i = 0; i < orig.Length; i++)
-            {
-                final += getSmol(orig[i]);
-            }
-            if (final.Length > 2000)
-                await ReplyAsync("This command does not support messages of that length, please shorten your message.");
-            else
-                await ReplyAsync(final);
-        }
-
-        [Command("widetext")]
-        [Remarks("Annoyances")]
-        [Summary("Takes the user input for messages and turns it into a ＷＩＤＥ  ＢＯＩ. If you end your command call with -d, it will delete your message calling the bot.\nUsage: ~widetext phrase, ~widetext phrase -d")]
-        public async Task WideText([Remainder] string message)
-        {
-            if (message.EndsWith("-d"))
-            {
-                message = message.Remove(message.Length - 2);
-                await Context.Message.DeleteAsync();
-            }
-            message = message.Replace(" ", "   ");
-            string alpha = "QWERTYUIOPASDFGHJKLÇZXCVBNMqwertyuiopasdfghjklçzxcvbnm,.-~+´«'0987654321!\"#$%&/()=?»*`^_:;";
-            string fullwidth = "ＱＷＥＲＴＹＵＩＯＰＡＳＤＦＧＨＪＫＬÇＺＸＣＶＢＮＭｑｗｅｒｔｙｕｉｏｐａｓｄｆｇｈｊｋｌçｚｘｃｖｂｎｍ,.－~ ´«＇０９８７６５４３２１！＂＃＄％＆／（）＝？»＊`＾＿：；";
-
-            for (int i = 0; i < alpha.Length; i++)
-            {
-                message = message.Replace(alpha[i], fullwidth[i]);
-            }
-            await ReplyAsync(message);
-        }
-
-        [Command("owo")]
-        [Alias("uwu")]
-        [Remarks("Annoyances")]
-        [Summary("Takes the user input, and translates it into degenerate owo speak. If you end your command call with -d, it will delete your message calling the bot..\nUsage: ~owo phrase, ~owo phrase -d")]
-        public async Task Owo([Remainder] string message)
-        {
-            if (message.EndsWith("-d"))
-            {
-                message = message.Remove(message.Length-2);
-                await Context.Message.DeleteAsync();
-            }
-            string[] faces = new string[] { "(・ω・)", ";;w;;", "owo", "UwU", ">w<", "^w^" };
-            Random rnd = new Random();
-            message = Regex.Replace(message, @"(?:r|l)", "w");
-            message = Regex.Replace(message, @"(?:R|L)", "W");
-            message = Regex.Replace(message, @"n([aeiou])", @"ny$1");
-            message = Regex.Replace(message, @"N([aeiou])", @"Ny$1");
-            message = Regex.Replace(message, @"N([AEIOU])", @"NY$1");
-            message = Regex.Replace(message, @"ove", @"uv");
-            message = Regex.Replace(message, @"\!+", (match) => string.Format("{0}", " " + faces[rnd.Next(faces.Length)] + " "));
-
-            await ReplyAsync(message);
-        }
-
-        [Command("timer")]
-        [Remarks("Helper")]
-        [Summary("Sets a reminder to ping you after a certain amount of time has passed. A message can be specified along with the time to be printed back to you at the end of the timer. Times can be specified using any combination of -m[minutes], -h[hours], and -d[days] anywhere in the message.\nUsage: ~timer -h2 -m30 message")]
-        public async Task Timer([Remainder]string message = "")
-        {
-            int waitTime = 0;
-
-            if (Regex.IsMatch(message, @"-m *[0-9]+"))
-                waitTime += Convert.ToInt32(Regex.Match(message, @"-m *[0-9]+").Value.Replace("-m", ""));
-
-            if (Regex.IsMatch(message, @"-h *[0-9]+"))
-                waitTime += Convert.ToInt32(Regex.Match(message, @"-h *[0-9]+").Value.Replace("-h", "")) * 60;
-
-            if (Regex.IsMatch(message, @"-h *[0-9]+"))
-                waitTime += Convert.ToInt32(Regex.Match(message, @"-d *[0-9]+").Value.Replace("-d", "")) * 1440;
-
-            if(waitTime == 0)
-            {
-                await ReplyAsync("Please provide an amount of time to wait for. For assistance, use ~help.");
-                return;
-            }
-            
-            message = Regex.Replace(message, @"-[m,h,d] *[0-9]+", "");
-            if (message.Replace(" ", "") == "")
-                message = "Times up!";
-            Process proc = new System.Diagnostics.Process();
-            proc.StartInfo.FileName = "/bin/bash";
-            proc.StartInfo.Arguments = "../../../scripts/sendmessage.sh " + Context.Channel.Id + " \"" + Context.User.Mention + " " + message + "\" " + waitTime;
-            proc.StartInfo.UseShellExecute = false;
-            proc.StartInfo.RedirectStandardOutput = true;
-            proc.Start();
-            if (waitTime == 1)
-                await ReplyAsync("Setting timer for " + Convert.ToString(waitTime) + " minute from now.");
-            else
-                await ReplyAsync("Setting timer for " + Convert.ToString(waitTime) + " minutes from now.");
-        }
-
-        [Command("choose")]
-        [Remarks("Helper")]
-        [Summary("Randomly makes a choice for you. You can use as many choices as you want, but seperate all choices using a space. If you wish for a choice to contain spaces, surround the choice with \"\"\nUsage: ~choose choice \"choice but with spaces\"")]
-        public async Task Choose([Remainder]string message)
-        {
-            int quotes = message.Split('\"').Length - 1;
-            if(quotes % 2 != 0)
-            {
-                await ReplyAsync("please ensure all quotations are closed");
-                return;
-            }
-
-            List<string> choices = new List<string>();
-            int count = 0;
-            message = message.TrimEnd();
-            while (true)
-            {
-                message = message.TrimStart();
-                string choice;
-                if(message == "")
-                {
-                    break;
-                }
-                if(message[0] == '\"')
-                {
-                    message = message.Remove(0, 1);
-                    choice = message.Remove(message.IndexOf("\""));
-                    message = message.Remove(0, message.IndexOf("\"") + 1);
-                }
-                else
-                {
-                    if (message.Contains(" "))
-                    {
-                        choice = message.Remove(message.IndexOf(" "));
-                        message = message.Remove(0, message.IndexOf(" "));
-                    }
-                    else
-                    {
-                        choice = message;
-                        message = "";
-                    }
-                }
-                choices.Add(choice);
-                count++;
-            }
-
-            if (count < 2)
-            {
-                await ReplyAsync("Please provide at least two choices.");
-                return;
-            }
-
-            Random rnd = new Random();
-            int num = rnd.Next(count);
-            await ReplyAsync("The robot overlords have chosen: **" + choices[num] + "**");
-        }
-
-        [Command("youtube")]
-        [Remarks("Helper")]
-        [Summary("Takes whatever you give it and searches for it on YouTube, it will return the first search result that appears.\nUsage: ~youtube video title")]
-        public async Task Youtube([Remainder]string vid)
-        {
-            vid = "https://www.youtube.com/results?search_query=" + vid.Replace(" ", "+");
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            string html = await client.GetStringAsync(vid);
-            html = html.Remove(0, html.IndexOf("?v=") + 3);
-            html = html.Remove(html.IndexOf("\""));
-            await ReplyAsync("https://www.youtube.com/watch?v=" + html);
-        }
-
-        [Command("gnomed")]
-        [Remarks("Hidden")]
-        [Summary("I'm gnot a gnelf...\nUsage: ~gnomed")]
-        public async Task Gnomed()
-        {
-            await ReplyAsync("https://www.youtube.com/watch?v=6n3pFFPSlW4");
-        }
-
         [Command("mastery")]
-        [Remarks("Helper")]
+        [Remarks("Information")]
         [Summary("Gives the number of mastery points for the top 10 most played champions for a user on any server.\nUsage: ~mastery region username")]
         public async Task Mastery(string region, [Remainder]string name)
         {
@@ -971,7 +782,7 @@ namespace JifBot.Commands
         }
 
         [Command("info")]
-        [Remarks("Helper")]
+        [Remarks("Information")]
         [Summary("Gets varying pieces of Discord information for one or more users. Mention a user or provide their id to get their information, or do neither to get your own. To do more than 1 person, separate mentions/ids with spaces.\nUsage: ~info, ~info @person1 @person2, ~info person1id person2id")]
         public async Task MyInfo([Remainder] string ids = "")
         {
@@ -1001,7 +812,7 @@ namespace JifBot.Commands
         }
 
         [Command("avatar")]
-        [Remarks("Helper")]
+        [Remarks("Information")]
         [Summary("Gets the avatar for one or more users. Mention a user or provide their id to get their avatar, or do neither to get your own. To do more than 1 person, separate mentions/ids with spaces.\nUsage: ~avatar, ~avatar @person1 @person2, ~avatar person1id person2id")]
         public async Task Avatar([Remainder] string ids = "")
         {
@@ -1019,7 +830,7 @@ namespace JifBot.Commands
                     await ReplyAsync("", false, embed);
                 }
             }
-            else if(ids != "")
+            else if (ids != "")
             {
                 string[] idList = ids.Split(' ');
                 foreach (string id in idList)
@@ -1044,64 +855,248 @@ namespace JifBot.Commands
             }
         }
 
-        [Command("8ball")]
-        [Remarks("Helper")]
-        [Summary("asks the magic 8 ball a question.\nUsage: ~8ball")]
-        public async Task eightBall([Remainder] string useless = "")
+        [Command("beefact")]
+        [Remarks("Information")]
+        [Alias("beefacts", "bee", "bees")]
+        [Summary("Provides a fact about bees\nUsage: ~beefact, ~beefacts, bee, bees")]
+        public async Task beeFact([Remainder] string useless = "")
         {
-            string[] responses = new string[] { "it is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful" };
-            Random rnd = new Random();
-            int num = rnd.Next(20);
-            await ReplyAsync(responses[num]);
+            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
+            string fact = await client.GetStringAsync("http://thebuzz.writeonlymedia.com/api");
+            await ReplyAsync(fact.TrimStart('\"').TrimEnd('\"'));
         }
 
-        [Command("s8ball")]
-        [Remarks("Helper")]
-        [Summary("asks the sassy 8 ball a question.\nUsage: ~s8ball")]
-        public async Task SeightBall([Remainder] string useless = "")
+        [Command("setmessage")]
+        [Remarks("Personalization")]
+        [Summary("Allows you to set a message that can be displayed at any time using the ~message command.\nUsage: ~setmessage write your message here")]
+        public async Task SetMessage([Remainder]string mess)
         {
-            string[] responses = new string[] { "Fuck yeah.", "Sure, why not?", "Well, duh.", "Do bears shit in the woods?", "Is water wet?", "I mean, I guess.", "If it gets you to fuck off, then sure.", "011110010110010101110011", "Whatever floats your boat.", "Fine, sure, whatever.", "Fuck you.", "Why do you feel the need to ask a BOT for validation?", "Figure it out yourself.", "Does it really matter?", "Leave me alone.", "Fuck no.", "Why would you even consider that a possibility?", "It's cute you think that could happen.", "Not a chance shitlord.", "Not in a million years." };
-            Random rnd = new Random();
-            int num = rnd.Next(20);
-            await ReplyAsync(responses[num]);
-        }
-
-        [Command("tiltycat")]
-        [Remarks("Helper")]
-        [Summary("Creates a cat at any angle you specify.\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_cat/(degree).png``` where (degree) is the desired angle\nUsage: ~tiltycat degree")]
-        public async Task TiltyCat(int degree, [Remainder] string useless = "")
-        {
-            string temp = "http://www.writeonlymedia.com/tilty_cat/" + degree + ".png";
-            using (WebClient client = new WebClient())
+            string file = "references/messages.txt";
+            string name = Context.User.Username + "#" + Context.User.Discriminator;
+            string id = Convert.ToString(Context.User.Id);
+            string temp = File.ReadAllText(file);
+            if (temp.IndexOf(id) != -1)
             {
-                client.DownloadFile(new Uri(temp),"tiltycat.png");
+                await ReplyAsync("This user already has a message!");
+                return;
             }
-            await Context.Channel.SendFileAsync("tiltycat.png");
+            temp = temp + id + " " + mess + "\r\n\r\n";
+            File.WriteAllText(file, temp);
+            await ReplyAsync("added message: \"" + mess + "\" for user: " + name);
         }
 
-        [Command("tiltydog")]
-        [Remarks("Helper")]
-        [Summary("Creates a dog at any angle you specify.\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_dog/(degree).png``` where (degree) is the desired angle\nUsage: ~tiltydog degree")]
-        public async Task TiltyDat(int degree, [Remainder] string useless = "")
+        [Command("setsignature")]
+        [Remarks("Personalization")]
+        [Summary("Sets for a specific emote to be reacted to every message you send. NOTE: Jif Bot does NOT have nitro, this will only work with emotes that are available on this server. \nUsage: ~setmessage :poop:")]
+        public async Task SetSignature(string mess, [Remainder]string nogo = "")
         {
-            string temp = "http://www.writeonlymedia.com/tilty_dog/" + degree + ".png";
-            using (WebClient client = new WebClient())
+            string messOrig = mess;
+            if (nogo != "")
+                await ReplyAsync("This currently only works for one emote, " + nogo + " will not be added.");
+            mess = mess.Replace("<", string.Empty);
+            mess = mess.Replace(">", string.Empty);
+            string file = "references/signatures.txt";
+            string name = Context.User.Username + "#" + Context.User.Discriminator;
+            string id = Convert.ToString(Context.User.Id);
+            string temp = File.ReadAllText(file);
+            if (temp.IndexOf(id) != -1)
             {
-                client.DownloadFile(new Uri(temp), "tiltydog.png");
+                await ReplyAsync("This user already has a signature!");
+                return;
             }
-            await Context.Channel.SendFileAsync("tiltydog.png");
+            temp = temp + id + " " + mess + "\r\n\r\n";
+            File.WriteAllText(file, temp);
+            await ReplyAsync("added signature: \"" + messOrig + "\" for user: " + name);
         }
 
-        [Command("rolligentle")]
-        [Remarks("Hidden")]
-        [Summary("Makes the Gentlecat do a rollie\nUsage: ~rolligentle")]
-        public async Task RolliCat([Remainder] string useless = "")
+        [Command("resetsignature")]
+        [Remarks("Personalization")]
+        [Summary("Removes your signature. If you do not have a signature, use the ~setsignature command\nUsage: ~resetmessage")]
+        public async Task ResetSignature()
         {
-            await ReplyAsync("<:gentlecat:302907277571260418> <:rightcat:455100361066283035> <:bottomcat:455100361120940032> <:leftcat:455100361187786752> <:gentlecat:302907277571260418>");
+            string name = Context.User.Username + "#" + Context.User.Discriminator;
+            string id = Convert.ToString(Context.User.Id);
+            string file = "references/signatures.txt";
+            string source = File.ReadAllText(file);
+            string temp = source;
+            Int32 start = source.IndexOf(id);
+            if (start == -1)
+            {
+                await ReplyAsync("User does not have a signature");
+                return;
+            }
+            temp = temp.Remove(0, start);
+            string end = "\r\n\r\n";
+            Int32 finish = temp.IndexOf(end) + end.Length;
+            temp = temp.Remove(temp.IndexOf(end));
+            temp = temp.Remove(0, name.Length);
+            source = source.Remove(start, finish);
+            File.WriteAllText(file, source);
+            await ReplyAsync("removed signature: \"" + temp + "\" from user: " + name);
+        }
+
+        [Command("message")]
+        [Remarks("Personalization")]
+        [Summary("Displays your previously set message. To set a message, use the ~setmessage command.\nUsage: ~message")]
+        public async Task Message()
+        {
+            string file = "references/messages.txt";
+            string name = Context.User.Username + "#" + Context.User.Discriminator;
+            string id = Convert.ToString(Context.User.Id);
+            string temp = File.ReadAllText(file);
+            Int32 start = temp.IndexOf(id);
+            if (start == -1)
+            {
+                await ReplyAsync("User has not set a message yet! use ~setmessage [message] to set your message.");
+                return;
+            }
+            start = start + id.Length;
+            temp = temp.Remove(0, start);
+            string end = "\r\n\r\n";
+            start = temp.IndexOf(end);
+            temp = temp.Remove(start);
+            await ReplyAsync(temp);
+        }
+
+        [Command("resetmessage")]
+        [Remarks("Personalization")]
+        [Summary("Deletes your currently set message. If you do not have a message, use the ~setmessage command\nUsage: ~resetmessage")]
+        public async Task ResetMessage()
+        {
+            string name = Context.User.Username + "#" + Context.User.Discriminator;
+            string id = Convert.ToString(Context.User.Id);
+            string file = "references/messages.txt";
+            string source = File.ReadAllText(file);
+            string temp = source;
+            Int32 start = source.IndexOf(id);
+            if (start == -1)
+            {
+                await ReplyAsync("User does not have a message");
+                return;
+            }
+            temp = temp.Remove(0, start);
+            string end = "\r\n\r\n";
+            Int32 finish = temp.IndexOf(end) + end.Length;
+            temp = temp.Remove(temp.IndexOf(end));
+            temp = temp.Remove(0, id.Length);
+            source = source.Remove(start, finish);
+            File.WriteAllText(file, source);
+            await ReplyAsync("removed message: \"" + temp + "\" from user: " + name);
+        }
+
+        [Command("reese")]
+        [Remarks("Miscellaneous")]
+        [Summary("Prompts ladies to hit him up.\nUsage: ~reese")]
+        public async Task Reese()
+        {
+            await Context.Channel.SendMessageAsync("Ladies hmu");
+        }
+
+        [Command("neeko")]
+        [Remarks("Miscellaneous")]
+        [Summary("A command to celebrate Neeko.\nUsage: ~neeko")]
+        public async Task Neko()
+        {
+            await Context.Channel.SendFileAsync("media/neeko.jpg");
+        }
+
+        [Command("smoochie")]
+        [Remarks("Miscellaneous")]
+        [Summary("Reese gives a smoochie.\nUsage: ~smoochie")]
+        public async Task Smoochie()
+        {
+            await Context.Channel.SendFileAsync("media/smoochie.mp4");
+        }
+
+        [Command("flat")]
+        [Remarks("Miscellaneous")]
+        [Summary("Heralds the unseen truth.\nUsage: ~flat")]
+        public async Task Flat()
+        {
+            await Context.Channel.SendFileAsync("media/flat.png");
+        }
+
+        [Command("attention")]
+        [Remarks("Miscellaneous")]
+        [Summary("Gives Dee the attention she craves.\nUsage: ~attention")]
+        public async Task Attention()
+        {
+            await Context.Channel.SendFileAsync("media/attention.gif");
+        }
+
+        [Command("shrug")]
+        [Remarks("Miscellaneous")]
+        [Summary("Shrugs.\nUsage: ~shrug")]
+        public async Task Shrug()
+        {
+            await Context.Channel.SendFileAsync("media/shrug.png");
+        }
+
+        [Command("lunch")]
+        [Remarks("Miscellaneous")]
+        [Summary("lunch.\nUsage: ~lunch")]
+        public async Task Lunch()
+        {
+            await Context.Channel.SendFileAsync("media/lunch.gif");
+        }
+
+        [Command("banterwtf")]
+        [Remarks("Miscellaneous")]
+        [Summary("A video to be played when Banter does something stupid.\nUsage: ~banterwtf")]
+        public async Task BanterWTF()
+        {
+            await ReplyAsync("https://www.youtube.com/watch?v=-qRsiHfWh1w");
+        }
+
+        [Command("rammus")]
+        [Remarks("Miscellaneous")]
+        [Summary("PRAISE RAMMUS.\nUsage: ~rammus")]
+        public async Task Rammus()
+        {
+            await Context.Channel.SendFileAsync("media/rammus.png");
+            await ReplyAsync("**P  R  A  I  S  E          R  A  M  M  U  S**");
+        }
+
+        [Command("whisper")]
+        [Remarks("Miscellaneous")]
+        [Summary("Sends a private message to someone on the server. The message containing your command call will be deleted for anonymity. NOTE: the \"name\" is the person's Discord username without the numbers.\nUsage: ~whisper \"name\" message")]
+        public async Task Whisper([Remainder]string contents)
+        {
+            int spot = contents.IndexOf("\"");
+            if (spot == -1)
+                await ReplyAsync("improper usage, please use: ~whisper \"username\" message. Do not include numbers with the user name.");
+            else
+            {
+                IUser user = Context.User;
+                await Context.Message.DeleteAsync();
+                contents = contents.Remove(0, spot + 1);
+                spot = contents.IndexOf("\"");
+                string copy = contents.Remove(0, spot + 1);
+                contents = contents.Remove(spot);
+                if (copy[0] == ' ')
+                    copy = copy.Remove(0, 1);
+                IGuildUser dm = null;
+                var list = Context.Guild.GetUsersAsync();
+                for (int i = 0; i < list.Result.Count; i++)
+                {
+                    if (list.Result.ElementAt(i).Username.ToLower() == contents.ToLower())
+                        dm = list.Result.ElementAt(i);
+                }
+                if (dm == null)
+                {
+                    await ReplyAsync("That is not a name for anybody on this server. Your message was not sent");
+                    Console.WriteLine(user + " attempted to send \"" + copy + "\" to " + contents);
+                }
+                else
+                {
+                    await dm.SendMessageAsync(copy);
+                    Console.WriteLine(user + " successfully sent \"" + copy + "\" to " + contents);
+                }
+            }
         }
 
         [Command("meancount")]
-        [Remarks("Annoyances")]
+        [Remarks("Miscellaneous")]
         [Summary("Reports the number of times Jif has said \"I mean\"\nUsage: ~meancount")]
         public async Task meanCount([Remainder] string useless = "")
         {
@@ -1111,7 +1106,7 @@ namespace JifBot.Commands
         }
 
         [Command("honkcount")]
-        [Remarks("Annoyances")]
+        [Remarks("Miscellaneous")]
         [Summary("Reports the number of times the honk reaction has been used\"\nUsage: ~honkcount")]
         public async Task honkCount([Remainder] string useless = "")
         {
@@ -1132,15 +1127,20 @@ namespace JifBot.Commands
             File.WriteAllText(file, Convert.ToString(num));
         }
 
-        [Command("beefact")]
-        [Remarks("Helper")]
-        [Alias("beefacts", "bee", "bees")]
-        [Summary("Provides a fact about bees\nUsage: ~beefact, ~beefacts, bee, bees")]
-        public async Task beeFact([Remainder] string useless = "")
+        [Command("gnomed")]
+        [Remarks("Hidden")]
+        [Summary("I'm gnot a gnelf...\nUsage: ~gnomed")]
+        public async Task Gnomed()
         {
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            string fact = await client.GetStringAsync("http://thebuzz.writeonlymedia.com/api");
-            await ReplyAsync(fact.TrimStart('\"').TrimEnd('\"'));
+            await ReplyAsync("https://www.youtube.com/watch?v=6n3pFFPSlW4");
+        }
+
+        [Command("rolligentle")]
+        [Remarks("Hidden")]
+        [Summary("Makes the Gentlecat do a rollie\nUsage: ~rolligentle")]
+        public async Task RolliCat([Remainder] string useless = "")
+        {
+            await ReplyAsync("<:gentlecat:302907277571260418> <:rightcat:455100361066283035> <:bottomcat:455100361120940032> <:leftcat:455100361187786752> <:gentlecat:302907277571260418>");
         }
 
         async Task<bool> RemoteFileExists(string url)
