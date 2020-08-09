@@ -19,14 +19,6 @@ namespace JifBot.Commands
 {
     public class Commands : ModuleBase
     {
-        [Command("doghouse")]
-        [Remarks("Utility")]
-        [Summary("A command to be used when someone has been enslaved by their female counterpart.\nUsage: ~doghouse name")]
-        public async Task Doghouse([Remainder]string name)
-        {
-            await ReplyAsync("<:doghouse:305246514467438602> Oh no! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> Freedom is down the drain! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> That's right! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> " + name + " is in the doghouse again! <:doghouse:305246514467438602>");
-        }
-
         [Command("invitelink")]
         [Remarks("Utility")]
         [Summary("Provides a link which can be used should you want to spread Jif Bot to another server.\nUsage: ~invitelink")]
@@ -445,6 +437,14 @@ namespace JifBot.Commands
             int num = rnd.Next(8);
             string png = "media/lewd/" + num + ".png";
             await Context.Channel.SendFileAsync(png);
+        }
+
+        [Command("doghouse")]
+        [Remarks("Reaction")]
+        [Summary("A command to be used when someone has been enslaved by their female counterpart.\nUsage: ~doghouse name")]
+        public async Task Doghouse([Remainder]string name)
+        {
+            await ReplyAsync("<:doghouse:305246514467438602> Oh no! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> Freedom is down the drain! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> That's right! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> " + name + " is in the doghouse again! <:doghouse:305246514467438602>");
         }
 
         [Command("streamers")]
