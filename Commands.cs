@@ -131,7 +131,7 @@ namespace JifBot.Commands
             if (Regex.IsMatch(message, @"-h *[0-9]+"))
                 waitTime += Convert.ToInt32(Regex.Match(message, @"-h *[0-9]+").Value.Replace("-h", "")) * 60;
 
-            if (Regex.IsMatch(message, @"-h *[0-9]+"))
+            if (Regex.IsMatch(message, @"-d *[0-9]+"))
                 waitTime += Convert.ToInt32(Regex.Match(message, @"-d *[0-9]+").Value.Replace("-d", "")) * 1440;
 
             if (waitTime == 0)
