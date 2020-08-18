@@ -170,15 +170,6 @@ namespace JifBot.CommandHandler
             if (words.ToLower().Contains("be") && words.ToLower().Contains("gone") && words.ToLower().Contains("thot"))
                 await msg.Channel.SendFileAsync("media/thot.jpg");
 
-            if (words.ToLower().Contains("kys"))
-            {
-                await msg.AddReactionAsync(new Emoji("🇹"));
-                await msg.AddReactionAsync(new Emoji("🇴"));
-                await msg.AddReactionAsync(new Emoji("🇽"));
-                await msg.AddReactionAsync(new Emoji("🇮"));
-                await msg.AddReactionAsync(new Emoji("🇨"));
-            }
-
             if (words.ToLower().Contains("kms"))
             {
                 await msg.Channel.SendFileAsync("media/kms.png");
