@@ -25,7 +25,7 @@ namespace JifBot.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite("Data Source=references\\BotBase.db");
+                optionsBuilder.UseSqlite("Data Source=references/BotBase.db");
             }
         }
 
