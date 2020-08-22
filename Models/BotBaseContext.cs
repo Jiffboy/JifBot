@@ -33,7 +33,9 @@ namespace JifBot.Models
         {
             modelBuilder.Entity<Configuration>(entity =>
             {
-                entity.HasKey(e => e.Token);
+                entity.HasKey(e => e.Name);
+
+                entity.Property(e => e.Token);
 
                 entity.Property(e => e.DictId).IsRequired();
 

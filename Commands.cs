@@ -1154,7 +1154,15 @@ namespace JifBot.Commands
                 foreach (Honk honk in honks)
                 {
                     var user = db.User.Where(user => user.UserId == honk.UserId).FirstOrDefault();
-                    message += $"{count}. {user.Name}#{user.Number} - {honk.Count} honks\n";
+                    if (count == 1)
+                        message += "🥇";
+                    else if (count == 2)
+                        message += "🥈";
+                    else if (count == 3)
+                        message += "🥉";
+                    else
+                        message += $"  {count}  ";
+                    message += $" {user.Name}#{user.Number} - {honk.Count} honks\n";
                     count++;
                     if (count > 5)
                         break;
