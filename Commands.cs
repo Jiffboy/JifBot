@@ -14,6 +14,7 @@ using Discord.Commands;
 using Newtonsoft.Json.Linq;
 using System.Web;
 using Newtonsoft.Json;
+using JifBot.Models;
 
 namespace JifBot.Commands
 {
@@ -1111,12 +1112,55 @@ namespace JifBot.Commands
 
         [Command("honkcount")]
         [Remarks("Miscellaneous")]
-        [Summary("Reports the number of times the honk reaction has been used\"\nUsage: ~honkcount")]
+        [Summary("Reports the number of times you have said honk\"\nUsage: ~honkcount")]
         public async Task honkCount([Remainder] string useless = "")
         {
-            string file = "references/honk.txt";
-            Int32 num = Convert.ToInt32(File.ReadAllText(file));
-            await ReplyAsync(num + " honks");
+            using (var db = new BotBaseContext())
+            {
+                var honk = db.Honk.Where(user => user.UserId == Context.Message.Author.Id).FirstOrDefault();
+                if (honk != null)
+                    await ReplyAsync($"You have honked {honk.Count} times!");
+                else
+                    await ReplyAsync("You have never honked! For shame!");
+            }
+        }
+
+        [Command("totalhonks")]
+        [Remarks("Miscellaneous")]
+        [Summary("Reports the total number of honks accross all users\"\nUsage: ~honkcount")]
+        public async Task totalHonks([Remainder] string useless = "")
+        {
+            long count = 0;
+            using (var db = new BotBaseContext())
+            {
+                foreach (Honk honk in db.Honk)
+                {
+                    count += honk.Count;
+                }
+            }
+            await ReplyAsync($"{count} honks");
+        }
+
+        [Command("honkboard")]
+        [Remarks("Miscellaneous")]
+        [Summary("Reports the top 5 users who have honked the most\"\nUsage: ~honkcount")]
+        public async Task honkBoard([Remainder] string useless = "")
+        {
+            using (var db = new BotBaseContext())
+            {
+                var honks = db.Honk.OrderByDescending(honk => honk.Count);
+                int count = 1;
+                string message = "";
+                foreach (Honk honk in honks)
+                {
+                    var user = db.User.Where(user => user.UserId == honk.UserId).FirstOrDefault();
+                    message += $"{count}. {user.Name}#{user.Number} - {honk.Count} honks\n";
+                    count++;
+                    if (count > 5)
+                        break;
+                }
+                await ReplyAsync(message);
+            }
         }
 
         [Command("imean")]

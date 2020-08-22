@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using JifBot.Models;
+using System.Linq;
 
 namespace JifBot.CommandHandler
 {
@@ -237,10 +239,24 @@ namespace JifBot.CommandHandler
             {
                 await msg.Channel.SendFileAsync("media/honk.jpg");
                 await msg.Channel.SendMessageAsync("**HONK**");
-                string file = "references/honk.txt";
-                Int32 num = Convert.ToInt32(File.ReadAllText(file));
-                num++;
-                File.WriteAllText(file, Convert.ToString(num));
+                using (var db = new BotBaseContext())
+                {
+                    var user = db.User.Where(user => user.UserId == msg.Author.Id).FirstOrDefault();
+                    if (user == null)
+                    {
+                        db.Add(new User { UserId = msg.Author.Id, Name = msg.Author.Username, Number = long.Parse(msg.Author.Discriminator) });
+                        db.Add(new Honk { UserId = msg.Author.Id, Count = 1 });
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+                        var honk = db.Honk.Where(honk => honk.UserId == user.UserId).FirstOrDefault();
+                        honk.Count += 1;
+                        user.Name = msg.Author.Username;
+                        user.Number = long.Parse(msg.Author.Discriminator);
+                        db.SaveChanges();
+                    }
+                }
             }
 
             if (words.ToLower().Contains(BotConfig.Load().Prefix + "announce") && msg.Author.Id == 150084781864910848)
