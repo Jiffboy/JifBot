@@ -49,7 +49,6 @@
     <None Remove="media\youve_been_gnomed_wmv.avi" />
     <None Remove="references\authors.txt" />
     <None Remove="references\hello.txt" />
-    <None Remove="references\LoadInformation.txt" />
     <None Remove="references\mean.txt" />
     <None Remove="references\messages.txt" />
     <None Remove="references\quotes.txt" />
@@ -181,9 +180,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="references\hello.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="references\LoadInformation.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="references\mean.txt">
