@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JifBot": {
+      "commandName": "Project",
+      "commandLineArgs": "--test"
+    }
+  }
+}

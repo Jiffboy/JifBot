@@ -4,8 +4,11 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using JifBot.Config;
+using JifBot;
+using JifBot.Models;
 using JifBot.CommandHandler;
+using System.Linq;
+using Newtonsoft.Json;
 using System.IO;
 
 namespace JIfBot
@@ -17,18 +20,23 @@ namespace JIfBot
 
         private DiscordSocketClient client;
         private CommandHandler handler;
-        private ulong timerLaunchId = 0;
-        private string timerLaunchMessage = "";
+        private string configName = "Live";
+        private bool print = false;
 
         public async Task Start(string[] args)
         {
-            if (args.Length == 2)
+            foreach(string arg in args)
             {
-                timerLaunchId = Convert.ToUInt64(args[0]);
-                timerLaunchMessage = args[1];
-            }
+                if(arg == "--generatejs")
+                {
+                    print = true;
+                }
 
-            CreateJSON(); // create a JSON file to run from
+                if(arg == "--test")
+                {
+                    configName = "Test";
+                }
+            }
 
             client = new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -40,12 +48,14 @@ namespace JIfBot
             client.Log += Logger;
             client.Ready += OnReady;
 
-            await client.LoginAsync(TokenType.Bot, BotConfig.Load().Token);
+            var db = new BotBaseContext();
+            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+
+            await client.LoginAsync(TokenType.Bot, config.Token);
             await client.StartAsync();
-            await client.SetGameAsync(BotConfig.Load().Prefix + "commands");
 
             var serviceProvider = ConfigureServices();
-            handler = new CommandHandler(serviceProvider);
+            handler = new CommandHandler(serviceProvider, configName);
             await handler.ConfigureAsync();
 
 
@@ -55,13 +65,11 @@ namespace JIfBot
 
         private Task OnReady()
         {
-            if (timerLaunchId > 0)
-            {
-                var channel = client.GetChannel(timerLaunchId) as IMessageChannel;
-                if (channel != null)
-                    channel.SendMessageAsync(timerLaunchMessage);
-                System.Environment.Exit(0);
-            }
+            var db = new BotBaseContext();
+            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+            client.SetGameAsync(config.Prefix + "commands");
+            if(print)
+                printCommandsToJSON("commands.js");
             return Task.CompletedTask;
         }
 
@@ -90,31 +98,6 @@ namespace JIfBot
             return Task.CompletedTask;
         }
 
-        public static void CreateJSON()
-        {
-            if (!Directory.Exists(Path.Combine(AppContext.BaseDirectory, "configuration")))
-                Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "configuration"));
-
-            string loc = Path.Combine(AppContext.BaseDirectory, "configuration/config.json");
-
-            if (File.Exists(loc))                              // Check if the configuration file exists.
-            {
-                File.Delete(loc);
-            }
-            var config = new BotConfig();               // Create a new configuration object.
-            System.IO.StreamReader file = new System.IO.StreamReader("references/LoadInformation.txt");
-
-            config.Prefix = file.ReadLine();
-
-            config.Token = file.ReadLine();
-
-            config.DictKey = file.ReadLine();
-
-            config.DictId = file.ReadLine();
-
-            config.Save();                                  // Save the new configuration object to file.
-            Console.WriteLine("Configuration has been loaded");
-        }
         public IServiceProvider ConfigureServices()
         {
 
@@ -130,6 +113,37 @@ namespace JIfBot
             return provider;
         }
 
+        public void printCommandsToJSON(string file)
+        {
+            using (StreamWriter fileStream = File.CreateText(file))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.DefaultValueHandling = DefaultValueHandling.Ignore;
+                foreach (Discord.Commands.CommandInfo c in this.handler.commands.Commands)
+                {
+                    string aliases = "";
+                    if (c.Aliases.Count > 1)
+                    {
+                        foreach (string alias in c.Aliases)
+                        {
+                            aliases = aliases + alias + ",";
+                        }
+                        aliases = aliases.Remove(0, aliases.IndexOf(",") + 1);
+                        aliases = aliases.Remove(aliases.LastIndexOf(","));
+                    }
+                    CommandJSON command = new CommandJSON(c.Name, aliases, c.Remarks, c.Summary);
 
+                    serializer.Serialize(fileStream, command);
+                }
+            }
+            string temp = File.ReadAllText(file);
+            temp = temp.Insert(0, "var jifBotCommands = [");
+            temp = temp += "];";
+            temp = temp.Replace("'", "\'");
+            temp = temp.Replace("}", "},");
+            File.WriteAllText(file, temp);
+            Console.WriteLine("Commands have been printed");
+            return;
+        }
     }
 }

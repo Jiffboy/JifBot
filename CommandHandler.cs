@@ -5,11 +5,9 @@ using Discord.WebSocket;
 using Discord;
 using System;
 using System.IO;
-using JifBot.Config;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json;
 using JifBot.Models;
 using System.Linq;
 
@@ -20,10 +18,12 @@ namespace JifBot.CommandHandler
         public CommandService commands;
         private DiscordSocketClient bot;
         private IServiceProvider map;
+        private string configName;
 
-        public CommandHandler(IServiceProvider provider)
+        public CommandHandler(IServiceProvider provider, string cfg)
         {
             map = provider;
+            configName = cfg;
             bot = map.GetService<DiscordSocketClient>();
             bot.UserJoined += AnnounceUserJoined;
             bot.UserLeft += AnnounceLeftUser;
@@ -103,7 +103,6 @@ namespace JifBot.CommandHandler
         public async Task ConfigureAsync()
         {
             await commands.AddModulesAsync(Assembly.GetEntryAssembly());
-            await bot.SetGameAsync(BotConfig.Load().Prefix + "commands");
         }
 
         public async Task HandleCommand(SocketMessage pMsg)
@@ -116,20 +115,18 @@ namespace JifBot.CommandHandler
 
             //Mark where the prefix ends and the command begins
             int argPos = 0;
+            var db = new BotBaseContext();
+            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+
             //Determine if the message has a valid prefix, adjust argPos
-            if (message.HasStringPrefix(BotConfig.Load().Prefix, ref argPos))
+            if (message.HasStringPrefix(config.Prefix, ref argPos))
             {
                 if (message.Author.IsBot)
                     return;
-                if (message.HasStringPrefix(BotConfig.Load().Prefix + "help", ref argPos))
+                if (message.HasStringPrefix(config.Prefix + "help", ref argPos))
                     await tryHelp(message);
-                if (message.HasStringPrefix(BotConfig.Load().Prefix + "commands", ref argPos))
+                if (message.HasStringPrefix(config.Prefix + "commands", ref argPos))
                     await printCommands(message);
-                if (message.HasStringPrefix(BotConfig.Load().Prefix + "printjsfile", ref argPos))
-                {
-                    await printCommandsToJSON("commands.js");
-                    await pMsg.Channel.SendMessageAsync("Done!");
-                }
                 //Execute the command, store the result
                 var result = await commands.ExecuteAsync(context, argPos, map);
 
@@ -145,6 +142,8 @@ namespace JifBot.CommandHandler
 
         public async Task CheckKeyword(SocketUserMessage msg)
         {
+            var db = new BotBaseContext();
+
             if (msg.Author.IsBot)
                 return;
             if (msg.Channel.Id == 532437794530787328 || msg.Channel.Id == 534141269870510110 || msg.Channel.Id == 532968642183299082 || msg.Channel.Id == 543961887914721290)
@@ -239,27 +238,26 @@ namespace JifBot.CommandHandler
             {
                 await msg.Channel.SendFileAsync("media/honk.jpg");
                 await msg.Channel.SendMessageAsync("**HONK**");
-                using (var db = new BotBaseContext())
+                var user = db.User.Where(user => user.UserId == msg.Author.Id).FirstOrDefault();
+                if (user == null)
                 {
-                    var user = db.User.Where(user => user.UserId == msg.Author.Id).FirstOrDefault();
-                    if (user == null)
-                    {
-                        db.Add(new User { UserId = msg.Author.Id, Name = msg.Author.Username, Number = long.Parse(msg.Author.Discriminator) });
-                        db.Add(new Honk { UserId = msg.Author.Id, Count = 1 });
-                        db.SaveChanges();
-                    }
-                    else
-                    {
-                        var honk = db.Honk.Where(honk => honk.UserId == user.UserId).FirstOrDefault();
-                        honk.Count += 1;
-                        user.Name = msg.Author.Username;
-                        user.Number = long.Parse(msg.Author.Discriminator);
-                        db.SaveChanges();
-                    }
+                    db.Add(new User { UserId = msg.Author.Id, Name = msg.Author.Username, Number = long.Parse(msg.Author.Discriminator) });
+                    db.Add(new Honk { UserId = msg.Author.Id, Count = 1 });
+                    db.SaveChanges();
+                }
+                else
+                {
+                    var honk = db.Honk.Where(honk => honk.UserId == user.UserId).FirstOrDefault();
+                    honk.Count += 1;
+                    user.Name = msg.Author.Username;
+                    user.Number = long.Parse(msg.Author.Discriminator);
+                    db.SaveChanges();
                 }
             }
 
-            if (words.ToLower().Contains(BotConfig.Load().Prefix + "announce") && msg.Author.Id == 150084781864910848)
+            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+
+            if (words.ToLower().Contains(config.Prefix + "announce") && msg.Author.Id == 150084781864910848)
             {
                 words = words.Remove(0, 9);
                 foreach (IGuild temp in this.bot.Guilds)
@@ -305,6 +303,8 @@ namespace JifBot.CommandHandler
 
         public async Task tryHelp(SocketUserMessage msg)
         {
+            var db = new BotBaseContext();
+            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
             string commandName = msg.Content;
             string desc = commandName.Remove(0, 5) + " is not a command, make sure the spelling is correct.";
             commandName = commandName.ToLower();
@@ -317,30 +317,30 @@ namespace JifBot.CommandHandler
             }
 
             else if (commandName == "help")
-                desc = "Used to get the descriptions of other commands.\nUsage: " + BotConfig.Load().Prefix + "help CommandName";
+                desc = "Used to get the descriptions of other commands.\nUsage: " + config.Prefix + "help CommandName";
 
             else if (commandName == "commands")
-                desc = "Shows all available commands.\nUsage: " + BotConfig.Load().Prefix + "commands";
+                desc = "Shows all available commands.\nUsage: " + config.Prefix + "commands";
 
             else foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
-            {
-                if (c.Name == commandName)
                 {
-                    desc = c.Summary;
-                    if (c.Aliases.Count > 1)
+                    if (c.Name == commandName)
                     {
-                        desc += "\nAlso works for ";
-                        foreach (string alias in c.Aliases)
+                        desc = c.Summary;
+                        if (c.Aliases.Count > 1)
                         {
-                            if (alias == commandName)
+                            desc += "\nAlso works for ";
+                            foreach (string alias in c.Aliases)
                             {
-                                continue;
+                                if (alias == commandName)
+                                {
+                                    continue;
+                                }
+                                desc += config.Prefix + alias + " ";
                             }
-                            desc += BotConfig.Load().Prefix + alias + " ";
                         }
                     }
                 }
-            }
 
             await msg.Channel.SendMessageAsync(desc);
             return;
@@ -348,6 +348,9 @@ namespace JifBot.CommandHandler
 
         public async Task printCommands(SocketUserMessage msg)
         {
+            var db = new BotBaseContext();
+            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+
             var categories = new Dictionary<string, List<string>>();
             foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
             {
@@ -365,7 +368,7 @@ namespace JifBot.CommandHandler
 
             var embed = new EmbedBuilder();
             embed.WithColor(new Color(0x42ebf4));
-            embed.Title = "All commands will begin with a " + BotConfig.Load().Prefix + " , for more information on individual commands, use: " + BotConfig.Load().Prefix + "help commandName";
+            embed.Title = "All commands will begin with a " + config.Prefix + " , for more information on individual commands, use: " + config.Prefix + "help commandName";
             embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://vertigeux.github.io/jifbot.html";
             embed.WithFooter("Made with love");
 
@@ -378,37 +381,6 @@ namespace JifBot.CommandHandler
                 embed.AddField(category.Key, commands);
             }
             await msg.Channel.SendMessageAsync("", false, embed);
-        }
-
-        public async Task printCommandsToJSON(string file)
-        {
-            using (StreamWriter fileStream = File.CreateText(file))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.DefaultValueHandling = DefaultValueHandling.Ignore;
-                foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
-                {
-                    string aliases = "";
-                    if (c.Aliases.Count > 1)
-                    {
-                        foreach (string alias in c.Aliases)
-                        {
-                            aliases = aliases + alias + ",";
-                        }
-                        aliases = aliases.Remove(0, aliases.IndexOf(",") + 1);
-                        aliases = aliases.Remove(aliases.LastIndexOf(","));
-                    }
-                    CommandJSON command = new CommandJSON(c.Name, aliases, c.Remarks, c.Summary);
-
-                    serializer.Serialize(fileStream, command);
-                }
-            }
-            string temp = File.ReadAllText(file);
-            temp = temp.Insert(0, "var jifBotCommands = [");
-            temp = temp += "];";
-            temp = temp.Replace("'", "\'");
-            temp = temp.Replace("}", "},");
-            File.WriteAllText(file, temp);
         }
     }
 }

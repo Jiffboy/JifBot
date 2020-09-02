@@ -20,6 +20,8 @@ namespace JifBot.Commands
 {
     public class Commands : ModuleBase
     {
+        string configName;
+
         [Command("invitelink")]
         [Remarks("Utility")]
         [Summary("Provides a link which can be used should you want to spread Jif Bot to another server.\nUsage: ~invitelink")]
