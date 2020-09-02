@@ -20,7 +20,7 @@ namespace JIfBot
 
         private DiscordSocketClient client;
         private CommandHandler handler;
-        private string configName = "Live";
+        public static string configName = "Live";
         private bool print = false;
 
         public async Task Start(string[] args)
@@ -55,7 +55,7 @@ namespace JIfBot
             await client.StartAsync();
 
             var serviceProvider = ConfigureServices();
-            handler = new CommandHandler(serviceProvider, configName);
+            handler = new CommandHandler(serviceProvider);
             await handler.ConfigureAsync();
 
 

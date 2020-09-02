@@ -15,12 +15,13 @@ using Newtonsoft.Json.Linq;
 using System.Web;
 using Newtonsoft.Json;
 using JifBot.Models;
+using JIfBot;
 
 namespace JifBot.Commands
 {
     public class Commands : ModuleBase
     {
-        string configName;
+        string configName = Program.configName;
 
         [Command("invitelink")]
         [Remarks("Utility")]
@@ -482,16 +483,14 @@ namespace JifBot.Commands
         [Summary("Defines any word in the Oxford English dictionary. For multiple definitions, use -m at the end of the command\nUsage: ~define word OR ~define word -m")]
         public async Task Define([Remainder]string word)
         {
+            var db = new BotBaseContext();
+            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
             bool multiple = false;
-            string inFile = File.ReadAllText("configuration/config.json");
-            var inReader = JObject.Parse(inFile);
-            string key = (string)inReader.SelectToken("DictKey");
-            string id = (string)inReader.SelectToken("DictId");
 
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri("https://od-api.oxforddictionaries.com/api/v2/entries/en/");
-            client.DefaultRequestHeaders.Add("app_id", id);
-            client.DefaultRequestHeaders.Add("app_key", key);
+            client.DefaultRequestHeaders.Add("app_id", config.DictId);
+            client.DefaultRequestHeaders.Add("app_key", config.DictKey);
             if (word.EndsWith(" -m"))
             {
                 word = word.Replace(" -m", "");

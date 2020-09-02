@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using JifBot.Models;
 using System.Linq;
+using JIfBot;
 
 namespace JifBot.CommandHandler
 {
@@ -20,10 +21,10 @@ namespace JifBot.CommandHandler
         private IServiceProvider map;
         private string configName;
 
-        public CommandHandler(IServiceProvider provider, string cfg)
+        public CommandHandler(IServiceProvider provider)
         {
             map = provider;
-            configName = cfg;
+            configName = Program.configName;
             bot = map.GetService<DiscordSocketClient>();
             bot.UserJoined += AnnounceUserJoined;
             bot.UserLeft += AnnounceLeftUser;
