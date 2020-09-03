@@ -239,21 +239,22 @@ namespace JifBot.CommandHandler
             {
                 await msg.Channel.SendFileAsync("media/honk.jpg");
                 await msg.Channel.SendMessageAsync("**HONK**");
+
                 var user = db.User.Where(user => user.UserId == msg.Author.Id).FirstOrDefault();
+                var honk = db.Honk.Where(honk => honk.UserId == msg.Author.Id).FirstOrDefault();
+
                 if (user == null)
-                {
                     db.Add(new User { UserId = msg.Author.Id, Name = msg.Author.Username, Number = long.Parse(msg.Author.Discriminator) });
-                    db.Add(new Honk { UserId = msg.Author.Id, Count = 1 });
-                    db.SaveChanges();
-                }
                 else
                 {
-                    var honk = db.Honk.Where(honk => honk.UserId == user.UserId).FirstOrDefault();
-                    honk.Count += 1;
                     user.Name = msg.Author.Username;
                     user.Number = long.Parse(msg.Author.Discriminator);
-                    db.SaveChanges();
                 }
+                if (honk == null)
+                    db.Add(new Honk { UserId = msg.Author.Id, Count = 1 });
+                else
+                    honk.Count += 1;
+                db.SaveChanges();
             }
 
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();

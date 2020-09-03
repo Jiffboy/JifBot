@@ -212,6 +212,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="media\damage.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="references\BotBase.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

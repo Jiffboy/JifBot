@@ -449,7 +449,7 @@ namespace JifBot.Commands
 
         [Command("doghouse")]
         [Remarks("Reaction")]
-        [Summary("A command to be used when someone has been enslaved by their female counterpart.\nUsage: ~doghouse name")]
+        [Summary("A command to be used when someone has been imprisoned by their significant other.\nUsage: ~doghouse name")]
         public async Task Doghouse([Remainder]string name)
         {
             await ReplyAsync("<:doghouse:305246514467438602> Oh no! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> Freedom is down the drain! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> That's right! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> " + name + " is in the doghouse again! <:doghouse:305246514467438602>");
@@ -872,23 +872,45 @@ namespace JifBot.Commands
             await ReplyAsync(fact.TrimStart('\"').TrimEnd('\"'));
         }
 
+        [Command("message")]
+        [Remarks("Personalization")]
+        [Summary("Displays your previously set message. To set a message, use the ~setmessage command.\nUsage: ~message")]
+        public async Task Message()
+        {
+            var db = new BotBaseContext();
+            var message = db.Message.Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
+            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+            if (message == null)
+                await ReplyAsync($"User does not have a message yet! use {config.Token}setmessage to set a message.");
+            else
+                await ReplyAsync(message.Message1);
+        }
+
         [Command("setmessage")]
         [Remarks("Personalization")]
         [Summary("Allows you to set a message that can be displayed at any time using the ~message command.\nUsage: ~setmessage write your message here")]
         public async Task SetMessage([Remainder]string mess)
         {
-            string file = "references/messages.txt";
-            string name = Context.User.Username + "#" + Context.User.Discriminator;
-            string id = Convert.ToString(Context.User.Id);
-            string temp = File.ReadAllText(file);
-            if (temp.IndexOf(id) != -1)
+            var db = new BotBaseContext();
+            var message = db.Message.Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
+            var user = db.User.Where(usr => usr.UserId == Context.User.Id).FirstOrDefault();
+            if (user == null)
+                db.Add(new User { UserId = Context.User.Id, Name = Context.User.Username, Number = long.Parse(Context.User.Discriminator) });
+            else
             {
-                await ReplyAsync("This user already has a message!");
-                return;
+                user.Name = Context.User.Username;
+                user.Number = long.Parse(Context.User.Discriminator);
             }
-            temp = temp + id + " " + mess + "\r\n\r\n";
-            File.WriteAllText(file, temp);
-            await ReplyAsync("added message: \"" + mess + "\" for user: " + name);
+            if (message == null)
+                db.Add(new Message { UserId = Context.User.Id, Message1 = mess});
+            else
+            {
+                await ReplyAsync("Replacing old message:");
+                await ReplyAsync(message.Message1);
+                message.Message1 = mess;
+            }
+            db.SaveChanges();
+            await ReplyAsync("Message Added!");
         }
 
         [Command("setsignature")]
@@ -917,7 +939,7 @@ namespace JifBot.Commands
 
         [Command("resetsignature")]
         [Remarks("Personalization")]
-        [Summary("Removes your signature. If you do not have a signature, use the ~setsignature command\nUsage: ~resetmessage")]
+        [Summary("Removes your signature. If you do not have a signature, use the ~setsignature command\nUsage: ~resetsignature")]
         public async Task ResetSignature()
         {
             string name = Context.User.Username + "#" + Context.User.Discriminator;
@@ -939,55 +961,6 @@ namespace JifBot.Commands
             source = source.Remove(start, finish);
             File.WriteAllText(file, source);
             await ReplyAsync("removed signature: \"" + temp + "\" from user: " + name);
-        }
-
-        [Command("message")]
-        [Remarks("Personalization")]
-        [Summary("Displays your previously set message. To set a message, use the ~setmessage command.\nUsage: ~message")]
-        public async Task Message()
-        {
-            string file = "references/messages.txt";
-            string name = Context.User.Username + "#" + Context.User.Discriminator;
-            string id = Convert.ToString(Context.User.Id);
-            string temp = File.ReadAllText(file);
-            Int32 start = temp.IndexOf(id);
-            if (start == -1)
-            {
-                await ReplyAsync("User has not set a message yet! use ~setmessage [message] to set your message.");
-                return;
-            }
-            start = start + id.Length;
-            temp = temp.Remove(0, start);
-            string end = "\r\n\r\n";
-            start = temp.IndexOf(end);
-            temp = temp.Remove(start);
-            await ReplyAsync(temp);
-        }
-
-        [Command("resetmessage")]
-        [Remarks("Personalization")]
-        [Summary("Deletes your currently set message. If you do not have a message, use the ~setmessage command\nUsage: ~resetmessage")]
-        public async Task ResetMessage()
-        {
-            string name = Context.User.Username + "#" + Context.User.Discriminator;
-            string id = Convert.ToString(Context.User.Id);
-            string file = "references/messages.txt";
-            string source = File.ReadAllText(file);
-            string temp = source;
-            Int32 start = source.IndexOf(id);
-            if (start == -1)
-            {
-                await ReplyAsync("User does not have a message");
-                return;
-            }
-            temp = temp.Remove(0, start);
-            string end = "\r\n\r\n";
-            Int32 finish = temp.IndexOf(end) + end.Length;
-            temp = temp.Remove(temp.IndexOf(end));
-            temp = temp.Remove(0, id.Length);
-            source = source.Remove(start, finish);
-            File.WriteAllText(file, source);
-            await ReplyAsync("removed message: \"" + temp + "\" from user: " + name);
         }
 
         [Command("reese")]
