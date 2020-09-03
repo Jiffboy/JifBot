@@ -21,7 +21,8 @@ namespace JifBot.Commands
 {
     public class Commands : ModuleBase
     {
-        string configName = Program.configName;
+        private string configName = Program.configName;
+        private BotBaseContext db = new BotBaseContext();
 
         [Command("invitelink")]
         [Remarks("Utility")]
@@ -483,7 +484,6 @@ namespace JifBot.Commands
         [Summary("Defines any word in the Oxford English dictionary. For multiple definitions, use -m at the end of the command\nUsage: ~define word OR ~define word -m")]
         public async Task Define([Remainder]string word)
         {
-            var db = new BotBaseContext();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
             bool multiple = false;
 
@@ -877,7 +877,6 @@ namespace JifBot.Commands
         [Summary("Displays your previously set message. To set a message, use the ~setmessage command.\nUsage: ~message")]
         public async Task Message()
         {
-            var db = new BotBaseContext();
             var message = db.Message.Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
             if (message == null)
@@ -891,7 +890,6 @@ namespace JifBot.Commands
         [Summary("Allows you to set a message that can be displayed at any time using the ~message command.\nUsage: ~setmessage write your message here")]
         public async Task SetMessage([Remainder]string mess)
         {
-            var db = new BotBaseContext();
             var message = db.Message.Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
             var user = db.User.Where(usr => usr.UserId == Context.User.Id).FirstOrDefault();
             if (user == null)
@@ -1089,14 +1087,11 @@ namespace JifBot.Commands
         [Summary("Reports the number of times you have said honk\"\nUsage: ~honkcount")]
         public async Task honkCount([Remainder] string useless = "")
         {
-            using (var db = new BotBaseContext())
-            {
-                var honk = db.Honk.Where(user => user.UserId == Context.Message.Author.Id).FirstOrDefault();
-                if (honk != null)
-                    await ReplyAsync($"You have honked {honk.Count} times!");
-                else
-                    await ReplyAsync("You have never honked! For shame!");
-            }
+            var honk = db.Honk.Where(user => user.UserId == Context.Message.Author.Id).FirstOrDefault();
+            if (honk != null)
+                await ReplyAsync($"You have honked {honk.Count} times!");
+            else
+                await ReplyAsync("You have never honked! For shame!");
         }
 
         [Command("totalhonks")]
@@ -1105,12 +1100,9 @@ namespace JifBot.Commands
         public async Task totalHonks([Remainder] string useless = "")
         {
             long count = 0;
-            using (var db = new BotBaseContext())
+            foreach (Honk honk in db.Honk)
             {
-                foreach (Honk honk in db.Honk)
-                {
-                    count += honk.Count;
-                }
+                count += honk.Count;
             }
             await ReplyAsync($"{count} honks");
         }
@@ -1120,29 +1112,26 @@ namespace JifBot.Commands
         [Summary("Reports the top 5 users who have honked the most\"\nUsage: ~honkcount")]
         public async Task honkBoard([Remainder] string useless = "")
         {
-            using (var db = new BotBaseContext())
+            var honks = db.Honk.OrderByDescending(honk => honk.Count);
+            int count = 1;
+            string message = "";
+            foreach (Honk honk in honks)
             {
-                var honks = db.Honk.OrderByDescending(honk => honk.Count);
-                int count = 1;
-                string message = "";
-                foreach (Honk honk in honks)
-                {
-                    var user = db.User.Where(user => user.UserId == honk.UserId).FirstOrDefault();
-                    if (count == 1)
-                        message += "🥇";
-                    else if (count == 2)
-                        message += "🥈";
-                    else if (count == 3)
-                        message += "🥉";
-                    else
-                        message += $"  {count}  ";
-                    message += $" {user.Name}#{user.Number} - {honk.Count} honks\n";
-                    count++;
-                    if (count > 5)
-                        break;
-                }
-                await ReplyAsync(message);
+                var user = db.User.Where(user => user.UserId == honk.UserId).FirstOrDefault();
+                if (count == 1)
+                    message += "🥇";
+                else if (count == 2)
+                    message += "🥈";
+                else if (count == 3)
+                    message += "🥉";
+                else
+                    message += $"  {count}  ";
+                message += $" {user.Name}#{user.Number} - {honk.Count} honks\n";
+                count++;
+                if (count > 5)
+                    break;
             }
+            await ReplyAsync(message);
         }
 
         [Command("imean")]

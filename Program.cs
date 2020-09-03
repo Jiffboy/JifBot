@@ -22,6 +22,7 @@ namespace JIfBot
         private CommandHandler handler;
         public static string configName = "Live";
         private bool print = false;
+        private BotBaseContext db = new BotBaseContext();
 
         public async Task Start(string[] args)
         {
@@ -48,7 +49,6 @@ namespace JIfBot
             client.Log += Logger;
             client.Ready += OnReady;
 
-            var db = new BotBaseContext();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
 
             await client.LoginAsync(TokenType.Bot, config.Token);
@@ -65,7 +65,6 @@ namespace JIfBot
 
         private Task OnReady()
         {
-            var db = new BotBaseContext();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
             client.SetGameAsync(config.Prefix + "commands");
             if(print)

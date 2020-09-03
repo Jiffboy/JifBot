@@ -20,6 +20,7 @@ namespace JifBot.CommandHandler
         private DiscordSocketClient bot;
         private IServiceProvider map;
         private string configName;
+        private BotBaseContext db = new BotBaseContext();
 
         public CommandHandler(IServiceProvider provider)
         {
@@ -116,7 +117,6 @@ namespace JifBot.CommandHandler
 
             //Mark where the prefix ends and the command begins
             int argPos = 0;
-            var db = new BotBaseContext();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
 
             //Determine if the message has a valid prefix, adjust argPos
@@ -143,8 +143,6 @@ namespace JifBot.CommandHandler
 
         public async Task CheckKeyword(SocketUserMessage msg)
         {
-            var db = new BotBaseContext();
-
             if (msg.Author.IsBot)
                 return;
             if (msg.Channel.Id == 532437794530787328 || msg.Channel.Id == 534141269870510110 || msg.Channel.Id == 532968642183299082 || msg.Channel.Id == 543961887914721290)
@@ -305,7 +303,6 @@ namespace JifBot.CommandHandler
 
         public async Task tryHelp(SocketUserMessage msg)
         {
-            var db = new BotBaseContext();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
             string commandName = msg.Content;
             string desc = commandName.Remove(0, 5) + " is not a command, make sure the spelling is correct.";
@@ -350,7 +347,6 @@ namespace JifBot.CommandHandler
 
         public async Task printCommands(SocketUserMessage msg)
         {
-            var db = new BotBaseContext();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
 
             var categories = new Dictionary<string, List<string>>();
