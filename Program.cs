@@ -22,11 +22,11 @@ namespace JIfBot
         private CommandHandler handler;
         public static string configName = "Live";
         private bool print = false;
-        private BotBaseContext db = new BotBaseContext();
 
         public async Task Start(string[] args)
         {
-            foreach(string arg in args)
+            var db = new BotBaseContext();
+            foreach (string arg in args)
             {
                 if(arg == "--generatejs")
                 {
@@ -65,6 +65,7 @@ namespace JIfBot
 
         private Task OnReady()
         {
+            var db = new BotBaseContext();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
             client.SetGameAsync(config.Prefix + "commands");
             if(print)

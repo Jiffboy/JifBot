@@ -20,7 +20,6 @@ namespace JifBot.CommandHandler
         private DiscordSocketClient bot;
         private IServiceProvider map;
         private string configName;
-        private BotBaseContext db = new BotBaseContext();
 
         public CommandHandler(IServiceProvider provider)
         {
@@ -109,6 +108,7 @@ namespace JifBot.CommandHandler
 
         public async Task HandleCommand(SocketMessage pMsg)
         {
+            var db = new BotBaseContext();
             //Don't handle the command if it is a system message
             var message = pMsg as SocketUserMessage;
             if (message == null)
@@ -143,6 +143,7 @@ namespace JifBot.CommandHandler
 
         public async Task CheckKeyword(SocketUserMessage msg)
         {
+            var db = new BotBaseContext();
             if (msg.Author.IsBot)
                 return;
             if (msg.Channel.Id == 532437794530787328 || msg.Channel.Id == 534141269870510110 || msg.Channel.Id == 532968642183299082 || msg.Channel.Id == 543961887914721290)
@@ -280,29 +281,18 @@ namespace JifBot.CommandHandler
 
         public async Task CheckSignature(SocketUserMessage msg)
         {
-            string temp = File.ReadAllText("references/signatures.txt");
-            if (temp != "")
+            var db = new BotBaseContext();
+            var signature = db.Signature.Where(sig => sig.UserId == msg.Author.Id).FirstOrDefault();
+            if (signature != null)
             {
-                string name = msg.Author.Username + "#" + msg.Author.Discriminator;
-                string id = Convert.ToString(msg.Author.Id);
-                Int32 start = temp.IndexOf(id);
-                if (start == -1)
-                {
-                    return;
-                }
-                start = start + id.Length;
-                temp = temp.Remove(0, start);
-                string end = "\r\n\r\n";
-                start = temp.IndexOf(end);
-                temp = temp.Remove(start);
-                temp = temp.Replace(" ", string.Empty);
-                Emoji react = new Emoji(temp);
+                Emoji react = new Emoji(signature.Signature1);
                 await msg.AddReactionAsync(react);
             }
         }
 
         public async Task tryHelp(SocketUserMessage msg)
         {
+            var db = new BotBaseContext();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
             string commandName = msg.Content;
             string desc = commandName.Remove(0, 5) + " is not a command, make sure the spelling is correct.";
@@ -347,6 +337,7 @@ namespace JifBot.CommandHandler
 
         public async Task printCommands(SocketUserMessage msg)
         {
+            var db = new BotBaseContext();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
 
             var categories = new Dictionary<string, List<string>>();

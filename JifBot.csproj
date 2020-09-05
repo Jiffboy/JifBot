@@ -51,7 +51,6 @@
     <None Remove="references\hello.txt" />
     <None Remove="references\mean.txt" />
     <None Remove="references\quotes.txt" />
-    <None Remove="references\signatures.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -185,9 +184,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="references\quotes.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="references\signatures.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

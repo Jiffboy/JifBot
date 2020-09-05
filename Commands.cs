@@ -22,7 +22,6 @@ namespace JifBot.Commands
     public class Commands : ModuleBase
     {
         private string configName = Program.configName;
-        private BotBaseContext db = new BotBaseContext();
 
         [Command("invitelink")]
         [Remarks("Utility")]
@@ -484,6 +483,7 @@ namespace JifBot.Commands
         [Summary("Defines any word in the Oxford English dictionary. For multiple definitions, use -m at the end of the command\nUsage: ~define word OR ~define word -m")]
         public async Task Define([Remainder]string word)
         {
+            var db = new BotBaseContext();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
             bool multiple = false;
 
@@ -877,6 +877,7 @@ namespace JifBot.Commands
         [Summary("Displays your previously set message. To set a message, use the ~setmessage command.\nUsage: ~message")]
         public async Task Message()
         {
+            var db = new BotBaseContext();
             var message = db.Message.Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
             var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
             if (message == null)
@@ -890,6 +891,7 @@ namespace JifBot.Commands
         [Summary("Allows you to set a message that can be displayed at any time using the ~message command.\nUsage: ~setmessage write your message here")]
         public async Task SetMessage([Remainder]string mess)
         {
+            var db = new BotBaseContext();
             var message = db.Message.Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
             var user = db.User.Where(usr => usr.UserId == Context.User.Id).FirstOrDefault();
             if (user == null)
@@ -911,54 +913,44 @@ namespace JifBot.Commands
             await ReplyAsync("Message Added!");
         }
 
-        [Command("setsignature")]
+        [Command("togglesignature")]
         [Remarks("Personalization")]
-        [Summary("Sets for a specific emote to be reacted to every message you send. NOTE: Jif Bot does NOT have nitro, this will only work with emotes that are available on this server. \nUsage: ~setmessage :poop:")]
-        public async Task SetSignature(string mess, [Remainder]string nogo = "")
+        [Summary("Sets for a specific emote to be reacted to every message you send. To remove a signature, call the command without specifying an emote, or using the emote you already have set. NOTE: Jif Bot does NOT have nitro, this will only work with emotes that are available on this server. \nUsage: ~togglesignature :poop:")]
+        public async Task ToggleSignature([Remainder] string sig = "")
         {
-            string messOrig = mess;
-            if (nogo != "")
-                await ReplyAsync("This currently only works for one emote, " + nogo + " will not be added.");
-            mess = mess.Replace("<", string.Empty);
-            mess = mess.Replace(">", string.Empty);
-            string file = "references/signatures.txt";
-            string name = Context.User.Username + "#" + Context.User.Discriminator;
-            string id = Convert.ToString(Context.User.Id);
-            string temp = File.ReadAllText(file);
-            if (temp.IndexOf(id) != -1)
+            var db = new BotBaseContext();
+            var signature = db.Signature.Where(s => s.UserId == Context.User.Id).FirstOrDefault();
+            var user = db.User.Where(usr => usr.UserId == Context.User.Id).FirstOrDefault();
+            sig = sig.Replace("<", string.Empty);
+            sig = sig.Replace(">", string.Empty);
+            if (user == null)
+                db.Add(new User { UserId = Context.User.Id, Name = Context.User.Username, Number = long.Parse(Context.User.Discriminator) });
+            else
             {
-                await ReplyAsync("This user already has a signature!");
-                return;
+                user.Name = Context.User.Username;
+                user.Number = long.Parse(Context.User.Discriminator);
             }
-            temp = temp + id + " " + mess + "\r\n\r\n";
-            File.WriteAllText(file, temp);
-            await ReplyAsync("added signature: \"" + messOrig + "\" for user: " + name);
-        }
+            if (sig == "")
+            {
+                if (signature == null)
+                {
+                    await ReplyAsync("User does not have a signature to remove. Doing nothing.");
+                    return;
+                }
+                db.Signature.Remove(signature);
+            }
+            else
+            {
+                if (signature == null)
+                    db.Add(new Signature { UserId = Context.User.Id, Signature1 = sig });
+                else if (signature.Signature1 == sig)
+                    db.Signature.Remove(signature);
+                else
+                    signature.Signature1 = sig;
+            }
+            db.SaveChanges();
+            await ReplyAsync("Signature updated.");
 
-        [Command("resetsignature")]
-        [Remarks("Personalization")]
-        [Summary("Removes your signature. If you do not have a signature, use the ~setsignature command\nUsage: ~resetsignature")]
-        public async Task ResetSignature()
-        {
-            string name = Context.User.Username + "#" + Context.User.Discriminator;
-            string id = Convert.ToString(Context.User.Id);
-            string file = "references/signatures.txt";
-            string source = File.ReadAllText(file);
-            string temp = source;
-            Int32 start = source.IndexOf(id);
-            if (start == -1)
-            {
-                await ReplyAsync("User does not have a signature");
-                return;
-            }
-            temp = temp.Remove(0, start);
-            string end = "\r\n\r\n";
-            Int32 finish = temp.IndexOf(end) + end.Length;
-            temp = temp.Remove(temp.IndexOf(end));
-            temp = temp.Remove(0, name.Length);
-            source = source.Remove(start, finish);
-            File.WriteAllText(file, source);
-            await ReplyAsync("removed signature: \"" + temp + "\" from user: " + name);
         }
 
         [Command("reese")]
@@ -1087,6 +1079,7 @@ namespace JifBot.Commands
         [Summary("Reports the number of times you have said honk\"\nUsage: ~honkcount")]
         public async Task honkCount([Remainder] string useless = "")
         {
+            var db = new BotBaseContext();
             var honk = db.Honk.Where(user => user.UserId == Context.Message.Author.Id).FirstOrDefault();
             if (honk != null)
                 await ReplyAsync($"You have honked {honk.Count} times!");
@@ -1099,6 +1092,7 @@ namespace JifBot.Commands
         [Summary("Reports the total number of honks accross all users\"\nUsage: ~honkcount")]
         public async Task totalHonks([Remainder] string useless = "")
         {
+            var db = new BotBaseContext();
             long count = 0;
             foreach (Honk honk in db.Honk)
             {
@@ -1112,6 +1106,7 @@ namespace JifBot.Commands
         [Summary("Reports the top 5 users who have honked the most\"\nUsage: ~honkcount")]
         public async Task honkBoard([Remainder] string useless = "")
         {
+            var db = new BotBaseContext();
             var honks = db.Honk.OrderByDescending(honk => honk.Count);
             int count = 1;
             string message = "";
