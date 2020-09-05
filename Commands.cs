@@ -1069,9 +1069,9 @@ namespace JifBot.Commands
         [Summary("Reports the number of times Jif has said \"I mean\"\nUsage: ~meancount")]
         public async Task meanCount([Remainder] string useless = "")
         {
-            string file = "references/mean.txt";
-            Int32 num = Convert.ToInt32(File.ReadAllText(file));
-            await ReplyAsync("I mean, I've said it " + num + " times since 12/13/18.");
+            var db = new BotBaseContext();
+            var count = db.Variable.Where(v => v.Name == "meanCount").First();
+            await ReplyAsync("I mean, I've said it " + count.Value + " times since 12/13/18.");
         }
 
         [Command("honkcount")]

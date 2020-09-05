@@ -204,11 +204,12 @@ namespace JifBot.CommandHandler
 
             if (words.ToLower().Contains("i mean") && msg.Author.Id == 150084781864910848)
             {
-                string file = "references/mean.txt";
-                Int32 num = Convert.ToInt32(File.ReadAllText(file));
-                num++;
-                await msg.Channel.SendMessageAsync("<@150084781864910848> you've said \"I mean\" " + num + " times.");
-                File.WriteAllText(file, Convert.ToString(num));
+                var count = db.Variable.Where(v => v.Name == "meanCount").First();
+                int num = Convert.ToInt32(count.Value) + 1;
+                count.Value = Convert.ToString(num);
+                db.SaveChanges();
+                await msg.Channel.SendMessageAsync("<@150084781864910848> you've said \"I mean\" " + count.Value + " times.");
+                
             }
 
             if (Regex.IsMatch(words.ToLower(), "fuck y?o?u jif ?bot"))
