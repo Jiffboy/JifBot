@@ -47,9 +47,7 @@
     <None Remove="media\stop.png" />
     <None Remove="media\thot.jpg" />
     <None Remove="media\youve_been_gnomed_wmv.avi" />
-    <None Remove="references\authors.txt" />
     <None Remove="references\hello.txt" />
-    <None Remove="references\quotes.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -173,13 +171,7 @@
     <Content Include="media\youve_been_gnomed_wmv.avi">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="references\authors.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="references\hello.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="references\quotes.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -22,6 +22,7 @@ namespace JifBot.Commands
     public class Commands : ModuleBase
     {
         private string configName = Program.configName;
+        List<Quote> quoteList = new List<Quote>();
 
         [Command("invitelink")]
         [Remarks("Utility")]
@@ -349,31 +350,33 @@ namespace JifBot.Commands
         [Summary("Gives an inspirational quote\nUsage: ~inspire")]
         public async Task Inspire()
         {
-            string file1 = "references/quotes.txt";
-            string file2 = "references/authors.txt";
-            string allQuotes = File.ReadAllText(file1);
-            string allAuthors = File.ReadAllText(file2);
-            int count = Regex.Matches(allQuotes, "\",\"").Count + 1;
+            if (quoteList.Count == 0)
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    using (var response = await client.GetAsync("https://type.fit/api/quotes"))
+                    {
+                        string jsonResponse = await response.Content.ReadAsStringAsync();
+                        jsonResponse = jsonResponse.Replace("[", "{\"list\":[");
+                        jsonResponse = jsonResponse.Replace("]", "]}");
+                        try
+                        {
+                            QuoteResult result = JsonConvert.DeserializeObject<QuoteResult>(jsonResponse);
+                            quoteList = result.List;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
+                    }
+                }
+            }
+            int count = quoteList.Count;
             Random rnd = new Random();
             int num = rnd.Next(count);
-            for (int i = 0; i < num; i++)
-            {
-                if (i == count - 1)
-                    break;
-                allQuotes = allQuotes.Remove(0, allQuotes.IndexOf("\",\"") + 3);
-                allAuthors = allAuthors.Remove(0, allAuthors.IndexOf("\",\"") + 3);
-            }
-            if (num != count)
-            {
-                allQuotes = allQuotes.Remove(allQuotes.IndexOf("\",\""));
-                allAuthors = allAuthors.Remove(allAuthors.IndexOf("\",\""));
-            }
-            else
-            {
-                allQuotes = allQuotes.Replace("\"", string.Empty);
-                allAuthors = allAuthors.Replace("\"", string.Empty);
-            }
-            await ReplyAsync("\"" + allQuotes + "\"\n-" + allAuthors);
+            Quote quote = quoteList[num];
+            await ReplyAsync("\"" + quote.text + "\"\n-" + quote.author);
+
 
         }
 
@@ -1350,5 +1353,16 @@ namespace JifBot.Commands
     class UrbanDictionaryResult
     {
         public List<UrbanDictionaryDefinition> List { get; set; }
+    }
+
+    class Quote
+    {
+        public string text { get; set; }
+        public string author { get; set; }
+    }
+
+    class QuoteResult
+    {
+        public List<Quote> List { get; set; }
     }
 }
