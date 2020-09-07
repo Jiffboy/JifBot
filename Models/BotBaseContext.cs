@@ -21,6 +21,7 @@ namespace JifBot.Models
         public virtual DbSet<Signature> Signature { get; set; }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<Variable> Variable { get; set; }
+        public virtual DbSet<Greeting> Greeting { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -85,6 +86,17 @@ namespace JifBot.Models
                 entity.Property(e => e.Name);
 
                 entity.Property(e => e.Value);
+            });
+
+            modelBuilder.Entity<Greeting>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id);
+
+                entity.Property(e => e.Greeting1)
+                    .IsRequired()
+                    .HasColumnName("Greeting");
             });
 
             OnModelCreatingPartial(modelBuilder);

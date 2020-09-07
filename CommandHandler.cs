@@ -184,16 +184,11 @@ namespace JifBot.CommandHandler
 
             if (words.ToLower().Equals("hi") || words.ToLower().Equals("hello") || words.ToLower().Equals("hey") || words.ToLower().Equals("yo") || words.ToLower().Equals("henlo"))
             {
-                string temp = File.ReadAllText("references/hello.txt");
-                List<string> greetings = new List<string>();
-                while (temp.Contains("\n"))
-                {
-                    greetings.Add(temp.Remove(temp.IndexOf("\r\n")));
-                    temp = temp.Remove(0, temp.IndexOf("\r\n") + 2);
-                }
+                db.Greeting.Where(g => true).ToList();
                 Random rnd = new Random();
-                int num = rnd.Next(greetings.Count);
-                await msg.Channel.SendMessageAsync(greetings[num]);
+                int num = rnd.Next(db.Greeting.Count()) + 1;
+                var greeting = db.Greeting.Where(greet => greet.Id == Convert.ToUInt64(num)).First();
+                await msg.Channel.SendMessageAsync(greeting.Greeting1);
             }
 
             if (words.ToLower().Contains("ahhhhh"))
