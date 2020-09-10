@@ -1012,6 +1012,22 @@ namespace JifBot.Commands
             await Context.Channel.SendFileAsync("media/lunch.gif");
         }
 
+        [Command("gay")]
+        [Remarks("Miscellaneous")]
+        [Summary("For when the gaydar starts beeping.\nUsage: ~gay")]
+        public async Task Gay()
+        {
+            await Context.Channel.SendFileAsync("media/gay.jpg");
+        }
+
+        [Command("biggay")]
+        [Remarks("Miscellaneous")]
+        [Summary("Inform somebody that they are the big gay.\nUsage: ~biggay")]
+        public async Task BigGay()
+        {
+            await Context.Channel.SendFileAsync("media/biggay.jpg");
+        }
+
         [Command("banterwtf")]
         [Remarks("Miscellaneous")]
         [Summary("A video to be played when Banter does something stupid.\nUsage: ~banterwtf")]

@@ -184,7 +184,6 @@ namespace JifBot.CommandHandler
 
             if (words.ToLower().Equals("hi") || words.ToLower().Equals("hello") || words.ToLower().Equals("hey") || words.ToLower().Equals("yo") || words.ToLower().Equals("henlo"))
             {
-                db.Greeting.Where(g => true).ToList();
                 Random rnd = new Random();
                 int num = rnd.Next(db.Greeting.Count()) + 1;
                 var greeting = db.Greeting.Where(greet => greet.Id == Convert.ToUInt64(num)).First();
