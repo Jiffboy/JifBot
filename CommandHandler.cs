@@ -146,7 +146,8 @@ namespace JifBot.CommandHandler
             var db = new BotBaseContext();
             if (msg.Author.IsBot)
                 return;
-            if (msg.Channel.Id == 532437794530787328 || msg.Channel.Id == 534141269870510110 || msg.Channel.Id == 532968642183299082 || msg.Channel.Id == 543961887914721290)
+            var react = db.ReactionBan.Where(c => c.ChannelId == msg.Channel.Id).FirstOrDefault();
+            if (react != null)
                 return;
             string words = msg.Content.ToString();
 

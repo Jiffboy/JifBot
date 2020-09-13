@@ -956,6 +956,51 @@ namespace JifBot.Commands
 
         }
 
+        [Command("togglereactions")]
+        [Remarks("Personalization")]
+        [Summary("Toggles between enabling and disabling reactions for the channel the command was issued in. Reactions are set keywords that Jif Bot will respond to. This does not include commands. To disable/enable for all channels, follow the command with \"all\". If there is at least one channel in which reactions are disabled when using \"all\", all channels will be enabled, otherwise, all will be disabled. Only the server owner can execute this command.\nUsage: ~togglereactions, ~togglereactions all")]
+        public async Task ToggleReactions([Remainder] string args = "")
+        {
+            if( Context.Guild.OwnerId != Context.User.Id )
+            {
+                await ReplyAsync("Command can only be used by server owner");
+                return;
+            }
+
+            var db = new BotBaseContext();
+            if (args.ToLower().Contains("all"))
+            {
+                var channels = db.ReactionBan.Where(c => c.ServerId == Context.Guild.Id).ToList();
+                if(channels.Count == 0)
+                {
+                    foreach (var c in await Context.Guild.GetTextChannelsAsync())
+                        db.Add(new ReactionBan { ChannelId = c.Id, ServerId = Context.Guild.Id, ChannelName = c.Name });
+                    await ReplyAsync("Reactions are now disabled for all currently available channels in the server");
+                }
+                else
+                {
+                    foreach (var c in channels)
+                        db.Remove(c);
+                    await ReplyAsync("Reactions are now enabled for all channels in this server");
+                }
+            }
+            else
+            {
+                var channel = db.ReactionBan.Where(s => s.ChannelId == Context.Channel.Id).FirstOrDefault();
+                if (channel == null)
+                {
+                    db.Add(new ReactionBan { ChannelId = Context.Channel.Id, ServerId = Context.Guild.Id, ChannelName = Context.Channel.Name });
+                    await ReplyAsync($"Reactions are now disabled for {Context.Channel.Name}");
+                }
+                else
+                {
+                    db.ReactionBan.Remove(channel);
+                    await ReplyAsync($"Reactions are now enabled for {Context.Channel.Name}");
+                }
+            }
+            db.SaveChanges();
+        }
+
         [Command("reese")]
         [Remarks("Miscellaneous")]
         [Summary("Prompts ladies to hit him up.\nUsage: ~reese")]

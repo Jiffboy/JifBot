@@ -22,6 +22,8 @@ namespace JifBot.Models
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<Variable> Variable { get; set; }
         public virtual DbSet<Greeting> Greeting { get; set; }
+        public virtual DbSet<ReactionBan> ReactionBan { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -97,6 +99,17 @@ namespace JifBot.Models
                 entity.Property(e => e.Greeting1)
                     .IsRequired()
                     .HasColumnName("Greeting");
+            });
+
+            modelBuilder.Entity<ReactionBan>(entity =>
+            {
+                entity.HasKey(e => e.ChannelId);
+
+                entity.Property(e => e.ChannelId);
+
+                entity.Property(e => e.ServerId);
+
+                entity.Property(e => e.ChannelName);
             });
 
             OnModelCreatingPartial(modelBuilder);
