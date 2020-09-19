@@ -197,6 +197,12 @@
     <None Update="media\gay.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="media\lobster.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="media\wheeze.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="references\BotBase.db">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>

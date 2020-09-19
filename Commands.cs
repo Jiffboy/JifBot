@@ -458,6 +458,30 @@ namespace JifBot.Commands
             await ReplyAsync("<:doghouse:305246514467438602> Oh no! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> Freedom is down the drain! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> That's right! <:doghouse:305246514467438602>\n<:doghouse:305246514467438602> " + name + " is in the doghouse again! <:doghouse:305246514467438602>");
         }
 
+        [Command("gay")]
+        [Remarks("Reaction")]
+        [Summary("For when the gaydar starts beeping.\nUsage: ~gay")]
+        public async Task Gay()
+        {
+            await Context.Channel.SendFileAsync("media/gay.jpg");
+        }
+
+        [Command("biggay")]
+        [Remarks("Reaction")]
+        [Summary("Inform somebody that they are the big gay.\nUsage: ~biggay")]
+        public async Task BigGay()
+        {
+            await Context.Channel.SendFileAsync("media/biggay.jpg");
+        }
+
+        [Command("wheeze")]
+        [Remarks("Reaction")]
+        [Summary("For use to accompany a joke that really wasn't that good\nUsage: ~wheeze")]
+        public async Task Wheeze()
+        {
+            await Context.Channel.SendFileAsync("media/wheeze.png");
+        }
+
         [Command("streamers")]
         [Remarks("Information")]
         [Summary("Displays everybody on the server who is currently streaming\nUsage: ~streamers")]
@@ -1008,7 +1032,7 @@ namespace JifBot.Commands
 
         [Command("setwelcome")]
         [Remarks("Customization")]
-        [Summary("Sets a channel to send messages when new users join the server. To remove, issue the command in the channel the welcome is currently set to. Only the server owner can execute this command.\nUsage: ~setwelcome")]
+        [Summary("Sets a channel to send messages to when new users join the server. To remove, issue the command in the channel the welcome is currently set to. Only the server owner can execute this command.\nUsage: ~setwelcome")]
         public async Task SetWelcome([Remainder] string args = "")
         {
             if (Context.Guild.OwnerId != Context.User.Id)
@@ -1046,7 +1070,7 @@ namespace JifBot.Commands
 
         [Command("setgoodbye")]
         [Remarks("Customization")]
-        [Summary("Sets a channel to send messages when users leave the server. To remove, issue the command in the channel the goodbye is currently set to. Only the server owner can execute this command.\nUsage: ~setgoodbye")]
+        [Summary("Sets a channel to send messages to when users leave the server. To remove, issue the command in the channel the goodbye is currently set to. Only the server owner can execute this command.\nUsage: ~setgoodbye")]
         public async Task SetGoodbye([Remainder] string args = "")
         {
             if (Context.Guild.OwnerId != Context.User.Id)
@@ -1082,9 +1106,9 @@ namespace JifBot.Commands
             db.SaveChanges();
         }
 
-        [Command("setmessagereport")]
+        [Command("setsnoop")]
         [Remarks("Customization")]
-        [Summary("Sets a channel to send messages when users leave the server. To remove, issue the command in the channel the goodbye is currently set to. Only the server owner can execute this command.\nUsage: ~setgoodbye")]
+        [Summary("Sets a channel to send messages to whenever a message gets deleted in the server. To remove, issue the command in the channel the goodbye is currently set to. Only the server owner can execute this command.\nUsage: ~setsnoop")]
         public async Task SetMessageReport([Remainder] string args = "")
         {
             if (Context.Guild.OwnerId != Context.User.Id)
@@ -1126,6 +1150,14 @@ namespace JifBot.Commands
         public async Task Reese()
         {
             await Context.Channel.SendMessageAsync("Ladies hmu");
+        }
+
+        [Command("lobster")]
+        [Remarks("Miscellaneous")]
+        [Summary("Displays the best image on the internet.\nUsage: ~lobster")]
+        public async Task Lobster()
+        {
+            await Context.Channel.SendFileAsync("media/lobster.jpg");
         }
 
         [Command("neeko")]
@@ -1174,22 +1206,6 @@ namespace JifBot.Commands
         public async Task Lunch()
         {
             await Context.Channel.SendFileAsync("media/lunch.gif");
-        }
-
-        [Command("gay")]
-        [Remarks("Miscellaneous")]
-        [Summary("For when the gaydar starts beeping.\nUsage: ~gay")]
-        public async Task Gay()
-        {
-            await Context.Channel.SendFileAsync("media/gay.jpg");
-        }
-
-        [Command("biggay")]
-        [Remarks("Miscellaneous")]
-        [Summary("Inform somebody that they are the big gay.\nUsage: ~biggay")]
-        public async Task BigGay()
-        {
-            await Context.Channel.SendFileAsync("media/biggay.jpg");
         }
 
         [Command("banterwtf")]
