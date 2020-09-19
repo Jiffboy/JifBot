@@ -30,7 +30,18 @@ namespace JifBot.CommandHandler
             eventHandler = new JifBot.EventHandler(bot);
             bot.UserJoined += eventHandler.AnnounceUserJoined;
             bot.UserLeft += eventHandler.AnnounceLeftUser;
-            bot.MessageDeleted += eventHandler.Audit;
+            bot.MessageDeleted += eventHandler.SendMessageReport;
+            //bot.ChannelCreated;
+            //bot.ChannelDestroyed;
+            //bot.ChannelUpdated;
+
+            //bot.RoleCreated;
+            //bot.RoleDeleted;
+            //bot.RoleUpdated;
+
+            //bot.UserBanned;
+            //bot.UserUnbanned;
+
             //Send user message to get handled
             bot.MessageReceived += HandleCommand;
             commands = map.GetService<CommandService>();
@@ -286,7 +297,8 @@ namespace JifBot.CommandHandler
             }
 
             var embed = new EmbedBuilder();
-            embed.WithColor(new Color(0x42ebf4));
+            var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+            embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
             embed.Title = "All commands will begin with a " + config.Prefix + " , for more information on individual commands, use: " + config.Prefix + "help commandName";
             embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://vertigeux.github.io/jifbot.html";
             embed.WithFooter("Made with love");

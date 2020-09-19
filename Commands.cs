@@ -517,7 +517,8 @@ namespace JifBot.Commands
             if (multiple)
             {
                 var embed = new EmbedBuilder();
-                embed.WithColor(new Color(0x42ebf4));
+                var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+                embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
                 string def = "1.) " + (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].definitions[0]");
                 string example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].examples[0].text");
                 if (example == null)
@@ -652,8 +653,10 @@ namespace JifBot.Commands
             }
             else
             {
+                var db = new BotBaseContext();
                 var embed = new EmbedBuilder();
-                embed.WithColor(new Color(0x42ebf4));
+                var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+                embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
                 {
                     string kdsource = source.Remove(0, source.IndexOf("summoner-id=\"") + 13);
                     kdsource = kdsource.Remove(kdsource.IndexOf("\""));
@@ -740,8 +743,10 @@ namespace JifBot.Commands
         [Summary("Gives the number of mastery points for the top 10 most played champions for a user on any server.\nUsage: ~mastery region username")]
         public async Task Mastery(string region, [Remainder]string name)
         {
+            var db = new BotBaseContext();
             var embed = new EmbedBuilder();
-            embed.WithColor(new Color(0x42ebf4));
+            var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+            embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
             {
                 name = name.Replace(" ", string.Empty);
                 System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
@@ -917,7 +922,7 @@ namespace JifBot.Commands
         }
 
         [Command("togglesignature")]
-        [Remarks("Personalization")]
+        [Remarks("Customization")]
         [Summary("Sets for a specific emote to be reacted to every message you send. To remove a signature, call the command without specifying an emote, or using the emote you already have set. NOTE: Jif Bot does NOT have nitro, this will only work with emotes that are available on this server. \nUsage: ~togglesignature :poop:")]
         public async Task ToggleSignature([Remainder] string sig = "")
         {
@@ -1003,7 +1008,7 @@ namespace JifBot.Commands
 
         [Command("setwelcome")]
         [Remarks("Customization")]
-        [Summary("Sets a channel to send messages when new users join the server. To remove, issue the command in the channel the welcome is currently set to.\nUsage: ~setwelcome")]
+        [Summary("Sets a channel to send messages when new users join the server. To remove, issue the command in the channel the welcome is currently set to. Only the server owner can execute this command.\nUsage: ~setwelcome")]
         public async Task SetWelcome([Remainder] string args = "")
         {
             if (Context.Guild.OwnerId != Context.User.Id)
@@ -1041,7 +1046,7 @@ namespace JifBot.Commands
 
         [Command("setgoodbye")]
         [Remarks("Customization")]
-        [Summary("Sets a channel to send messages when users leave the server. To remove, issue the command in the channel the goodbye is currently set to.\nUsage: ~setgoodbye")]
+        [Summary("Sets a channel to send messages when users leave the server. To remove, issue the command in the channel the goodbye is currently set to. Only the server owner can execute this command.\nUsage: ~setgoodbye")]
         public async Task SetGoodbye([Remainder] string args = "")
         {
             if (Context.Guild.OwnerId != Context.User.Id)
@@ -1073,6 +1078,44 @@ namespace JifBot.Commands
             {
                 db.Add(new ServerConfig { ServerId = Context.Guild.Id, LeaveId = Context.Channel.Id });
                 await ReplyAsync($"Goodbye messages will now be sent in {Context.Channel.Name}");
+            }
+            db.SaveChanges();
+        }
+
+        [Command("setmessagereport")]
+        [Remarks("Customization")]
+        [Summary("Sets a channel to send messages when users leave the server. To remove, issue the command in the channel the goodbye is currently set to. Only the server owner can execute this command.\nUsage: ~setgoodbye")]
+        public async Task SetMessageReport([Remainder] string args = "")
+        {
+            if (Context.Guild.OwnerId != Context.User.Id)
+            {
+                await ReplyAsync("Command can only be used by server owner");
+                return;
+            }
+
+            var db = new BotBaseContext();
+            var config = db.ServerConfig.Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
+            if (config != null)
+            {
+                if (config.MessageId == Context.Channel.Id)
+                {
+                    config.MessageId = 0;
+                    await ReplyAsync($"Message deletion reports will no longer be sent in {Context.Channel.Name}");
+                }
+                else
+                {
+                    var old = await Context.Guild.GetTextChannelAsync(config.MessageId);
+                    config.MessageId = Context.Channel.Id;
+                    if (old != null)
+                        await ReplyAsync($"Message deletion reports will no longer be sent in {old.Name}, will now be sent in {Context.Channel.Name}");
+                    else
+                        await ReplyAsync($"Message deletion reports will now be sent in {Context.Channel.Name}");
+                }
+            }
+            else
+            {
+                db.Add(new ServerConfig { ServerId = Context.Guild.Id, MessageId = Context.Channel.Id });
+                await ReplyAsync($"Message deletion reports will now be sent in {Context.Channel.Name}");
             }
             db.SaveChanges();
         }
@@ -1448,8 +1491,10 @@ namespace JifBot.Commands
 
         public EmbedBuilder ConstructEmbedInfo(IGuildUser user)
         {
+            var db = new BotBaseContext();
             var embed = new EmbedBuilder();
-            embed.WithColor(new Color(0x42ebf4));
+            var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+            embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
             embed.WithAuthor(user.Username + "#" + user.Discriminator, user.GetAvatarUrl());
             embed.ThumbnailUrl = user.GetAvatarUrl();
             embed.AddField("User ID", user.Id);

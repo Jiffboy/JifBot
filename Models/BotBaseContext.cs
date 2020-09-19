@@ -122,6 +122,8 @@ namespace JifBot.Models
                 entity.Property(e => e.JoinId);
 
                 entity.Property(e => e.LeaveId);
+
+                entity.Property(e => e.MessageId);
             });
 
             OnModelCreatingPartial(modelBuilder);
