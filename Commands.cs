@@ -876,7 +876,7 @@ namespace JifBot.Commands
         }
 
         [Command("message")]
-        [Remarks("Personalization")]
+        [Remarks("Customization")]
         [Summary("Displays your previously set message. To set a message, use the ~setmessage command.\nUsage: ~message")]
         public async Task Message()
         {
@@ -890,7 +890,7 @@ namespace JifBot.Commands
         }
 
         [Command("setmessage")]
-        [Remarks("Personalization")]
+        [Remarks("Customization")]
         [Summary("Allows you to set a message that can be displayed at any time using the ~message command.\nUsage: ~setmessage write your message here")]
         public async Task SetMessage([Remainder]string mess)
         {
@@ -957,7 +957,7 @@ namespace JifBot.Commands
         }
 
         [Command("togglereactions")]
-        [Remarks("Personalization")]
+        [Remarks("Customization")]
         [Summary("Toggles between enabling and disabling reactions for the channel the command was issued in. Reactions are set keywords that Jif Bot will respond to. This does not include commands. To disable/enable for all channels, follow the command with \"all\". If there is at least one channel in which reactions are disabled when using \"all\", all channels will be enabled, otherwise, all will be disabled. Only the server owner can execute this command.\nUsage: ~togglereactions, ~togglereactions all")]
         public async Task ToggleReactions([Remainder] string args = "")
         {
@@ -997,6 +997,82 @@ namespace JifBot.Commands
                     db.ReactionBan.Remove(channel);
                     await ReplyAsync($"Reactions are now enabled for {Context.Channel.Name}");
                 }
+            }
+            db.SaveChanges();
+        }
+
+        [Command("setwelcome")]
+        [Remarks("Customization")]
+        [Summary("Sets a channel to send messages when new users join the server. To remove, issue the command in the channel the welcome is currently set to.\nUsage: ~setwelcome")]
+        public async Task SetWelcome([Remainder] string args = "")
+        {
+            if (Context.Guild.OwnerId != Context.User.Id)
+            {
+                await ReplyAsync("Command can only be used by server owner");
+                return;
+            }
+
+            var db = new BotBaseContext();
+            var config = db.ServerConfig.Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
+            if(config != null)
+            {
+                if(config.JoinId == Context.Channel.Id)
+                {
+                    config.JoinId = 0;
+                    await ReplyAsync($"Welcome messages will no longer be sent in {Context.Channel.Name}");
+                }
+                else
+                {
+                    var old = await Context.Guild.GetTextChannelAsync(config.JoinId);
+                    config.JoinId = Context.Channel.Id;
+                    if(old != null)
+                        await ReplyAsync($"Welcome messages will no longer be sent in {old.Name}, will now be sent in {Context.Channel.Name}");
+                    else
+                        await ReplyAsync($"Welcome messages will now be sent in {Context.Channel.Name}");
+                }
+            }
+            else
+            {
+                db.Add(new ServerConfig { ServerId = Context.Guild.Id, JoinId = Context.Channel.Id });
+                await ReplyAsync($"Welcome messages will now be sent in {Context.Channel.Name}");
+            }
+            db.SaveChanges();
+        }
+
+        [Command("setgoodbye")]
+        [Remarks("Customization")]
+        [Summary("Sets a channel to send messages when users leave the server. To remove, issue the command in the channel the goodbye is currently set to.\nUsage: ~setgoodbye")]
+        public async Task SetGoodbye([Remainder] string args = "")
+        {
+            if (Context.Guild.OwnerId != Context.User.Id)
+            {
+                await ReplyAsync("Command can only be used by server owner");
+                return;
+            }
+            
+            var db = new BotBaseContext();
+            var config = db.ServerConfig.Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
+            if (config != null)
+            {
+                if (config.LeaveId == Context.Channel.Id)
+                {
+                    config.LeaveId = 0;
+                    await ReplyAsync($"Goodbye messages will no longer be sent in {Context.Channel.Name}");
+                }
+                else
+                {
+                    var old = await Context.Guild.GetTextChannelAsync(config.LeaveId);
+                    config.LeaveId = Context.Channel.Id;
+                    if (old != null)
+                        await ReplyAsync($"Goodbye messages will no longer be sent in {old.Name}, will now be sent in {Context.Channel.Name}");
+                    else
+                        await ReplyAsync($"Goodbye messages will now be sent in {Context.Channel.Name}");
+                }
+            }
+            else
+            {
+                db.Add(new ServerConfig { ServerId = Context.Guild.Id, LeaveId = Context.Channel.Id });
+                await ReplyAsync($"Goodbye messages will now be sent in {Context.Channel.Name}");
             }
             db.SaveChanges();
         }

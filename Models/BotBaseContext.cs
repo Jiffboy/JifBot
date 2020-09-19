@@ -23,6 +23,7 @@ namespace JifBot.Models
         public virtual DbSet<Variable> Variable { get; set; }
         public virtual DbSet<Greeting> Greeting { get; set; }
         public virtual DbSet<ReactionBan> ReactionBan { get; set; }
+        public virtual DbSet<ServerConfig> ServerConfig { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -110,6 +111,17 @@ namespace JifBot.Models
                 entity.Property(e => e.ServerId);
 
                 entity.Property(e => e.ChannelName);
+            });
+
+            modelBuilder.Entity<ServerConfig>(entity =>
+            {
+                entity.HasKey(e => e.ServerId);
+
+                entity.Property(e => e.ServerId);
+
+                entity.Property(e => e.JoinId);
+
+                entity.Property(e => e.LeaveId);
             });
 
             OnModelCreatingPartial(modelBuilder);

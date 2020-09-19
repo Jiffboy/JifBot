@@ -4,7 +4,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Discord;
 using System;
-using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -20,86 +19,21 @@ namespace JifBot.CommandHandler
         private DiscordSocketClient bot;
         private IServiceProvider map;
         private string configName;
+        private JifBot.EventHandler eventHandler;
 
         public CommandHandler(IServiceProvider provider)
         {
+            
             map = provider;
             configName = Program.configName;
             bot = map.GetService<DiscordSocketClient>();
-            bot.UserJoined += AnnounceUserJoined;
-            bot.UserLeft += AnnounceLeftUser;
-            bot.MessageDeleted += Audit;
+            eventHandler = new JifBot.EventHandler(bot);
+            bot.UserJoined += eventHandler.AnnounceUserJoined;
+            bot.UserLeft += eventHandler.AnnounceLeftUser;
+            bot.MessageDeleted += eventHandler.Audit;
             //Send user message to get handled
             bot.MessageReceived += HandleCommand;
             commands = map.GetService<CommandService>();
-        }
-        public async Task AnnounceLeftUser(SocketGuildUser user)
-        {
-            Console.WriteLine("User " + user.Username + " Left " + user.Guild.Name);
-            var embed = new EmbedBuilder();
-            embed.WithColor(new Color(0x42ebf4));
-
-            {
-                IGuild temp = user.Guild;
-                var channel = await temp.GetDefaultChannelAsync();
-                if (user.Guild.Id == 366129048029495296)
-                    channel = await temp.GetTextChannelAsync(398305757784702977);
-                if (user.Guild.Id == 374014790793691137)
-                    channel = await temp.GetTextChannelAsync(442745612908232734);
-                if (user.Guild.Id == 301897718824173570)
-                    channel = await temp.GetTextChannelAsync(566425762089926677);
-                {
-                    embed.ThumbnailUrl = user.GetAvatarUrl();
-                    embed.Title = $"**{user.Username} Left The Server:**";
-                    embed.Description = $"**User:**{user.Mention}";
-                    embed.WithCurrentTimestamp();
-                    await channel.SendMessageAsync("", false, embed);
-                }
-            }
-        }
-        public async Task Audit(Cacheable<IMessage, ulong> cache, ISocketMessageChannel channel)
-        {
-            var message = await cache.GetOrDownloadAsync();
-            var embed = new EmbedBuilder();
-            SocketGuild server = bot.GetGuild(301918679262691330);
-            if (server.GetChannel(channel.Id) == null)
-            {
-                return;
-            }
-            IUser user = bot.GetUser(186584509226024960);
-            ISocketMessageChannel mod = server.GetTextChannel(457250924318949378);
-
-            embed.WithColor(new Color(0x13e89d));
-            embed.Title = "A message has been deleted";
-            embed.Description = "\"" + message.Content + "\"";
-            embed.WithCurrentTimestamp();
-            embed.AddField("in " + channel.Name, "sent by: " + message.Author);
-            embed.ThumbnailUrl = message.Author.GetAvatarUrl();
-            await user.SendMessageAsync("", false, embed);
-            await mod.SendMessageAsync("", false, embed);
-
-        }
-        public async Task AnnounceUserJoined(SocketGuildUser user)
-        {
-            Console.WriteLine("User " + user.Username + " Joined " + user.Guild.Name);
-
-            IGuild temp = user.Guild;
-            var channel = await temp.GetDefaultChannelAsync();
-            if (user.Guild.Id == 366129048029495296)
-                channel = await temp.GetTextChannelAsync(398305757784702977);
-            if (user.Guild.Id == 374014790793691137)
-                channel = await temp.GetTextChannelAsync(442745612908232734);
-            if (user.Guild.Id == 301897718824173570)
-                channel = await temp.GetTextChannelAsync(566425762089926677);
-
-            var embed = new EmbedBuilder();
-            embed.ThumbnailUrl = user.GetAvatarUrl();
-            embed.WithColor(new Color(0x42ebf4));
-            embed.Title = $"**{user.Username} Joined The Server:**";
-            embed.Description = ($"**User:** {user.Mention}");
-            embed.WithCurrentTimestamp();
-            await channel.SendMessageAsync("", false, embed: embed);
-
         }
         public async Task ConfigureAsync()
         {
