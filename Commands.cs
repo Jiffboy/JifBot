@@ -1356,6 +1356,15 @@ namespace JifBot.Commands
             await ReplyAsync("<:gentlecat:302907277571260418> <:rightcat:455100361066283035> <:bottomcat:455100361120940032> <:leftcat:455100361187786752> <:gentlecat:302907277571260418>");
         }
 
+
+        [Command("metroman")]
+        [Remarks("Hidden")]
+        [Summary("Spreads the good word\nUsage: ~metroman")]
+        public async Task MetroMan([Remainder] string useless = "")
+        {
+            await ReplyAsync("https://www.youtube.com/watch?v=W7urgEgXgyg");
+        }
+
         async Task<bool> RemoteFileExists(string url)
         {
             System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
