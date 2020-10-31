@@ -16,6 +16,7 @@ using System.Web;
 using Newtonsoft.Json;
 using JifBot.Models;
 using JIfBot;
+using SQLitePCL;
 
 namespace JifBot.Commands
 {
@@ -125,7 +126,7 @@ namespace JifBot.Commands
 
         [Command("timer")]
         [Remarks("Utility")]
-        [Summary("Sets a reminder to ping you after a certain amount of time has passed. A message can be specified along with the time to be printed back to you at the end of the timer. Times can be specified using any combination of -m[minutes], -h[hours], and -d[days] anywhere in the message.\nUsage: ~timer -h2 -m30 message")]
+        [Summary("Sets a reminder to ping you after a certain amount of time has passed. A message can be specified along with the time to be printed back to you at the end of the timer. Times can be specified using any combination of -m[minutes], -h[hours], -d[days], and -w[weeks] anywhere in the message.\nUsage: ~timer -h2 -m30 message")]
         public async Task Timer([Remainder]string message = "")
         {
             int waitTime = 0;
@@ -143,6 +144,11 @@ namespace JifBot.Commands
                 waitTime += (Convert.ToInt32(Regex.Match(message, @"-d *[0-9]+").Value.Replace("-d", "")) * 1440);
             }
 
+            if (Regex.IsMatch(message, @"-w *[0-9]+"))
+            {
+                waitTime += (Convert.ToInt32(Regex.Match(message, @"-w *[0-9]+").Value.Replace("-w", "")) * 10080);
+            }
+
             if (waitTime == 0)
             {
                 await ReplyAsync("Please provide an amount of time to wait for. For assistance, use ~help.");
@@ -158,10 +164,8 @@ namespace JifBot.Commands
             proc.StartInfo.UseShellExecute = false;
             proc.StartInfo.RedirectStandardOutput = true;
             proc.Start();
-            if (waitTime == 1)
-                await ReplyAsync("Setting timer for " + Convert.ToString(waitTime) + " minute from now.");
-            else
-                await ReplyAsync("Setting timer for " + Convert.ToString(waitTime) + " minutes from now.");
+
+            await ReplyAsync("Setting timer for " + formatMinutesToString(waitTime) + " from now.");
         }
 
         [Command("choose")]
@@ -1549,6 +1553,48 @@ namespace JifBot.Commands
 
             embed.WithCurrentTimestamp();
             return embed;
+        }
+        string formatMinutesToString(int minutes)
+        {
+            string format = "";
+
+            if (minutes / 10080 > 0)
+            {
+                format += Convert.ToString(minutes / 10080) + " week";
+                if (minutes / 10080 > 1)
+                    format += "s";
+                format += ", ";
+                minutes = minutes % 10080;
+            }
+
+            if (minutes / 1440 > 0)
+            {
+                format += Convert.ToString(minutes / 1440) + " day";
+                if (minutes / 1440 > 1)
+                    format += "s";
+                format += ", ";
+                minutes = minutes % 1440;
+            }
+
+            if (minutes / 24 > 0)
+            {
+                format += Convert.ToString(minutes / 60) + " hour";
+                if (minutes / 60 > 1)
+                    format += "s";
+                format += ", ";
+                minutes = minutes % 60;
+            }
+
+            if (minutes > 0)
+            {
+                format += Convert.ToString(minutes) + " minute";
+                if (minutes > 1)
+                    format += "s";
+            }
+            else
+                format = format.Remove(format.Length - 2, 2);
+
+            return format;
         }
     }
 
