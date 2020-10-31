@@ -487,8 +487,11 @@ namespace JifBot.Commands
         [Summary("Displays everybody on the server who is currently streaming\nUsage: ~streamers")]
         public async Task Stream()
         {
+            var db = new BotBaseContext();
             bool found = false;
             var embed = new EmbedBuilder();
+            var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+            embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
             IGuild server = Context.Guild;
             var people = server.GetUsersAsync();
             foreach (IGuildUser person in people.Result)
