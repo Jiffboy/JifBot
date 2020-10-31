@@ -95,6 +95,8 @@ namespace JifBot.CommandHandler
             if (react != null)
                 return;
             string words = msg.Content.ToString();
+            words = words.Replace("*", "");
+            words = words.Replace("_", "");
 
             if (words.ToLower().Contains("delet this") || words.ToLower().Contains("delete this"))
                 await msg.Channel.SendFileAsync("media/deletthis.jpg");
