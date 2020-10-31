@@ -126,7 +126,7 @@ namespace JifBot.Commands
 
         [Command("timer")]
         [Remarks("Utility")]
-        [Summary("Sets a reminder to ping you after a certain amount of time has passed. A message can be specified along with the time to be printed back to you at the end of the timer. Times can be specified using any combination of -m[minutes], -h[hours], -d[days], and -w[weeks] anywhere in the message.\nUsage: ~timer -h2 -m30 message")]
+        [Summary("Sets a reminder to ping you after a certain amount of time has passed. A message can be specified along with the time to be printed back to you at the end of the timer. Times can be specified using any combination of -m[minutes], -h[hours], -d[days], and -w[weeks] anywhere in the message. Additionally, to set a quick timer for a number of minutes, just do ~timer [minutes] message\nUsage: ~timer -h2 -m30 message, ~timer 150 message")]
         public async Task Timer([Remainder]string message = "")
         {
             int waitTime = 0;
@@ -151,8 +151,13 @@ namespace JifBot.Commands
 
             if (waitTime == 0)
             {
-                await ReplyAsync("Please provide an amount of time to wait for. For assistance, use ~help.");
-                return;
+                if (Regex.IsMatch(message, @" *[0-9]+"))
+                    waitTime = Convert.ToInt32(message.Split(" ")[0]);
+                else
+                {
+                    await ReplyAsync("Please provide an amount of time to wait for. For assistance, use ~help.");
+                    return;
+                }
             }
 
             message = Regex.Replace(message, @"-[m,h,d] *[0-9]+", "");
@@ -1576,7 +1581,7 @@ namespace JifBot.Commands
                 minutes = minutes % 1440;
             }
 
-            if (minutes / 24 > 0)
+            if (minutes / 60 > 0)
             {
                 format += Convert.ToString(minutes / 60) + " hour";
                 if (minutes / 60 > 1)
