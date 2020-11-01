@@ -10,5 +10,6 @@ namespace JifBot.Models
         public string Token { get; set; }
         public string DictKey { get; set; }
         public string DictId { get; set; }
+        public string OmdbKey { get; set; }
     }
 }

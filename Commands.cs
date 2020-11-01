@@ -650,6 +650,50 @@ namespace JifBot.Commands
 
         }
 
+        [Command("movie")]
+        [Remarks("Information")]
+        [Summary("Provides information for a movie as specified by name\nUsage: ~movie airplane!")]
+        public async Task Movie([Remainder] string word)
+        {
+            var db = new BotBaseContext();
+            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri("http://www.omdbapi.com");
+            HttpResponseMessage response = await client.GetAsync($"?t={word}&plot=full&apikey={config.OmdbKey}");
+            HttpContent content = response.Content;
+            string stuff = await content.ReadAsStringAsync();
+            var json = JObject.Parse(stuff);
+            if ((string)json.SelectToken("Response") == "False")
+            {
+                await ReplyAsync("Movie not found");
+                return;
+            }
+            var embed = new EmbedBuilder();
+            var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+            embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
+            string rt = (string)json.SelectToken("Ratings[1].Value");
+            string imdb = (string)json.SelectToken("Ratings[0].Value");
+
+            embed.Title = (string)json.SelectToken("Title");
+            embed.Description = (string)json.SelectToken("Genre");
+            if((string)json.SelectToken("Poster") != "N/A")
+                embed.ThumbnailUrl = (string)json.SelectToken("Poster");
+            if(rt != null)
+                embed.AddField($"Rotten Tomatoes: {rt}, IMDb: {imdb}", (string)json.SelectToken("Plot"));
+            else
+                embed.AddField($"IMDb Rating: {imdb}", (string)json.SelectToken("Plot"));
+            embed.AddInlineField("Released", (string)json.SelectToken("Released"));
+            embed.AddInlineField("Run Time", (string)json.SelectToken("Runtime"));
+            embed.AddInlineField("Rating", (string)json.SelectToken("Rated"));
+            embed.AddField("Starring", (string)json.SelectToken("Actors"));
+            embed.AddField("Directed By", (string)json.SelectToken("Director"));
+
+            embed.WithFooter("Made with love");
+            embed.WithCurrentTimestamp();
+            await ReplyAsync("", false, embed);
+        }
+
         [Command("stats")]
         [Remarks("Information")]
         [Summary("Gives the stats for a league player on any region. The region name is the abbreviated verson of the region name. Example: na = North America\nUsage: ~stats region username")]
