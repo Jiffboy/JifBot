@@ -251,10 +251,8 @@ namespace JifBot.Commands
             if (words == "")
             {
                 await Context.Message.DeleteAsync();
-                var msg = Context.Channel.GetMessagesAsync(2).Flatten().Result;
+                var msg = Context.Channel.GetMessagesAsync(1).FlattenAsync().Result;
                 words = msg.ElementAt(0).Content;
-                if (words.ToLower() == "!mock")
-                    words = msg.ElementAt(1).Content;
             }
             else if (words.EndsWith("-d"))
             {
@@ -491,39 +489,13 @@ namespace JifBot.Commands
             await Context.Channel.SendFileAsync("media/wheeze.png");
         }
 
-        [Command("streamers")]
-        [Remarks("Information")]
-        [Summary("Displays everybody on the server who is currently streaming\nUsage: ~streamers")]
-        public async Task Stream()
-        {
-            var db = new BotBaseContext();
-            bool found = false;
-            var embed = new EmbedBuilder();
-            var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
-            embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
-            IGuild server = Context.Guild;
-            var people = server.GetUsersAsync();
-            foreach (IGuildUser person in people.Result)
-            {
-                if (person.Game != null && person.Game.Value.StreamUrl != null)
-                {
-                    embed.AddField(person.Username, "[" + person.Game + "](" + person.Game.Value.StreamUrl + ")");
-                    found = true;
-                }
-            }
-            if (!found)
-                await ReplyAsync("Nobody is streaming at this time.");
-            else
-                await ReplyAsync("", false, embed);
-        }
-
         [Command("define")]
         [Remarks("Information")]
         [Summary("Defines any word in the Oxford English dictionary. For multiple definitions, use -m at the end of the command\nUsage: ~define word OR ~define word -m")]
         public async Task Define([Remainder]string word)
         {
             var db = new BotBaseContext();
-            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
             bool multiple = false;
 
             HttpClient client = new HttpClient();
@@ -553,7 +525,7 @@ namespace JifBot.Commands
             if (multiple)
             {
                 var embed = new EmbedBuilder();
-                var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+                var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
                 embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
                 string def = "1.) " + (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].definitions[0]");
                 string example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].examples[0].text");
@@ -578,7 +550,7 @@ namespace JifBot.Commands
                 }
                 embed.WithFooter("Made with love");
                 embed.WithCurrentTimestamp();
-                await ReplyAsync("", false, embed);
+                await ReplyAsync("", false, embed.Build());
             }
             else
             {
@@ -656,7 +628,7 @@ namespace JifBot.Commands
         public async Task Movie([Remainder] string word)
         {
             var db = new BotBaseContext();
-            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
 
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri("http://www.omdbapi.com");
@@ -670,7 +642,7 @@ namespace JifBot.Commands
                 return;
             }
             var embed = new EmbedBuilder();
-            var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+            var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
             embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
             string rt = (string)json.SelectToken("Ratings[1].Value");
             string imdb = (string)json.SelectToken("Ratings[0].Value");
@@ -683,15 +655,15 @@ namespace JifBot.Commands
                 embed.AddField($"Rotten Tomatoes: {rt}, IMDb: {imdb}", (string)json.SelectToken("Plot"));
             else
                 embed.AddField($"IMDb Rating: {imdb}", (string)json.SelectToken("Plot"));
-            embed.AddInlineField("Released", (string)json.SelectToken("Released"));
-            embed.AddInlineField("Run Time", (string)json.SelectToken("Runtime"));
-            embed.AddInlineField("Rating", (string)json.SelectToken("Rated"));
+            embed.AddField("Released", (string)json.SelectToken("Released"), inline:true);
+            embed.AddField("Run Time", (string)json.SelectToken("Runtime"), inline:true);
+            embed.AddField("Rating", (string)json.SelectToken("Rated"), inline:true);
             embed.AddField("Starring", (string)json.SelectToken("Actors"));
             embed.AddField("Directed By", (string)json.SelectToken("Director"));
 
             embed.WithFooter("Made with love");
             embed.WithCurrentTimestamp();
-            await ReplyAsync("", false, embed);
+            await ReplyAsync("", false, embed.Build());
         }
 
         [Command("stats")]
@@ -735,7 +707,7 @@ namespace JifBot.Commands
             {
                 var db = new BotBaseContext();
                 var embed = new EmbedBuilder();
-                var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+                var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
                 embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
                 {
                     string kdsource = source.Remove(0, source.IndexOf("summoner-id=\"") + 13);
@@ -814,7 +786,7 @@ namespace JifBot.Commands
                 }
                 embed.WithFooter("Made with love");
                 embed.WithCurrentTimestamp();
-                await ReplyAsync("", false, embed);
+                await ReplyAsync("", false, embed.Build());
             }
         }
 
@@ -825,7 +797,7 @@ namespace JifBot.Commands
         {
             var db = new BotBaseContext();
             var embed = new EmbedBuilder();
-            var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+            var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
             embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
             {
                 name = name.Replace(" ", string.Empty);
@@ -861,7 +833,7 @@ namespace JifBot.Commands
                     for (int j = nums.Length - 3; j > 0; j = j - 3)
                         nums = nums.Remove(j) + "," + nums.Remove(0, j);
 
-                    embed.AddInlineField(i + ". " + champ, nums + " points");
+                    embed.AddField(i + ". " + champ, nums + " points", inline: true);
                 }
 
                 nums = Convert.ToString(count);
@@ -871,7 +843,7 @@ namespace JifBot.Commands
 
                 embed.WithFooter("Made with love");
                 embed.WithCurrentTimestamp();
-                await ReplyAsync("", false, embed);
+                await ReplyAsync("", false, embed.Build());
             }
         }
 
@@ -885,8 +857,8 @@ namespace JifBot.Commands
             {
                 foreach (ulong id in mention)
                 {
-                    var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(id));
-                    await ReplyAsync("", false, embed);
+                    var embed = ConstructEmbedInfo(Context.Guild.GetUserAsync(id).Result);
+                    await ReplyAsync("", false, embed.Build());
                 }
             }
             else if (ids != "")
@@ -895,13 +867,13 @@ namespace JifBot.Commands
                 foreach (string id in idList)
                 {
                     var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(Convert.ToUInt64(id)));
-                    await ReplyAsync("", false, embed);
+                    await ReplyAsync("", false, embed.Build());
                 }
             }
             else
             {
                 var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(Context.User.Id));
-                await ReplyAsync("", false, embed);
+                await ReplyAsync("", false, embed.Build());
             }
         }
 
@@ -916,12 +888,12 @@ namespace JifBot.Commands
                 foreach (ulong id in mention)
                 {
                     var embed = new EmbedBuilder();
-                    IGuildUser user = await Context.Guild.GetUserAsync(id);
+                    IGuildUser user = Context.Guild.GetUserAsync(id).Result;
                     string url = user.GetAvatarUrl();
                     url = url.Remove(url.IndexOf("?size=128"));
                     url = url + "?size=256";
                     embed.ImageUrl = url;
-                    await ReplyAsync("", false, embed);
+                    await ReplyAsync("", false, embed.Build());
                 }
             }
             else if (ids != "")
@@ -935,7 +907,7 @@ namespace JifBot.Commands
                     url = url.Remove(url.IndexOf("?size=128"));
                     url = url + "?size=256";
                     embed.ImageUrl = url;
-                    await ReplyAsync("", false, embed);
+                    await ReplyAsync("", false, embed.Build());
                 }
             }
             else
@@ -945,7 +917,7 @@ namespace JifBot.Commands
                 url = url.Remove(url.IndexOf("?size=128"));
                 url = url + "?size=256";
                 embed.ImageUrl = url;
-                await ReplyAsync("", false, embed);
+                await ReplyAsync("", false, embed.Build());
             }
         }
 
@@ -966,8 +938,8 @@ namespace JifBot.Commands
         public async Task Message()
         {
             var db = new BotBaseContext();
-            var message = db.Message.Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
-            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+            var message = db.Message.AsQueryable().Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
             if (message == null)
                 await ReplyAsync($"User does not have a message yet! use {config.Token}setmessage to set a message.");
             else
@@ -980,8 +952,8 @@ namespace JifBot.Commands
         public async Task SetMessage([Remainder]string mess)
         {
             var db = new BotBaseContext();
-            var message = db.Message.Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
-            var user = db.User.Where(usr => usr.UserId == Context.User.Id).FirstOrDefault();
+            var message = db.Message.AsQueryable().Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
+            var user = db.User.AsQueryable().Where(usr => usr.UserId == Context.User.Id).FirstOrDefault();
             if (user == null)
                 db.Add(new User { UserId = Context.User.Id, Name = Context.User.Username, Number = long.Parse(Context.User.Discriminator) });
             else
@@ -1007,8 +979,8 @@ namespace JifBot.Commands
         public async Task ToggleSignature([Remainder] string sig = "")
         {
             var db = new BotBaseContext();
-            var signature = db.Signature.Where(s => s.UserId == Context.User.Id).FirstOrDefault();
-            var user = db.User.Where(usr => usr.UserId == Context.User.Id).FirstOrDefault();
+            var signature = db.Signature.AsQueryable().Where(s => s.UserId == Context.User.Id).FirstOrDefault();
+            var user = db.User.AsQueryable().Where(usr => usr.UserId == Context.User.Id).FirstOrDefault();
             sig = sig.Replace("<", string.Empty);
             sig = sig.Replace(">", string.Empty);
             if (user == null)
@@ -1055,7 +1027,7 @@ namespace JifBot.Commands
             var db = new BotBaseContext();
             if (args.ToLower().Contains("all"))
             {
-                var channels = db.ReactionBan.Where(c => c.ServerId == Context.Guild.Id).ToList();
+                var channels = db.ReactionBan.AsQueryable().Where(c => c.ServerId == Context.Guild.Id).ToList();
                 if(channels.Count == 0)
                 {
                     foreach (var c in await Context.Guild.GetTextChannelsAsync())
@@ -1071,7 +1043,7 @@ namespace JifBot.Commands
             }
             else
             {
-                var channel = db.ReactionBan.Where(s => s.ChannelId == Context.Channel.Id).FirstOrDefault();
+                var channel = db.ReactionBan.AsQueryable().Where(s => s.ChannelId == Context.Channel.Id).FirstOrDefault();
                 if (channel == null)
                 {
                     db.Add(new ReactionBan { ChannelId = Context.Channel.Id, ServerId = Context.Guild.Id, ChannelName = Context.Channel.Name });
@@ -1098,7 +1070,7 @@ namespace JifBot.Commands
             }
 
             var db = new BotBaseContext();
-            var config = db.ServerConfig.Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
+            var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
             if(config != null)
             {
                 if(config.JoinId == Context.Channel.Id)
@@ -1136,7 +1108,7 @@ namespace JifBot.Commands
             }
             
             var db = new BotBaseContext();
-            var config = db.ServerConfig.Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
+            var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
             if (config != null)
             {
                 if (config.LeaveId == Context.Channel.Id)
@@ -1174,7 +1146,7 @@ namespace JifBot.Commands
             }
 
             var db = new BotBaseContext();
-            var config = db.ServerConfig.Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
+            var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
             if (config != null)
             {
                 if (config.MessageId == Context.Channel.Id)
@@ -1325,7 +1297,7 @@ namespace JifBot.Commands
         public async Task meanCount([Remainder] string useless = "")
         {
             var db = new BotBaseContext();
-            var count = db.Variable.Where(v => v.Name == "meanCount").First();
+            var count = db.Variable.AsQueryable().Where(v => v.Name == "meanCount").First();
             await ReplyAsync("I mean, I've said it " + count.Value + " times since 12/13/18.");
         }
 
@@ -1335,7 +1307,7 @@ namespace JifBot.Commands
         public async Task honkCount([Remainder] string useless = "")
         {
             var db = new BotBaseContext();
-            var honk = db.Honk.Where(user => user.UserId == Context.Message.Author.Id).FirstOrDefault();
+            var honk = db.Honk.AsQueryable().Where(user => user.UserId == Context.Message.Author.Id).FirstOrDefault();
             if (honk != null)
                 await ReplyAsync($"You have honked {honk.Count} times!");
             else
@@ -1362,12 +1334,12 @@ namespace JifBot.Commands
         public async Task honkBoard([Remainder] string useless = "")
         {
             var db = new BotBaseContext();
-            var honks = db.Honk.OrderByDescending(honk => honk.Count);
+            var honks = db.Honk.AsQueryable().OrderByDescending(honk => honk.Count);
             int count = 1;
             string message = "";
             foreach (Honk honk in honks)
             {
-                var user = db.User.Where(user => user.UserId == honk.UserId).FirstOrDefault();
+                var user = db.User.AsQueryable().Where(user => user.UserId == honk.UserId).FirstOrDefault();
                 if (count == 1)
                     message += "🥇";
                 else if (count == 2)
@@ -1574,7 +1546,7 @@ namespace JifBot.Commands
         {
             var db = new BotBaseContext();
             var embed = new EmbedBuilder();
-            var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+            var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
             embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
             embed.WithAuthor(user.Username + "#" + user.Discriminator, user.GetAvatarUrl());
             embed.ThumbnailUrl = user.GetAvatarUrl();
@@ -1583,10 +1555,10 @@ namespace JifBot.Commands
                 embed.AddField("Nickname", user.Username);
             else
                 embed.AddField("Nickname", user.Nickname);
-            if (user.Game == null)
+            if (user.Activity == null)
                 embed.AddField("Currently Playing", "[nothing]");
             else
-                embed.AddField("Currently Playing", user.Game);
+                embed.AddField("Currently " + user.Activity.Type.ToString(), user.Activity.Name);
             embed.AddField("Account Creation Date", FormatTime(user.CreatedAt));
             embed.AddField("Server Join Date", FormatTime(user.JoinedAt.Value));
             string roles = "";

@@ -48,7 +48,7 @@ namespace JifBot.CommandHandler
         }
         public async Task ConfigureAsync()
         {
-            await commands.AddModulesAsync(Assembly.GetEntryAssembly());
+            await commands.AddModulesAsync(Assembly.GetEntryAssembly(), map);
         }
 
         public async Task HandleCommand(SocketMessage pMsg)
@@ -62,7 +62,7 @@ namespace JifBot.CommandHandler
 
             //Mark where the prefix ends and the command begins
             int argPos = 0;
-            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+            var config = db.Configuration.AsQueryable().AsQueryable().AsQueryable().Where(cfg => cfg.Name == configName).First();
 
             //Determine if the message has a valid prefix, adjust argPos
             if (message.HasStringPrefix(config.Prefix, ref argPos))
@@ -91,7 +91,7 @@ namespace JifBot.CommandHandler
             var db = new BotBaseContext();
             if (msg.Author.IsBot)
                 return;
-            var react = db.ReactionBan.Where(c => c.ChannelId == msg.Channel.Id).FirstOrDefault();
+            var react = db.ReactionBan.AsQueryable().AsQueryable().AsQueryable().Where(c => c.ChannelId == msg.Channel.Id).FirstOrDefault();
             if (react != null)
                 return;
             string words = msg.Content.ToString();
@@ -134,7 +134,7 @@ namespace JifBot.CommandHandler
             {
                 Random rnd = new Random();
                 int num = rnd.Next(db.Greeting.Count()) + 1;
-                var greeting = db.Greeting.Where(greet => greet.Id == Convert.ToUInt64(num)).First();
+                var greeting = db.Greeting.AsQueryable().AsQueryable().AsQueryable().Where(greet => greet.Id == Convert.ToUInt64(num)).First();
                 await msg.Channel.SendMessageAsync(greeting.Greeting1);
             }
 
@@ -146,7 +146,7 @@ namespace JifBot.CommandHandler
 
             if (words.ToLower().Contains("i mean") && msg.Author.Id == 150084781864910848)
             {
-                var count = db.Variable.Where(v => v.Name == "meanCount").First();
+                var count = db.Variable.AsQueryable().AsQueryable().AsQueryable().Where(v => v.Name == "meanCount").First();
                 int num = Convert.ToInt32(count.Value) + 1;
                 count.Value = Convert.ToString(num);
                 db.SaveChanges();
@@ -182,8 +182,8 @@ namespace JifBot.CommandHandler
                 await msg.Channel.SendFileAsync("media/honk.jpg");
                 await msg.Channel.SendMessageAsync("**HONK**");
 
-                var user = db.User.Where(user => user.UserId == msg.Author.Id).FirstOrDefault();
-                var honk = db.Honk.Where(honk => honk.UserId == msg.Author.Id).FirstOrDefault();
+                var user = db.User.AsQueryable().AsQueryable().AsQueryable().Where(user => user.UserId == msg.Author.Id).FirstOrDefault();
+                var honk = db.Honk.AsQueryable().AsQueryable().AsQueryable().Where(honk => honk.UserId == msg.Author.Id).FirstOrDefault();
 
                 if (user == null)
                     db.Add(new User { UserId = msg.Author.Id, Name = msg.Author.Username, Number = long.Parse(msg.Author.Discriminator) });
@@ -199,7 +199,7 @@ namespace JifBot.CommandHandler
                 db.SaveChanges();
             }
 
-            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+            var config = db.Configuration.AsQueryable().AsQueryable().AsQueryable().Where(cfg => cfg.Name == configName).First();
 
             if (words.ToLower().Contains(config.Prefix + "announce") && msg.Author.Id == 150084781864910848)
             {
@@ -225,7 +225,7 @@ namespace JifBot.CommandHandler
         public async Task CheckSignature(SocketUserMessage msg)
         {
             var db = new BotBaseContext();
-            var signature = db.Signature.Where(sig => sig.UserId == msg.Author.Id).FirstOrDefault();
+            var signature = db.Signature.AsQueryable().AsQueryable().AsQueryable().Where(sig => sig.UserId == msg.Author.Id).FirstOrDefault();
             if (signature != null)
             {
                 Emoji react = new Emoji(signature.Signature1);
@@ -236,7 +236,7 @@ namespace JifBot.CommandHandler
         public async Task tryHelp(SocketUserMessage msg)
         {
             var db = new BotBaseContext();
-            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+            var config = db.Configuration.AsQueryable().AsQueryable().AsQueryable().Where(cfg => cfg.Name == configName).First();
             string commandName = msg.Content;
             string desc = commandName.Remove(0, 5) + " is not a command, make sure the spelling is correct.";
             commandName = commandName.ToLower();
@@ -281,7 +281,7 @@ namespace JifBot.CommandHandler
         public async Task printCommands(SocketUserMessage msg)
         {
             var db = new BotBaseContext();
-            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+            var config = db.Configuration.AsQueryable().AsQueryable().AsQueryable().Where(cfg => cfg.Name == configName).First();
 
             var categories = new Dictionary<string, List<string>>();
             foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
@@ -299,7 +299,7 @@ namespace JifBot.CommandHandler
             }
 
             var embed = new EmbedBuilder();
-            var color = db.Variable.Where(V => V.Name == "embedColor").FirstOrDefault();
+            var color = db.Variable.AsQueryable().AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
             embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
             embed.Title = "All commands will begin with a " + config.Prefix + " , for more information on individual commands, use: " + config.Prefix + "help commandName";
             embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://vertigeux.github.io/jifbot.html";
@@ -313,7 +313,7 @@ namespace JifBot.CommandHandler
                 commands = commands.Remove(commands.Length - 2);
                 embed.AddField(category.Key, commands);
             }
-            await msg.Channel.SendMessageAsync("", false, embed);
+            await msg.Channel.SendMessageAsync("", false, embed.Build());
         }
     }
 }

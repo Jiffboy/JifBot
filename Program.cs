@@ -49,7 +49,7 @@ namespace JIfBot
             client.Log += Logger;
             client.Ready += OnReady;
 
-            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+            var config = db.Configuration.AsQueryable().AsQueryable().Where(cfg => cfg.Name == configName).First();
 
             await client.LoginAsync(TokenType.Bot, config.Token);
             await client.StartAsync();
@@ -66,7 +66,7 @@ namespace JIfBot
         private Task OnReady()
         {
             var db = new BotBaseContext();
-            var config = db.Configuration.Where(cfg => cfg.Name == configName).First();
+            var config = db.Configuration.AsQueryable().AsQueryable().Where(cfg => cfg.Name == configName).First();
             client.SetGameAsync(config.Prefix + "commands");
             if(print)
                 printCommandsToJSON("commands.js");
