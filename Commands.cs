@@ -16,6 +16,7 @@ using System.Web;
 using Newtonsoft.Json;
 using JifBot.Models;
 using JIfBot;
+using SQLitePCL;
 
 namespace JifBot.Commands
 {
@@ -645,20 +646,29 @@ namespace JifBot.Commands
             embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
             string rt = (string)json.SelectToken("Ratings[1].Value");
             string imdb = (string)json.SelectToken("Ratings[0].Value");
+            string plot = (string)json.SelectToken("Plot");
+            if(plot.Length > 1024)
+            {
+                int excess = plot.Length - 1024;
+                plot = plot.Remove(plot.Length - excess - 3);
+                plot += "...";
+            }
 
             embed.Title = (string)json.SelectToken("Title");
             embed.Description = (string)json.SelectToken("Genre");
             if((string)json.SelectToken("Poster") != "N/A")
                 embed.ThumbnailUrl = (string)json.SelectToken("Poster");
             if(rt != null)
-                embed.AddField($"Rotten Tomatoes: {rt}, IMDb: {imdb}", (string)json.SelectToken("Plot"));
+                embed.AddField($"Rotten Tomatoes: {rt}, IMDb: {imdb}", plot);
             else
-                embed.AddField($"IMDb Rating: {imdb}", (string)json.SelectToken("Plot"));
+                embed.AddField($"IMDb Rating: {imdb}", plot);
             embed.AddField("Released", (string)json.SelectToken("Released"), inline:true);
             embed.AddField("Run Time", (string)json.SelectToken("Runtime"), inline:true);
             embed.AddField("Rating", (string)json.SelectToken("Rated"), inline:true);
             embed.AddField("Starring", (string)json.SelectToken("Actors"));
-            embed.AddField("Directed By", (string)json.SelectToken("Director"));
+            embed.AddField("Directed By", (string)json.SelectToken("Director"), inline:true);
+            embed.WithUrl("https://www.imdb.com/title/" + (string)json.SelectToken("imdbID"));
+
 
             embed.WithFooter("Made with love");
             embed.WithCurrentTimestamp();
