@@ -42,7 +42,6 @@
     <None Remove="Media\rammus.png" />
     <None Remove="Media\shrug.png" />
     <None Remove="Media\smoochie.mp4" />
-    <None Remove="Media\stale.png" />
     <None Remove="Media\stfu.jpg" />
     <None Remove="Media\stop.png" />
     <None Remove="Media\thot.jpg" />
@@ -153,9 +152,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Media\smoochie.mp4">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Media\stale.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Media\stfu.jpg">
