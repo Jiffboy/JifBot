@@ -164,7 +164,7 @@ namespace JifBot.Commands
                 message = "Times up!";
             Process proc = new System.Diagnostics.Process();
             proc.StartInfo.FileName = "/bin/bash";
-            proc.StartInfo.Arguments = "../../../scripts/sendmessage.sh " + Context.Channel.Id + " \"" + Context.User.Mention + " " + message + "\" " + waitTime;
+            proc.StartInfo.Arguments = "../../../Scripts/sendmessage.sh " + Context.Channel.Id + " \"" + Context.User.Mention + " " + message + "\" " + waitTime;
             proc.StartInfo.UseShellExecute = false;
             proc.StartInfo.RedirectStandardOutput = true;
             proc.Start();
