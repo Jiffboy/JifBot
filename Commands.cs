@@ -16,7 +16,6 @@ using System.Web;
 using Newtonsoft.Json;
 using JifBot.Models;
 using JIfBot;
-using SQLitePCL;
 
 namespace JifBot.Commands
 {
@@ -400,7 +399,7 @@ namespace JifBot.Commands
         [Summary("Helps to prove your point that you were right.\nUsage: ~neener")]
         public async Task ToldYou()
         {
-            await Context.Channel.SendFileAsync("media/neener.gif");
+            await Context.Channel.SendFileAsync("Media/neener.gif");
         }
 
         [Command("bully")]
@@ -408,7 +407,7 @@ namespace JifBot.Commands
         [Summary("Reminds young rapscallions that this is a bully free zone.\nUsage: ~bully")]
         public async Task Bully()
         {
-            await Context.Channel.SendFileAsync("media/bully.gif");
+            await Context.Channel.SendFileAsync("Media/bully.gif");
         }
 
         [Command("stfu")]
@@ -416,7 +415,7 @@ namespace JifBot.Commands
         [Summary("Tells someone to shut up.\nUsage: ~stfu")]
         public async Task STFU()
         {
-            await Context.Channel.SendFileAsync("media/stfu.jpg");
+            await Context.Channel.SendFileAsync("Media/stfu.jpg");
         }
 
         [Command("edgy")]
@@ -424,7 +423,7 @@ namespace JifBot.Commands
         [Summary("Informs someone that their prior sent comment was perhaps a tad too mischievous.\nUsage: ~edgy")]
         public async Task Edgy()
         {
-            await Context.Channel.SendFileAsync("media/edgy.jpg");
+            await Context.Channel.SendFileAsync("Media/edgy.jpg");
         }
 
         [Command("sorry")]
@@ -442,7 +441,7 @@ namespace JifBot.Commands
         {
             Random rnd = new Random();
             int num = rnd.Next(10);
-            string gif = "media/cheer/cheer" + num + ".gif";
+            string gif = "Media/cheer/cheer" + num + ".gif";
             await Context.Channel.SendFileAsync(gif);
         }
 
@@ -453,7 +452,7 @@ namespace JifBot.Commands
         {
             Random rnd = new Random();
             int num = rnd.Next(8);
-            string png = "media/lewd/" + num + ".png";
+            string png = "Media/lewd/" + num + ".png";
             await Context.Channel.SendFileAsync(png);
         }
 
@@ -470,7 +469,7 @@ namespace JifBot.Commands
         [Summary("For when the gaydar starts beeping.\nUsage: ~gay")]
         public async Task Gay()
         {
-            await Context.Channel.SendFileAsync("media/gay.jpg");
+            await Context.Channel.SendFileAsync("Media/gay.jpg");
         }
 
         [Command("biggay")]
@@ -478,7 +477,7 @@ namespace JifBot.Commands
         [Summary("Inform somebody that they are the big gay.\nUsage: ~biggay")]
         public async Task BigGay()
         {
-            await Context.Channel.SendFileAsync("media/biggay.jpg");
+            await Context.Channel.SendFileAsync("Media/biggay.jpg");
         }
 
         [Command("wheeze")]
@@ -486,7 +485,7 @@ namespace JifBot.Commands
         [Summary("For use to accompany a joke that really wasn't that good\nUsage: ~wheeze")]
         public async Task Wheeze()
         {
-            await Context.Channel.SendFileAsync("media/wheeze.png");
+            await Context.Channel.SendFileAsync("Media/wheeze.png");
         }
 
         [Command("define")]
@@ -510,7 +509,7 @@ namespace JifBot.Commands
             HttpResponseMessage response = await client.GetAsync(word);
             if (response.StatusCode.ToString() == "NotFound")
             {
-                await Context.Channel.SendFileAsync("media/damage.png");
+                await Context.Channel.SendFileAsync("Media/damage.png");
                 return;
             }
 
@@ -1185,7 +1184,7 @@ namespace JifBot.Commands
         [Summary("Displays the best image on the internet.\nUsage: ~lobster")]
         public async Task Lobster()
         {
-            await Context.Channel.SendFileAsync("media/lobster.jpg");
+            await Context.Channel.SendFileAsync("Media/lobster.jpg");
         }
 
         [Command("neeko")]
@@ -1193,7 +1192,7 @@ namespace JifBot.Commands
         [Summary("A command to celebrate Neeko.\nUsage: ~neeko")]
         public async Task Neko()
         {
-            await Context.Channel.SendFileAsync("media/neeko.jpg");
+            await Context.Channel.SendFileAsync("Media/neeko.jpg");
         }
 
         [Command("smoochie")]
@@ -1201,7 +1200,7 @@ namespace JifBot.Commands
         [Summary("Reese gives a smoochie.\nUsage: ~smoochie")]
         public async Task Smoochie()
         {
-            await Context.Channel.SendFileAsync("media/smoochie.mp4");
+            await Context.Channel.SendFileAsync("Media/smoochie.mp4");
         }
 
         [Command("flat")]
@@ -1209,7 +1208,7 @@ namespace JifBot.Commands
         [Summary("Heralds the unseen truth.\nUsage: ~flat")]
         public async Task Flat()
         {
-            await Context.Channel.SendFileAsync("media/flat.png");
+            await Context.Channel.SendFileAsync("Media/flat.png");
         }
 
         [Command("attention")]
@@ -1217,7 +1216,7 @@ namespace JifBot.Commands
         [Summary("Gives Dee the attention she craves.\nUsage: ~attention")]
         public async Task Attention()
         {
-            await Context.Channel.SendFileAsync("media/attention.gif");
+            await Context.Channel.SendFileAsync("Media/attention.gif");
         }
 
         [Command("shrug")]
@@ -1225,7 +1224,7 @@ namespace JifBot.Commands
         [Summary("Shrugs.\nUsage: ~shrug")]
         public async Task Shrug()
         {
-            await Context.Channel.SendFileAsync("media/shrug.png");
+            await Context.Channel.SendFileAsync("Media/shrug.png");
         }
 
         [Command("lunch")]
@@ -1233,7 +1232,7 @@ namespace JifBot.Commands
         [Summary("lunch.\nUsage: ~lunch")]
         public async Task Lunch()
         {
-            await Context.Channel.SendFileAsync("media/lunch.gif");
+            await Context.Channel.SendFileAsync("Media/lunch.gif");
         }
 
         [Command("banterwtf")]
@@ -1249,7 +1248,7 @@ namespace JifBot.Commands
         [Summary("PRAISE RAMMUS.\nUsage: ~rammus")]
         public async Task Rammus()
         {
-            await Context.Channel.SendFileAsync("media/rammus.png");
+            await Context.Channel.SendFileAsync("Media/rammus.png");
             await ReplyAsync("**P  R  A  I  S  E          R  A  M  M  U  S**");
         }
 
@@ -1361,11 +1360,9 @@ namespace JifBot.Commands
         [Summary("Adds a tally to the number of times Jif has said \"I mean\"\nUsage: ~imean")]
         public async Task iMean([Remainder] string useless = "")
         {
-            string file = "references/mean.txt";
-            Int32 num = Convert.ToInt32(File.ReadAllText(file));
-            num++;
-            await ReplyAsync("<@150084781864910848> you've said \"I mean\" " + num + " times.");
-            File.WriteAllText(file, Convert.ToString(num));
+            var db = new BotBaseContext();
+            var count = db.Variable.AsQueryable().AsQueryable().Where(v => v.Name == "meanCount").First();
+            await ReplyAsync($"Jif has said \"I mean\" {count.Value} times");
         }
 
         [Command("gnomed")]

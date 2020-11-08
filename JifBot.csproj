@@ -7,167 +7,167 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="media\cheer\cheer0.gif" />
-    <None Remove="media\cheer\cheer1.gif" />
-    <None Remove="media\cheer\cheer2.gif" />
-    <None Remove="media\cheer\cheer3.gif" />
-    <None Remove="media\cheer\cheer4.gif" />
-    <None Remove="media\cheer\cheer5.gif" />
-    <None Remove="media\cheer\cheer6.gif" />
-    <None Remove="media\cheer\cheer7.gif" />
-    <None Remove="media\cheer\cheer8.gif" />
-    <None Remove="media\cheer\cheer9.gif" />
-    <None Remove="media\lewd\0.png" />
-    <None Remove="media\lewd\1.png" />
-    <None Remove="media\lewd\2.png" />
-    <None Remove="media\lewd\3.png" />
-    <None Remove="media\lewd\4.png" />
-    <None Remove="media\lewd\5.png" />
-    <None Remove="media\lewd\6.png" />
-    <None Remove="media\lewd\7.png" />
-    <None Remove="media\attention.gif" />
-    <None Remove="media\bamboozle.png" />
-    <None Remove="media\banter.mp3" />
-    <None Remove="media\bully.gif" />
-    <None Remove="media\deletthis.jpg" />
-    <None Remove="media\edgy.jpg" />
-    <None Remove="media\fiora.jpg" />
-    <None Remove="media\flat.png" />
-    <None Remove="media\honk.jpg" />
-    <None Remove="media\kms.png" />
-    <None Remove="media\lunch.gif" />
-    <None Remove="media\nani.jpg" />
-    <None Remove="media\neeko.jpg" />
-    <None Remove="media\neener.gif" />
-    <None Remove="media\rammus.png" />
-    <None Remove="media\shrug.png" />
-    <None Remove="media\smoochie.mp4" />
-    <None Remove="media\stale.png" />
-    <None Remove="media\stfu.jpg" />
-    <None Remove="media\stop.png" />
-    <None Remove="media\thot.jpg" />
-    <None Remove="media\youve_been_gnomed_wmv.avi" />
+    <None Remove="Media\cheer\cheer0.gif" />
+    <None Remove="Media\cheer\cheer1.gif" />
+    <None Remove="Media\cheer\cheer2.gif" />
+    <None Remove="Media\cheer\cheer3.gif" />
+    <None Remove="Media\cheer\cheer4.gif" />
+    <None Remove="Media\cheer\cheer5.gif" />
+    <None Remove="Media\cheer\cheer6.gif" />
+    <None Remove="Media\cheer\cheer7.gif" />
+    <None Remove="Media\cheer\cheer8.gif" />
+    <None Remove="Media\cheer\cheer9.gif" />
+    <None Remove="Media\lewd\0.png" />
+    <None Remove="Media\lewd\1.png" />
+    <None Remove="Media\lewd\2.png" />
+    <None Remove="Media\lewd\3.png" />
+    <None Remove="Media\lewd\4.png" />
+    <None Remove="Media\lewd\5.png" />
+    <None Remove="Media\lewd\6.png" />
+    <None Remove="Media\lewd\7.png" />
+    <None Remove="Media\attention.gif" />
+    <None Remove="Media\bamboozle.png" />
+    <None Remove="Media\banter.mp3" />
+    <None Remove="Media\bully.gif" />
+    <None Remove="Media\deletthis.jpg" />
+    <None Remove="Media\edgy.jpg" />
+    <None Remove="Media\fiora.jpg" />
+    <None Remove="Media\flat.png" />
+    <None Remove="Media\honk.jpg" />
+    <None Remove="Media\kms.png" />
+    <None Remove="Media\lunch.gif" />
+    <None Remove="Media\nani.jpg" />
+    <None Remove="Media\neeko.jpg" />
+    <None Remove="Media\neener.gif" />
+    <None Remove="Media\rammus.png" />
+    <None Remove="Media\shrug.png" />
+    <None Remove="Media\smoochie.mp4" />
+    <None Remove="Media\stale.png" />
+    <None Remove="Media\stfu.jpg" />
+    <None Remove="Media\stop.png" />
+    <None Remove="Media\thot.jpg" />
+    <None Remove="Media\youve_been_gnomed_wmv.avi" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="media\cheer\cheer0.gif">
+    <Content Include="Media\cheer\cheer0.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\cheer\cheer1.gif">
+    <Content Include="Media\cheer\cheer1.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\cheer\cheer2.gif">
+    <Content Include="Media\cheer\cheer2.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\cheer\cheer3.gif">
+    <Content Include="Media\cheer\cheer3.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\cheer\cheer4.gif">
+    <Content Include="Media\cheer\cheer4.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\cheer\cheer5.gif">
+    <Content Include="Media\cheer\cheer5.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\cheer\cheer6.gif">
+    <Content Include="Media\cheer\cheer6.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\cheer\cheer7.gif">
+    <Content Include="Media\cheer\cheer7.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\cheer\cheer8.gif">
+    <Content Include="Media\cheer\cheer8.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\cheer\cheer9.gif">
+    <Content Include="Media\cheer\cheer9.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\lewd\0.png">
+    <Content Include="Media\lewd\0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\lewd\1.png">
+    <Content Include="Media\lewd\1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\lewd\2.png">
+    <Content Include="Media\lewd\2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\lewd\3.png">
+    <Content Include="Media\lewd\3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\lewd\4.png">
+    <Content Include="Media\lewd\4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\lewd\5.png">
+    <Content Include="Media\lewd\5.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\lewd\6.png">
+    <Content Include="Media\lewd\6.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\lewd\7.png">
+    <Content Include="Media\lewd\7.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\attention.gif">
+    <Content Include="Media\attention.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\bamboozle.png">
+    <Content Include="Media\bamboozle.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\banter.mp3">
+    <Content Include="Media\banter.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\bully.gif">
+    <Content Include="Media\bully.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\deletthis.jpg">
+    <Content Include="Media\deletthis.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\edgy.jpg">
+    <Content Include="Media\edgy.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\fiora.jpg">
+    <Content Include="Media\fiora.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\flat.png">
+    <Content Include="Media\flat.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\honk.jpg">
+    <Content Include="Media\honk.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\kms.png">
+    <Content Include="Media\kms.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\lunch.gif">
+    <Content Include="Media\lunch.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\nani.jpg">
+    <Content Include="Media\nani.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\neeko.jpg">
+    <Content Include="Media\neeko.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\neener.gif">
+    <Content Include="Media\neener.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\rammus.png">
+    <Content Include="Media\rammus.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\shrug.png">
+    <Content Include="Media\shrug.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\smoochie.mp4">
+    <Content Include="Media\smoochie.mp4">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\stale.png">
+    <Content Include="Media\stale.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\stfu.jpg">
+    <Content Include="Media\stfu.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\stop.png">
+    <Content Include="Media\stop.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\thot.jpg">
+    <Content Include="Media\thot.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="media\youve_been_gnomed_wmv.avi">
+    <Content Include="Media\youve_been_gnomed_wmv.avi">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -188,23 +188,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="media\biggay.jpg">
+    <None Update="Media\biggay.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="media\damage.png">
+    <None Update="Media\damage.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="media\gay.jpg">
+    <None Update="Media\gay.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="media\lobster.jpg">
+    <None Update="Media\lobster.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="media\wheeze.png">
+    <None Update="Media\wheeze.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="references\BotBase.db">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    <None Update="Database\BotBase.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

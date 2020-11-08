@@ -4,12 +4,12 @@ using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using JifBot;
 using JifBot.Models;
-using JifBot.CommandHandler;
 using System.Linq;
 using Newtonsoft.Json;
 using System.IO;
+using System.Reflection;
+using System.ComponentModel;
 
 namespace JIfBot
 {
@@ -19,8 +19,11 @@ namespace JIfBot
             new Program().Start(args).GetAwaiter().GetResult();
 
         private DiscordSocketClient client;
-        private CommandHandler handler;
         public static string configName = "Live";
+        public CommandService commands;
+        private DiscordSocketClient bot;
+        private IServiceProvider map;
+        private JifBot.EventHandler eventHandler;
         private bool print = false;
 
         public async Task Start(string[] args)
@@ -46,18 +49,25 @@ namespace JIfBot
                 LogLevel = LogSeverity.Verbose
             });
 
-            client.Log += Logger;
+            client.Log += JifBot.EventHandler.WriteLog;
             client.Ready += OnReady;
 
-            var config = db.Configuration.AsQueryable().AsQueryable().Where(cfg => cfg.Name == configName).First();
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
 
             await client.LoginAsync(TokenType.Bot, config.Token);
             await client.StartAsync();
 
-            var serviceProvider = ConfigureServices();
-            handler = new CommandHandler(serviceProvider);
-            await handler.ConfigureAsync();
+            map = ConfigureServices();
+            bot = map.GetService<DiscordSocketClient>();
+            commands = map.GetService<CommandService>();
+            eventHandler = new JifBot.EventHandler(map);
 
+            bot.UserJoined += eventHandler.AnnounceUserJoined;
+            bot.UserLeft += eventHandler.AnnounceLeftUser;
+            bot.MessageDeleted += eventHandler.SendMessageReport;
+            bot.MessageReceived += eventHandler.HandleMessage;
+
+            await commands.AddModulesAsync(Assembly.GetEntryAssembly(), map);
 
             //Block this program untill it is closed
             await Task.Delay(-1);
@@ -66,50 +76,20 @@ namespace JIfBot
         private Task OnReady()
         {
             var db = new BotBaseContext();
-            var config = db.Configuration.AsQueryable().AsQueryable().Where(cfg => cfg.Name == configName).First();
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
             client.SetGameAsync(config.Prefix + "commands");
             if(print)
                 printCommandsToJSON("commands.js");
             return Task.CompletedTask;
         }
 
-        private static Task Logger(LogMessage lmsg)
-        {
-            var cc = Console.ForegroundColor;
-            switch (lmsg.Severity)
-            {
-                case LogSeverity.Critical:
-                case LogSeverity.Error:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    break;
-                case LogSeverity.Warning:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    break;
-                case LogSeverity.Info:
-                    Console.ForegroundColor = ConsoleColor.White;
-                    break;
-                case LogSeverity.Verbose:
-                case LogSeverity.Debug:
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                    break;
-            }
-            Console.WriteLine($"{DateTime.Now} [{lmsg.Severity,8}] {lmsg.Source}: {lmsg.Message}");
-            Console.ForegroundColor = cc;
-            return Task.CompletedTask;
-        }
-
         public IServiceProvider ConfigureServices()
         {
-
             var services = new ServiceCollection()
                 //.AddSingleton(new AudioService())
                 .AddSingleton(client)
                  .AddSingleton(new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false }));
             var provider = new DefaultServiceProviderFactory().CreateServiceProvider(services);
-
-
-
-
             return provider;
         }
 
@@ -119,7 +99,7 @@ namespace JIfBot
             {
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.DefaultValueHandling = DefaultValueHandling.Ignore;
-                foreach (Discord.Commands.CommandInfo c in this.handler.commands.Commands)
+                foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
                 {
                     string aliases = "";
                     if (c.Aliases.Count > 1)
@@ -145,5 +125,28 @@ namespace JIfBot
             Console.WriteLine("Commands have been printed");
             return;
         }
+    }
+
+    class CommandJSON
+    {
+        public CommandJSON(string commandName, string aliasName, string categoryName, string descriptionName)
+        {
+            command = commandName;
+            alias = aliasName;
+            category = categoryName;
+            description = descriptionName;
+        }
+
+        [DefaultValue("")]
+        public string command { get; set; }
+
+        [DefaultValue("")]
+        public string alias { get; set; }
+
+        [DefaultValue("")]
+        public string category { get; set; }
+
+        [DefaultValue("")]
+        public string description { get; set; }
     }
 }
