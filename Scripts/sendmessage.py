@@ -1,14 +1,17 @@
 import sys
 import json
 import discord
+import sqlite3
 
 channelId = sys.argv[1]
 message   = sys.argv[2]
 
-
-jsonFile = open("../bin/Debug/netcoreapp3.0/configuration/config.json", "r")
-json = json.loads(jsonFile.read())
-token = json["Token"]
+connection = sqlite3.connect("../bin/Debug/netcoreapp3.1/Database/BotBase.db")
+cursor = connection.cursor()
+cursor.execute("SELECT Token FROM Configuration WHERE Name = 'Live'")
+token = cursor.fetchone()[0]
+cursor.close()
+connection.close()
 
 client = discord.Client()
 
