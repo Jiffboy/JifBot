@@ -95,6 +95,8 @@ namespace JIfBot
 
         public void printCommandsToJSON(string file)
         {
+            var db = new BotBaseContext();
+            var config = db.Configuration.AsQueryable().AsQueryable().Where(cfg => cfg.Name == configName).First();
             using (StreamWriter fileStream = File.CreateText(file))
             {
                 JsonSerializer serializer = new JsonSerializer();
@@ -111,7 +113,7 @@ namespace JIfBot
                         aliases = aliases.Remove(0, aliases.IndexOf(",") + 1);
                         aliases = aliases.Remove(aliases.LastIndexOf(","));
                     }
-                    CommandJSON command = new CommandJSON(c.Name, aliases, c.Remarks, c.Summary);
+                    CommandJSON command = new CommandJSON(c.Name, aliases, c.Module.Name, c.Summary.Replace("-p-", config.Prefix) + "\nUsage: " + c.Remarks.Replace("-c-", $"{config.Prefix}{c.Name}"));
 
                     serializer.Serialize(fileStream, command);
                 }
