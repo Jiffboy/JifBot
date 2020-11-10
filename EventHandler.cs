@@ -203,7 +203,7 @@ namespace JifBot
                 }
                 if (cmd != null)
                 {
-                    desc = cmd.Summary;
+                    desc = cmd.Summary.Replace("-p-", config.Prefix) + "\nUsage: " + cmd.Remarks.Replace("-c-", $"{config.Prefix}{cmd.Name}");
                     if (cmd.Aliases.Count > 1)
                     {
                         desc += "\nAlso works for ";
@@ -231,16 +231,16 @@ namespace JifBot
             var categories = new Dictionary<string, List<string>>();
             foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
             {
-                if (c.Remarks == "Hidden")
+                if (c.Module.Name == "Hidden")
                     continue;
-                else if (!categories.ContainsKey(c.Remarks))
+                else if (!categories.ContainsKey(c.Module.Name))
                 {
                     List<string> temp = new List<string>();
                     temp.Add(c.Name);
-                    categories.Add(c.Remarks, temp);
+                    categories.Add(c.Module.Name, temp);
                 }
                 else
-                    categories[c.Remarks].Add(c.Name);
+                    categories[c.Module.Name].Add(c.Name);
             }
 
             var embed = new EmbedBuilder();

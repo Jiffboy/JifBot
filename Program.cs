@@ -88,7 +88,7 @@ namespace JIfBot
             var services = new ServiceCollection()
                 //.AddSingleton(new AudioService())
                 .AddSingleton(client)
-                 .AddSingleton(new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false }));
+                .AddSingleton(new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false }));
             var provider = new DefaultServiceProviderFactory().CreateServiceProvider(services);
             return provider;
         }
