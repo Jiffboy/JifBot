@@ -182,25 +182,42 @@ namespace JifBot
             else if (commandName == "commands")
                 desc = "Shows all available commands.\nUsage: " + config.Prefix + "commands";
 
-            else foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
+            else 
+            {
+                Discord.Commands.CommandInfo cmd = null;
+                foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
                 {
                     if (c.Name == commandName)
                     {
-                        desc = c.Summary;
-                        if (c.Aliases.Count > 1)
+                        cmd = c;
+                        break;
+                    }
+                    else foreach (string alias in c.Aliases)
+                    {
+                        if (alias == commandName)
                         {
-                            desc += "\nAlso works for ";
-                            foreach (string alias in c.Aliases)
-                            {
-                                if (alias == commandName)
-                                {
-                                    continue;
-                                }
-                                desc += config.Prefix + alias + " ";
-                            }
+                            cmd = c;
+                            break;
                         }
                     }
                 }
+                if (cmd != null)
+                {
+                    desc = cmd.Summary;
+                    if (cmd.Aliases.Count > 1)
+                    {
+                        desc += "\nAlso works for ";
+                        foreach (string alias in cmd.Aliases)
+                        {
+                            if (alias == cmd.Name)
+                            {
+                                continue;
+                            }
+                            desc += config.Prefix + alias + " ";
+                        }
+                    }
+                }
+            }
 
             await msg.Channel.SendMessageAsync(desc);
             return;

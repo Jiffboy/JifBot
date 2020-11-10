@@ -623,6 +623,7 @@ namespace JifBot.Commands
         }
 
         [Command("movie")]
+        [Alias("imdb")]
         [Remarks("Information")]
         [Summary("Provides information for a movie as specified by name\nUsage: ~movie airplane!")]
         public async Task Movie([Remainder] string word)

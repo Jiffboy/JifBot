@@ -74,7 +74,7 @@ namespace JifBot
             if (words.ToLower().Contains("@here") || words.ToLower().Contains("@everyone"))
                 await msg.Channel.SendMessageAsync("<:ping:377208255132467233>");
 
-            if (words.ToLower().Contains("i mean") && msg.Author.Id == 150084781864910848)
+            if ((words.ToLower().Contains(" i mean ") || words.ToLower().Equals("i mean") || words.ToLower().StartsWith("i mean ") || words.ToLower().EndsWith(" i mean")) && msg.Author.Id == 150084781864910848)
             {
                 var count = db.Variable.AsQueryable().AsQueryable().Where(v => v.Name == "meanCount").First();
                 int num = Convert.ToInt32(count.Value) + 1;
@@ -89,8 +89,7 @@ namespace JifBot
                 await msg.DeleteAsync();
                 await msg.Channel.SendMessageAsync("Know your place, trash.");
             }
-            var mentionedUsers = msg.MentionedUsers;
-            foreach (SocketUser mention in mentionedUsers)
+            foreach (SocketUser mention in msg.MentionedUsers)
             {
                 if (mention.Id == 315569278101225483)
                 {
@@ -100,6 +99,17 @@ namespace JifBot
                         await msg.Channel.SendMessageAsync("you're pretty ❤");
                     else
                         await msg.Channel.SendMessageAsync("<:ping:377208255132467233>");
+                }
+            }
+
+            var channel = (SocketGuildChannel)msg.Channel;
+            SocketGuildUser jifBot = channel.Guild.GetUser(315569278101225483);
+            foreach(SocketRole role in msg.MentionedRoles)
+            {
+                if(jifBot.Roles.Contains(role))
+                {
+                    await msg.Channel.SendMessageAsync("<:ping:377208255132467233>");
+                    break;
                 }
             }
 

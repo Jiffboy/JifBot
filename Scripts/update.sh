@@ -14,6 +14,7 @@ dotnet build
 cd Scripts
 read -p "Make database updates and press enter to continue..."
 cp backup/* ../bin/Debug/netcoreapp3.1/Database/
+rm ../bin/Debug/netcoreapp3.1/commands.js
 sudo systemctl start jifbot.service
 
 # get the latest verions of the website
@@ -34,5 +35,4 @@ then
     git add commands.js
     git commit -m"Automatic command update from Jif Bot"
     git push
-    rm ../../JifBot/bin/Debug/netcoreapp3.1/commands.js
 fi
