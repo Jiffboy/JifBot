@@ -19,8 +19,6 @@ namespace JifBot
         private async Task CheckKeyword(SocketUserMessage msg)
         {
             var db = new BotBaseContext();
-            if (msg.Author.IsBot)
-                return;
             var react = db.ReactionBan.AsQueryable().AsQueryable().Where(c => c.ChannelId == msg.Channel.Id).FirstOrDefault();
             if (react != null)
                 return;

@@ -17,6 +17,69 @@ namespace JifBot.Commands
 {
     public class Information : ModuleBase
     {
+        [Command("commands")]
+        [Remarks("-c-")]
+        [Alias("help")]
+        [Summary("Shows all available commands.")]
+        public async Task Commands()
+        {
+            var db = new BotBaseContext();
+            var commands = db.Command.AsQueryable().OrderBy(command => command.Category );
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+
+            var embed = new EmbedBuilder();
+            var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
+            embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
+            embed.Title = "All commands will begin with a " + config.Prefix + " , for more information on individual commands, use: " + config.Prefix + "help commandName";
+            embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://vertigeux.github.io/jifbot.html";
+            embed.WithFooter("Made with love");
+            embed.WithCurrentTimestamp();
+
+            string cat = commands.First().Category;
+            string list = "";
+            foreach(Command command in commands)
+            {
+                if(command.Category != cat)
+                {
+                    embed.AddField(cat, list);
+                    cat = command.Category;
+                    list = "";
+                }
+                list += command.Name + " ";
+            }
+            embed.AddField(cat, list);
+            await ReplyAsync("", false, embed.Build());
+        }
+
+        [Command("help")]
+        [Remarks("-c- commandName")]
+        [Summary("Used to get the descriptions of other commands.")]
+        public async Task Help([Remainder] string commandName)
+        {
+            var db = new BotBaseContext();
+            var command = db.Command.AsQueryable().Where(cmd => cmd.Name == commandName).FirstOrDefault();
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+            if(command == null)
+            {
+                var cmdAlias = db.CommandAlias.AsQueryable().Where(cmd => cmd.Alias == commandName).FirstOrDefault();
+                if(cmdAlias == null)
+                {
+                    await ReplyAsync($"{commandName} is not a command, make sure the spelling is correct.");
+                    return;
+                }
+                command = db.Command.AsQueryable().Where(cmd => cmd.Name == cmdAlias.Command).First();
+            }
+            var alias = db.CommandAlias.AsQueryable().Where(als => als.Command == command.Name);
+            string msg = $"{command.Description}\nUsage: {command.Usage}";
+            if(alias.Any())
+            {
+                msg += "\nAlso works for: ";
+                foreach(CommandAlias al in alias)
+                    msg += $"{config.Prefix}{al.Alias} ";
+            }
+            await ReplyAsync(msg);
+        }
+
         [Command("define")]
         [Remarks("-c- word OR -c- word -m")]
         [Summary("Defines any word in the Oxford English dictionary. For multiple definitions, use -m at the end of the command.")]

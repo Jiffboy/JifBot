@@ -24,6 +24,8 @@ namespace JifBot.Models
         public virtual DbSet<Greeting> Greeting { get; set; }
         public virtual DbSet<ReactionBan> ReactionBan { get; set; }
         public virtual DbSet<ServerConfig> ServerConfig { get; set; }
+        public virtual DbSet<Command> Command { get; set; }
+        public virtual DbSet<CommandAlias> CommandAlias { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -126,6 +128,29 @@ namespace JifBot.Models
                 entity.Property(e => e.LeaveId);
 
                 entity.Property(e => e.MessageId);
+            });
+
+            modelBuilder.Entity<Command>(entity =>
+            {
+                entity.HasKey(e => e.Name);
+
+                entity.Property(e => e.Name);
+
+                entity.Property(e => e.Category);
+
+                entity.Property(e => e.Usage);
+
+                entity.Property(e => e.Description);
+            });
+
+
+            modelBuilder.Entity<CommandAlias>(entity =>
+            {
+                entity.HasKey(e => e.Alias);
+
+                entity.Property(e => e.Alias);
+
+                entity.Property(e => e.Command);
             });
 
             OnModelCreatingPartial(modelBuilder);

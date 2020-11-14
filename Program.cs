@@ -9,7 +9,6 @@ using System.Linq;
 using Newtonsoft.Json;
 using System.IO;
 using System.Reflection;
-using System.ComponentModel;
 
 namespace JIfBot
 {
@@ -24,18 +23,12 @@ namespace JIfBot
         private DiscordSocketClient bot;
         private IServiceProvider map;
         private JifBot.EventHandler eventHandler;
-        private bool print = false;
 
         public async Task Start(string[] args)
         {
             var db = new BotBaseContext();
             foreach (string arg in args)
             {
-                if(arg == "--generatejs")
-                {
-                    print = true;
-                }
-
                 if(arg == "--test")
                 {
                     configName = "Test";
@@ -78,8 +71,27 @@ namespace JIfBot
             var db = new BotBaseContext();
             var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
             client.SetGameAsync(config.Prefix + "commands");
-            if(print)
-                printCommandsToJSON("commands.js");
+            db.Command.RemoveRange(db.Command);
+            db.CommandAlias.RemoveRange(db.CommandAlias);
+            foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
+            {
+                if (c.Module.Name != "Hidden")
+                {
+                    if (c.Aliases.Count > 1)
+                    {
+                        foreach (string alias in c.Aliases)
+                        {
+                            if (alias != c.Name)
+                            {
+                                db.Add(new CommandAlias { Alias = alias, Command = c.Name });
+                            }
+                        }
+                    }
+                    db.Add(new Command { Name = c.Name, Category = c.Module.Name, Usage = c.Remarks.Replace("-c-", $"{config.Prefix}{c.Name}"), Description = c.Summary.Replace("-p-", config.Prefix) });
+                }
+            }
+            db.SaveChanges();
+
             return Task.CompletedTask;
         }
 
@@ -101,22 +113,7 @@ namespace JIfBot
             {
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.DefaultValueHandling = DefaultValueHandling.Ignore;
-                foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
-                {
-                    string aliases = "";
-                    if (c.Aliases.Count > 1)
-                    {
-                        foreach (string alias in c.Aliases)
-                        {
-                            aliases = aliases + alias + ",";
-                        }
-                        aliases = aliases.Remove(0, aliases.IndexOf(",") + 1);
-                        aliases = aliases.Remove(aliases.LastIndexOf(","));
-                    }
-                    CommandJSON command = new CommandJSON(c.Name, aliases, c.Module.Name, c.Summary.Replace("-p-", config.Prefix) + "\nUsage: " + c.Remarks.Replace("-c-", $"{config.Prefix}{c.Name}"));
-
-                    serializer.Serialize(fileStream, command);
-                }
+                
             }
             string temp = File.ReadAllText(file);
             temp = temp.Insert(0, "var jifBotCommands = [");
@@ -127,28 +124,5 @@ namespace JIfBot
             Console.WriteLine("Commands have been printed");
             return;
         }
-    }
-
-    class CommandJSON
-    {
-        public CommandJSON(string commandName, string aliasName, string categoryName, string descriptionName)
-        {
-            command = commandName;
-            alias = aliasName;
-            category = categoryName;
-            description = descriptionName;
-        }
-
-        [DefaultValue("")]
-        public string command { get; set; }
-
-        [DefaultValue("")]
-        public string alias { get; set; }
-
-        [DefaultValue("")]
-        public string category { get; set; }
-
-        [DefaultValue("")]
-        public string description { get; set; }
     }
 }
