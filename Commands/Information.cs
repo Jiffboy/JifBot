@@ -140,8 +140,16 @@ namespace JifBot.Commands
                 var dayMonth = definitionList[0].Written_On.Substring(definitionList[0].Written_On.IndexOf("-") + 1, 5);
                 var cleanDate = dayMonth.Replace("-", "/") + "/" + year;
                 var word = definitionList[0].Word;
+                var msg = $"{word} - {cleanDate}\n**Definition:** {cleanDefinition}\n**Example:** {cleanExample}";
 
-                await ReplyAsync($"{word} - {cleanDate}\n**Definition:** {cleanDefinition}\n**Example:** {cleanExample}");
+                while(msg.Length > 2000)
+                {
+                    var index = msg.Substring(0, 2000).LastIndexOf(" ");
+                    await ReplyAsync(msg.Substring(0, index));
+                    msg = msg.Substring(index, msg.Length - index);
+                }
+
+                await ReplyAsync(msg);
             }
             else
             {
