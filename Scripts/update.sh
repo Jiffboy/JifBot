@@ -21,15 +21,11 @@ sudo systemctl start jifbot.service
 cd ../../Vertigeux.github.io/javascript
 git pull
 
-# wait for Jif bot to generate commands.js
-echo "Waiting for commands.js to exist..."
-until [ -f ../../JifBot/bin/Debug/netcoreapp3.1/commands.js ]
-do
-	sleep 1
-done
+# generate js file for website
+python3 generatejs.py
 
 # if the generated version of commands.js is different, update website
-if [ -n "$(cmp commands.js ../../JifBot/bin/Debug/netcoreapp3.1/commands.js)" ]
+if [ -n "$(cmp commands.js ../../JifBot/Scripts/backup/commands.js)" ]
 then
     cp ../../JifBot/bin/Debug/netcoreapp3.1/commands.js commands.js
     git add commands.js
