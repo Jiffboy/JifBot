@@ -17,12 +17,12 @@ cp backup/* ../bin/Debug/netcoreapp3.1/Database/
 rm ../bin/Debug/netcoreapp3.1/commands.js
 sudo systemctl start jifbot.service
 
+# generate js file for website
+python3 generatejs.py
+
 # get the latest verions of the website
 cd ../../Vertigeux.github.io/javascript
 git pull
-
-# generate js file for website
-python3 generatejs.py
 
 # if the generated version of commands.js is different, update website
 if [ -n "$(cmp commands.js ../../JifBot/Scripts/backup/commands.js)" ]
