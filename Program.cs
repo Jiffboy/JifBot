@@ -90,6 +90,8 @@ namespace JIfBot
                     db.Add(new Command { Name = c.Name, Category = c.Module.Name, Usage = c.Remarks.Replace("-c-", $"{config.Prefix}{c.Name}"), Description = c.Summary.Replace("-p-", config.Prefix) });
                 }
             }
+            var update = db.Variable.AsQueryable().Where(V => V.Name == "lastCmdUpdateTime").FirstOrDefault();
+            update.Value = DateTime.Now.ToLocalTime().ToString();
             db.SaveChanges();
 
             return Task.CompletedTask;

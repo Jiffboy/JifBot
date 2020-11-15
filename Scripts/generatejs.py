@@ -1,12 +1,20 @@
-import sys
-import json
-import discord
 import sqlite3
+import time
 
 json = "var jifBotCommands = ["
 
 connection = sqlite3.connect("../bin/Debug/netcoreapp3.1/Database/BotBase.db")
 cursor = connection.cursor()
+
+cursor.execute('SELECT Value FROM Variable WHERE Name = "lastCmdUpdateTime"')
+lastUpdate = cursor.fetchone()
+currUpdate = lastUpdate
+print("Waiting for Commands to be populated...")
+while(currUpdate == lastUpdate):
+    cursor.execute('SELECT Value FROM Variable WHERE Name = "lastCmdUpdateTime"')
+    currUpdate = cursor.fetchone()
+    time.sleep(0.5)
+
 
 cursor.execute("SELECT * FROM Command")
 commands = cursor.fetchall()
