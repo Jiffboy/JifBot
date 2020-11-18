@@ -45,6 +45,7 @@
     <None Remove="Media\stfu.jpg" />
     <None Remove="Media\stop.png" />
     <None Remove="Media\thot.jpg" />
+    <None Remove="Media\tiltycat.png" />
     <None Remove="Media\youve_been_gnomed_wmv.avi" />
   </ItemGroup>
 
@@ -163,6 +164,9 @@
     <Content Include="Media\thot.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Media\tiltycat.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Media\youve_been_gnomed_wmv.avi">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -177,6 +181,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.7" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

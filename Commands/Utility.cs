@@ -11,6 +11,8 @@ using Discord.Commands;
 using Newtonsoft.Json;
 using JifBot.Models;
 using JIfBot;
+using System.Drawing;
+using System.IO;
 
 namespace JifBot.Commands
 {
@@ -303,25 +305,15 @@ namespace JifBot.Commands
         [Summary("Creates a cat at any angle you specify.\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_cat/(degree).png``` where (degree) is the desired angle.")]
         public async Task TiltyCat(int degree, [Remainder] string useless = "")
         {
-            string temp = "http://www.writeonlymedia.com/tilty_cat/" + degree + ".png";
-            using (WebClient client = new WebClient())
-            {
-                client.DownloadFile(new Uri(temp), "tiltycat.png");
-            }
-            await Context.Channel.SendFileAsync("tiltycat.png");
-        }
+            Bitmap bmp = TiltyEmoji.tiltCat(degree);
 
-        [Command("tiltydog")]
-        [Remarks("-c- degree")]
-        [Summary("Creates a dog at any angle you specify.\nSpecial thanks to Erik (Assisting#8734) for writing the program. Accessed via ```http://www.writeonlymedia.com/tilty_dog/(degree).png``` where (degree) is the desired angle.")]
-        public async Task TiltyDat(int degree, [Remainder] string useless = "")
-        {
-            string temp = "http://www.writeonlymedia.com/tilty_dog/" + degree + ".png";
-            using (WebClient client = new WebClient())
+            using (MemoryStream ms = new MemoryStream())
             {
-                client.DownloadFile(new Uri(temp), "tiltydog.png");
+                bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                ms.Seek(0, SeekOrigin.Begin);
+                bmp.Dispose();
+                await Context.Channel.SendFileAsync(ms, "tiltycat.png");
             }
-            await Context.Channel.SendFileAsync("tiltydog.png");
         }
 
         [Command("joke")]
@@ -568,5 +560,47 @@ namespace JifBot.Commands
     class QuoteResult
     {
         public List<Quote> List { get; set; }
+    }
+
+    class TiltyEmoji
+    {
+        private const string TILTY_CAT = "Media/tiltycat.png";
+        private const int OUTPUT_WIDTH = 128;
+        private const int OUTPUT_HEIGHT = 128;
+
+        public static Bitmap tiltCat(int degreeCount)
+        {
+            return openAndRotate(TILTY_CAT, degreeCount);
+        }
+
+        private static Bitmap openAndRotate(string filePath, int degreeCount)
+        {
+            try
+            {
+                Bitmap bmp = (Bitmap)Bitmap.FromFile(filePath);
+                return RotateImage(bmp, degreeCount);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.Out.WriteLine($"Couldn't find image at file path {filePath}");
+                throw ex;
+            }
+        }
+
+        private static Bitmap RotateImage(Bitmap bmp, int angle)
+        {
+            float height = bmp.Height;
+            float width = bmp.Width;
+            int hypotenuse = System.Convert.ToInt32(System.Math.Floor(Math.Sqrt(height * height + width * width)));
+            Bitmap rotatedImage = new Bitmap(hypotenuse, hypotenuse);
+            using (Graphics g = Graphics.FromImage(rotatedImage))
+            {
+                g.TranslateTransform((float)rotatedImage.Width / 2, (float)rotatedImage.Height / 2); //set the rotation point as the center into the matrix
+                g.RotateTransform(angle); //rotate
+                g.TranslateTransform(-(float)rotatedImage.Width / 2, -(float)rotatedImage.Height / 2); //restore rotation point into the matrix
+                g.DrawImage(bmp, (hypotenuse - OUTPUT_WIDTH) / 2, (hypotenuse - OUTPUT_HEIGHT) / 2, OUTPUT_WIDTH, OUTPUT_HEIGHT);
+            }
+            return rotatedImage;
+        }
     }
 }
