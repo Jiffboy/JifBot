@@ -26,7 +26,7 @@ git pull
 # if the generated version of commands.js is different, update website
 if [ -n "$(cmp commands.js ../../JifBot/Scripts/backup/commands.js)" ]
 then
-    cp ../../JifBot/bin/Debug/netcoreapp3.1/commands.js commands.js
+    cp ../../JifBot/Scripts/backup/commands.js commands.js
     git add commands.js
     git commit -m"Automatic command update from Jif Bot"
     git push
