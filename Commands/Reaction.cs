@@ -113,7 +113,7 @@ namespace JifBot.Commands
         [Summary("Inform somebody that you will not be doing that")]
         public async Task No()
         {
-            await Context.Channel.SendFileAsync("Media/No.jpg");
+            await Context.Channel.SendFileAsync("Media/no.jpg");
         }
     }
 }
