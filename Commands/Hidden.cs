@@ -9,7 +9,7 @@ namespace JifBot.Commands
     {
         [Command("imean")]
         [Remarks("-c-")]
-        [Summary("Adds a tally to the number of times Jif has said \"I mean\".")]
+        [Summary("Reports the number of times Jif has said \"I mean\".")]
         public async Task iMean([Remainder] string useless = "")
         {
             var db = new BotBaseContext();

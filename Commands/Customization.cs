@@ -24,6 +24,7 @@ namespace JifBot.Commands
 
         [Command("setmessage")]
         [Remarks("-c- This is my message")]
+        [Alias("resetmessage")]
         [Summary("Allows you to set a message that can be displayed at any time using the -p-message command.")]
         public async Task SetMessage([Remainder] string mess)
         {
@@ -51,6 +52,7 @@ namespace JifBot.Commands
 
         [Command("togglesignature")]
         [Remarks("-c- :fox:")]
+        [Alias("resetsignature", "setsignature")]
         [Summary("Sets for a specific emote to be reacted to every message you send. To remove a signature, call the command without specifying an emote, or using the emote you already have set. NOTE: Jif Bot does NOT have nitro, this will only work with emotes that are available on this server.")]
         public async Task ToggleSignature([Remainder] string sig = "")
         {

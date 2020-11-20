@@ -107,5 +107,13 @@ namespace JifBot.Commands
         {
             await Context.Channel.SendFileAsync("Media/wheeze.png");
         }
+
+        [Command("no")]
+        [Remarks("-c-")]
+        [Summary("Inform somebody that you will not be doing that")]
+        public async Task No()
+        {
+            await Context.Channel.SendFileAsync("Media/No.jpg");
+        }
     }
 }
