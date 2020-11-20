@@ -5,8 +5,6 @@ using System;
 using JifBot.Models;
 using System.Linq;
 using Discord.Commands;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using JIfBot;
 

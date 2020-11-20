@@ -14,7 +14,6 @@ dotnet build
 cd Scripts
 read -p "Make database updates and press enter to continue..."
 cp backup/* ../bin/Debug/netcoreapp3.1/Database/
-rm ../bin/Debug/netcoreapp3.1/commands.js
 sudo systemctl start jifbot.service
 
 # generate js file for website

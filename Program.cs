@@ -6,8 +6,6 @@ using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using JifBot.Models;
 using System.Linq;
-using Newtonsoft.Json;
-using System.IO;
 using System.Reflection;
 
 namespace JIfBot
@@ -29,7 +27,7 @@ namespace JIfBot
             var db = new BotBaseContext();
             foreach (string arg in args)
             {
-                if(arg == "--test")
+                if (arg == "--test")
                 {
                     configName = "Test";
                 }
@@ -105,26 +103,6 @@ namespace JIfBot
                 .AddSingleton(new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false }));
             var provider = new DefaultServiceProviderFactory().CreateServiceProvider(services);
             return provider;
-        }
-
-        public void printCommandsToJSON(string file)
-        {
-            var db = new BotBaseContext();
-            var config = db.Configuration.AsQueryable().AsQueryable().Where(cfg => cfg.Name == configName).First();
-            using (StreamWriter fileStream = File.CreateText(file))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.DefaultValueHandling = DefaultValueHandling.Ignore;
-                
-            }
-            string temp = File.ReadAllText(file);
-            temp = temp.Insert(0, "var jifBotCommands = [");
-            temp = temp += "];";
-            temp = temp.Replace("'", "\'");
-            temp = temp.Replace("}", "},");
-            File.WriteAllText(file, temp);
-            Console.WriteLine("Commands have been printed");
-            return;
         }
     }
 }
