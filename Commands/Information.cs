@@ -70,7 +70,7 @@ namespace JifBot.Commands
                 command = db.Command.AsQueryable().Where(cmd => cmd.Name == cmdAlias.Command).First();
             }
             var alias = db.CommandAlias.AsQueryable().Where(als => als.Command == command.Name);
-            string msg = $"{command.Description}\nUsage: {command.Usage}";
+            string msg = $"{command.Description}\n**Usage**: {command.Usage}";
             if(alias.Any())
             {
                 msg += "\nAlso works for: ";
