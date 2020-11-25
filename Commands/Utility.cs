@@ -287,15 +287,46 @@ namespace JifBot.Commands
             await ReplyAsync(responses[num]);
         }
 
-        [Command("s8ball")]
-        [Remarks("-c-")]
-        [Summary("asks the sassy 8 ball a question.")]
-        public async Task SeightBall([Remainder] string useless = "")
+        [Command("dice")]
+        [Remarks("-c- 1d20")]
+        [Alias("roll")]
+        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]")]
+        public async Task Dice([Remainder] string message)
         {
-            string[] responses = new string[] { "Fuck yeah.", "Sure, why not?", "Well, duh.", "Do bears shit in the woods?", "Is water wet?", "I mean, I guess.", "If it gets you to fuck off, then sure.", "011110010110010101110011", "Whatever floats your boat.", "Fine, sure, whatever.", "Fuck you.", "Why do you feel the need to ask a BOT for validation?", "Figure it out yourself.", "Does it really matter?", "Leave me alone.", "Fuck no.", "Why would you even consider that a possibility?", "It's cute you think that could happen.", "Not a chance shitlord.", "Not in a million years." };
+            Match dice = Regex.Match(message, @"[0-9]+d[0-9]+");
+            if (!dice.Success)
+            {
+                await ReplyAsync("Invalid, used [# dice]d[# sides]");
+            }
+
             Random rnd = new Random();
-            int num = rnd.Next(20);
-            await ReplyAsync(responses[num]);
+            MatchCollection vals = Regex.Matches(message, @"[0-9]+");
+            int numDice = Convert.ToInt32(vals[0].Value);
+            int diceSides = Convert.ToInt32(vals[1].Value);
+
+            if(numDice == 0 || diceSides == 0)
+            {
+                await ReplyAsync("Cannot be 0");
+                return;
+            }
+
+            string msg = "";
+            int total = 0;
+
+            for(int i = 0; i < numDice; i++)
+            {
+                int num = rnd.Next(diceSides) + 1;
+                total += num;
+                msg += $"**{num}**, ";
+            }
+
+            msg = msg.Remove(msg.LastIndexOf(", "));
+
+            if (numDice == 1)
+                await ReplyAsync($"Rolled: {msg}");
+            else
+                await ReplyAsync($"Rolled: {msg}\nTotal: **{total}**");
+
         }
 
         [Command("tiltycat")]
