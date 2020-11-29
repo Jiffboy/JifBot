@@ -26,6 +26,7 @@ namespace JifBot.Models
         public virtual DbSet<ServerConfig> ServerConfig { get; set; }
         public virtual DbSet<Command> Command { get; set; }
         public virtual DbSet<CommandAlias> CommandAlias { get; set; }
+        public virtual DbSet<ReactRole> ReactRole { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -128,6 +129,10 @@ namespace JifBot.Models
                 entity.Property(e => e.LeaveId);
 
                 entity.Property(e => e.MessageId);
+
+                entity.Property(e => e.ReactMessageId);
+
+                entity.Property(e => e.ReactChannelId);
             });
 
             modelBuilder.Entity<Command>(entity =>
@@ -151,6 +156,17 @@ namespace JifBot.Models
                 entity.Property(e => e.Alias);
 
                 entity.Property(e => e.Command);
+            });
+
+            modelBuilder.Entity<ReactRole>(entity =>
+            {
+                entity.HasKey(e => e.RoleId);
+
+                entity.Property(e => e.RoleId);
+
+                entity.Property(e => e.Emote);
+
+                entity.Property(e => e.ServerId);
             });
 
             OnModelCreatingPartial(modelBuilder);

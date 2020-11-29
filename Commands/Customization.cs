@@ -1,8 +1,11 @@
 ﻿using System.Threading.Tasks;
 using System.Linq;
+using System;
+using Discord;
 using Discord.Commands;
 using JifBot.Models;
 using JIfBot;
+using System.Text.RegularExpressions;
 
 namespace JifBot.Commands
 {
@@ -248,6 +251,149 @@ namespace JifBot.Commands
                 await ReplyAsync($"Message deletion reports will now be sent in {Context.Channel.Name}");
             }
             db.SaveChanges();
+        }
+
+        [Command("placereactrole")]
+        [Remarks("-c-, -c- -d")]
+        [Summary("Places a message in the current channel that users can react to to assign themselves roles. To assign roles to be added to this message, see -p-reactroles. Using this command again will delete the old message, and send a new message. Using this command with -d will delete the message (but keep all pairings set with -p-reactroles)")]
+        public async Task PlaceReactRole([Remainder] string command = "")
+        {
+            if (Context.Guild.OwnerId != Context.User.Id)
+            {
+                await ReplyAsync("Command can only be used by server owner");
+                return;
+            }
+
+            var db = new BotBaseContext();
+            var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
+            
+            if(command == "-d")
+            {
+                if (config != null && config.ReactMessageId != 0 && config.ReactChannelId != 0)
+                {
+                    var channel = await Context.Guild.GetTextChannelAsync(config.ReactChannelId);
+                    var msg = await channel.GetMessageAsync(config.ReactMessageId);
+                    await msg.DeleteAsync();
+                    config.ReactChannelId = 0;
+                    config.ReactMessageId = 0;
+                    db.SaveChanges();
+                    await ReplyAsync("Message removed. Any withstanding roles will remain.");
+                    return;
+                }
+                await ReplyAsync("Message does not exist, or cannot be found. Not deleting");
+                return;
+            }
+
+            var message = await ReplyAsync("", false, BuildReactMessage(Context.Guild));
+
+            if (config == null)
+            {
+                db.Add(new ServerConfig { ServerId = Context.Guild.Id, ReactMessageId = message.Id, ReactChannelId = message.Channel.Id });
+            }
+            else 
+            {
+                if (config.ReactChannelId != 0)
+                {
+                    var channel = await Context.Guild.GetTextChannelAsync(config.ReactChannelId);
+                    var msg = await channel.GetMessageAsync(config.ReactMessageId);
+                    await msg.DeleteAsync();
+                }
+
+                config.ReactMessageId = message.Id;
+                config.ReactChannelId = message.Channel.Id;
+            }
+            db.SaveChanges();
+        }
+
+        [Command("reactrole")]
+        [Remarks("-c- @role 🦊, -c- @role -d")]
+        [Summary("Assigns role-reaction pairings to show in the message sent by -p-placereactrole. Ensure that Jif Bot is a higher role than any of the roles you would like to be assigned. Any use of -p-reactrole will be represented in the message sent by -p-placereactrole. The emote for a role can be changed by calling the command again with a different emote. A role can be removed by using -d in place of an emote.")]
+        public async Task ReactRole(string role, string emote)
+        {
+            if (Context.Guild.OwnerId != Context.User.Id)
+            {
+                await ReplyAsync("Command can only be used by server owner");
+                return;
+            }
+
+            var db = new BotBaseContext();
+            if(!Regex.IsMatch(role, @"[0-9]+"))
+            {
+                await ReplyAsync("Not a valid role");
+                return;
+            }
+            ulong roleId = Convert.ToUInt64(Regex.Match(role, @"[0-9]+").Value);
+            if(Context.Guild.Roles.Where(r => r.Id == roleId).FirstOrDefault() == null)
+            {
+                await ReplyAsync("Not a valid role");
+                return;
+            }
+
+            var react = db.ReactRole.AsQueryable().Where(s => s.RoleId == roleId).FirstOrDefault();
+            var rRole = db.ReactRole.AsQueryable().Where(r => r.Emote == emote && r.ServerId == Context.Guild.Id).FirstOrDefault();
+
+            if (emote == "-d")
+            {
+                if (react != null)
+                {
+                    db.Remove(react);
+                    db.SaveChanges();
+                    await ReplyAsync("Role removed");
+                }
+                else
+                {
+                    await ReplyAsync("Role does not exist. Not removing");
+                    return;
+                }
+            }
+            else if (rRole != null)
+            {
+                await ReplyAsync("Emote already being used");
+                return;
+            }
+            else if (react == null)
+            {
+                db.Add(new ReactRole { RoleId = roleId, Emote = emote, ServerId = Context.Guild.Id });
+                db.SaveChanges();
+                await ReplyAsync("Role Added");
+            }
+            else if (roleId == react.RoleId)
+            {
+                react.Emote = emote;
+                db.SaveChanges();
+                await ReplyAsync($"Updated emote for <@&{react.RoleId}>");
+            }
+
+            var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
+            var channel = await Context.Guild.GetTextChannelAsync(config.ReactChannelId);
+            var msg = (IUserMessage)await channel.GetMessageAsync(config.ReactMessageId);
+            await msg.ModifyAsync(m => m.Embed = BuildReactMessage(Context.Guild));
+        }
+
+        public Embed BuildReactMessage(IGuild server)
+        {
+            var db = new BotBaseContext();
+            var embed = new JifBotEmbedBuilder();
+            embed.Title = "React with the following emojis to receive the corresponding role. Remove the reaction to remove the role.";
+            embed.Description = "";
+
+            var roles = db.ReactRole.AsQueryable().Where(r => r.ServerId == server.Id).DefaultIfEmpty();
+            var config = db.Configuration.AsQueryable().Where(c => c.Name == Program.configName).First();
+
+            if (roles.First() == null)
+            {
+                embed.Description = $"No emotes currently set. Use {config.Prefix}reactrole to set roles";
+            }
+            else
+            {
+                foreach (var role in roles)
+                {
+                    var dRole = server.GetRole(role.RoleId);
+                    embed.Description += $"{role.Emote} -- <@&{role.RoleId}>\n\n";
+                }
+            }
+
+            return embed.Build();
         }
     }
 }

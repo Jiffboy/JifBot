@@ -38,13 +38,10 @@ namespace JifBot
                 IGuild server = user.Guild;
                 ITextChannel channel = await server.GetTextChannelAsync(config.JoinId);
 
-                var embed = new EmbedBuilder();
-                var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
-                embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
+                var embed = new JifBotEmbedBuilder();
                 embed.ThumbnailUrl = user.GetAvatarUrl();
                 embed.Title = $"**{user.Username} Joined The Server:**";
                 embed.Description = ($"**User:** {user.Mention}");
-                embed.WithCurrentTimestamp();
                 await channel.SendMessageAsync("", false, embed: embed.Build());
             }
         }
@@ -61,13 +58,10 @@ namespace JifBot
                 IGuild server = user.Guild;
                 ITextChannel channel = await server.GetTextChannelAsync(config.LeaveId);
 
-                var embed = new EmbedBuilder();
-                var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
-                embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
+                var embed = new JifBotEmbedBuilder();
                 embed.ThumbnailUrl = user.GetAvatarUrl();
                 embed.Title = $"**{user.Username} Left The Server:**";
                 embed.Description = $"**User:**{user.Mention}";
-                embed.WithCurrentTimestamp();
                 await channel.SendMessageAsync("", false, embed.Build());
             }
         }
@@ -84,14 +78,18 @@ namespace JifBot
                 ITextChannel sendChannel = await server.GetTextChannelAsync(config.MessageId);
 
                 var message = await cache.GetOrDownloadAsync();
-                var embed = new EmbedBuilder();
-                var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
-                embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
+                var embed = new JifBotEmbedBuilder();
                 embed.Title = "A message has been deleted";
-                embed.Description = "\"" + message.Content + "\"";
-                embed.WithCurrentTimestamp();
-                embed.AddField("in " + channel.Name, "sent by: " + message.Author);
-                embed.ThumbnailUrl = message.Author.GetAvatarUrl();
+                if (message != null)
+                {
+                    embed.Description = "\"" + message.Content + "\"";
+                    embed.AddField("in " + channel.Name, "sent by: " + message.Author);
+                    embed.ThumbnailUrl = message.Author.GetAvatarUrl();
+                }
+                else
+                {
+                    embed.AddField("in " + channel.Name, "message unknown");
+                }
                 await sendChannel.SendMessageAsync("", false, embed.Build());
             }
         }
@@ -119,6 +117,44 @@ namespace JifBot
             Console.WriteLine($"{DateTime.Now} [{lmsg.Severity,8}] {lmsg.Source}: {lmsg.Message}");
             Console.ForegroundColor = cc;
             return Task.CompletedTask;
+        }
+
+        public async Task HandleReactionAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
+        {
+            var db = new BotBaseContext();
+            var config = db.ServerConfig.AsQueryable().Where(s => s.ReactMessageId == cache.Id).FirstOrDefault();
+            if (config != null)
+            {
+                var role = db.ReactRole.AsQueryable().Where(s => s.ServerId == config.ServerId && s.Emote == reaction.Emote.ToString()).FirstOrDefault();
+                if (role != null)
+                {
+                    var server = bot.GetGuild(config.ServerId);
+                    var serverRole = server.GetRole(role.RoleId);
+                    var user = server.GetUser(reaction.UserId);
+                    
+                    if(serverRole != null)
+                        await user.AddRoleAsync((IRole)serverRole);
+                }
+            }
+        }
+
+        public async Task HandleReactionRemoved(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
+        {
+            var db = new BotBaseContext();
+            var config = db.ServerConfig.AsQueryable().Where(s => s.ReactMessageId == cache.Id).FirstOrDefault();
+            if (config != null)
+            {
+                var role = db.ReactRole.AsQueryable().Where(s => s.ServerId == config.ServerId && s.Emote == reaction.Emote.ToString()).FirstOrDefault();
+                if (role != null)
+                {
+                    var server = bot.GetGuild(config.ServerId);
+                    var serverRole = server.GetRole(role.RoleId);
+                    var user = server.GetUser(reaction.UserId);
+
+                    if (serverRole != null)
+                        await user.RemoveRoleAsync((IRole)serverRole);
+                }
+            }
         }
 
         public async Task HandleMessage(SocketMessage pMsg)

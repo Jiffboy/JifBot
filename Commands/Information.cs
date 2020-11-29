@@ -27,13 +27,10 @@ namespace JifBot.Commands
             var commands = db.Command.AsQueryable().OrderBy(command => command.Category );
             var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
 
-            var embed = new EmbedBuilder();
-            var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
-            embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
+            var embed = new JifBotEmbedBuilder();
+            
             embed.Title = "All commands will begin with a " + config.Prefix + " , for more information on individual commands, use: " + config.Prefix + "help commandName";
             embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://vertigeux.github.io/jifbot.html";
-            embed.WithFooter("Made with love");
-            embed.WithCurrentTimestamp();
 
             string cat = commands.First().Category;
             string list = "";
@@ -115,9 +112,7 @@ namespace JifBot.Commands
             var json = JObject.Parse(stuff);
             if (multiple)
             {
-                var embed = new EmbedBuilder();
-                var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
-                embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
+                var embed = new JifBotEmbedBuilder();
                 string def = "1.) " + (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].definitions[0]");
                 string example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].examples[0].text");
                 if (example == null)
@@ -139,8 +134,6 @@ namespace JifBot.Commands
                         embed.AddField(def, example);
                     }
                 }
-                embed.WithFooter("Made with love");
-                embed.WithCurrentTimestamp();
                 await ReplyAsync("", false, embed.Build());
             }
             else
@@ -241,9 +234,7 @@ namespace JifBot.Commands
                 await ReplyAsync("Movie not found");
                 return;
             }
-            var embed = new EmbedBuilder();
-            var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
-            embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
+            var embed = new JifBotEmbedBuilder();
             string rt = (string)json.SelectToken("Ratings[1].Value");
             string imdb = (string)json.SelectToken("Ratings[0].Value");
             string plot = (string)json.SelectToken("Plot");
@@ -268,10 +259,6 @@ namespace JifBot.Commands
             embed.AddField("Starring", (string)json.SelectToken("Actors"));
             embed.AddField("Directed By", (string)json.SelectToken("Director"), inline: true);
             embed.WithUrl("https://www.imdb.com/title/" + (string)json.SelectToken("imdbID"));
-
-
-            embed.WithFooter("Made with love");
-            embed.WithCurrentTimestamp();
             await ReplyAsync("", false, embed.Build());
         }
 
@@ -315,87 +302,83 @@ namespace JifBot.Commands
             else
             {
                 var db = new BotBaseContext();
-                var embed = new EmbedBuilder();
-                var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
-                embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
+                var embed = new JifBotEmbedBuilder();
+                
+                string kdsource = source.Remove(0, source.IndexOf("summoner-id=\"") + 13);
+                kdsource = kdsource.Remove(kdsource.IndexOf("\""));
+                if (region == "kr")
+                    kdsource = "http://www." + "op.gg/summoner/champions/ajax/champions.most/summonerId=" + kdsource + "&season=11";
+                else
+                    kdsource = "http://" + region + ".op.gg/summoner/champions/ajax/champions.most/summonerId=" + kdsource + "&season=11";
+                System.Net.Http.HttpClient client2 = new System.Net.Http.HttpClient();
+                kdsource = await client2.GetStringAsync(kdsource);
+                string url = source.Remove(0, source.IndexOf("ProfileIcon"));
+                url = url.Remove(0, url.IndexOf("<img src=\"//") + 12);
+                url = url.Remove(url.IndexOf("\""));
+                url = "http://" + url;
+                embed.ThumbnailUrl = url;
+                Int32 start = source.IndexOf(SearchText) + SearchText.Length;
+                source = source.Remove(0, start);
+                Int32 end = source.IndexOf(SearchText2);
+                source = source.Remove(end);
+
+                source = source.Replace("&#039;", "'");
+                if (source.IndexOf("Lv. ") == -1 && source.IndexOf("Unranked") == -1)
                 {
-                    string kdsource = source.Remove(0, source.IndexOf("summoner-id=\"") + 13);
-                    kdsource = kdsource.Remove(kdsource.IndexOf("\""));
-                    if (region == "kr")
-                        kdsource = "http://www." + "op.gg/summoner/champions/ajax/champions.most/summonerId=" + kdsource + "&season=11";
-                    else
-                        kdsource = "http://" + region + ".op.gg/summoner/champions/ajax/champions.most/summonerId=" + kdsource + "&season=11";
-                    System.Net.Http.HttpClient client2 = new System.Net.Http.HttpClient();
-                    kdsource = await client2.GetStringAsync(kdsource);
-                    string url = source.Remove(0, source.IndexOf("ProfileIcon"));
-                    url = url.Remove(0, url.IndexOf("<img src=\"//") + 12);
-                    url = url.Remove(url.IndexOf("\""));
-                    url = "http://" + url;
-                    embed.ThumbnailUrl = url;
-                    Int32 start = source.IndexOf(SearchText) + SearchText.Length;
-                    source = source.Remove(0, start);
-                    Int32 end = source.IndexOf(SearchText2);
-                    source = source.Remove(end);
-
-                    source = source.Replace("&#039;", "'");
-                    if (source.IndexOf("Lv. ") == -1 && source.IndexOf("Unranked") == -1)
+                    string def = "Information for: " + source.Remove(source.IndexOf("/")) + "\n";
+                    source = source.Remove(0, source.IndexOf("/") + 1);
+                    embed.Title = def;
+                    def = "Current Ranking: " + source.Remove(source.IndexOf("/")) + "\n";
+                    source = source.Remove(0, source.IndexOf("/") + 1);
+                    def = def + "Win Record: " + source.Remove(source.IndexOf("Win")) + "  (";
+                    source = source.Remove(0, source.IndexOf("o") + 1);
+                    def = def + source.Remove(source.IndexOf("/")) + ")\n\nTop 5 Champions:\n";
+                    source = source.Remove(0, source.IndexOf("/") + 1);
+                    embed.Description = def;
+                    for (int i = 0; i < 4; i++)
                     {
-                        string def = "Information for: " + source.Remove(source.IndexOf("/")) + "\n";
-                        source = source.Remove(0, source.IndexOf("/") + 1);
-                        embed.Title = def;
-                        def = "Current Ranking: " + source.Remove(source.IndexOf("/")) + "\n";
-                        source = source.Remove(0, source.IndexOf("/") + 1);
-                        def = def + "Win Record: " + source.Remove(source.IndexOf("Win")) + "  (";
-                        source = source.Remove(0, source.IndexOf("o") + 1);
-                        def = def + source.Remove(source.IndexOf("/")) + ")\n\nTop 5 Champions:\n";
-                        source = source.Remove(0, source.IndexOf("/") + 1);
-                        embed.Description = def;
-                        for (int i = 0; i < 4; i++)
+                        if (source.IndexOf(",") != -1)
                         {
-                            if (source.IndexOf(",") != -1)
-                            {
-                                def = source.Remove(source.IndexOf("Win")) + "(";
-                                source = source.Remove(0, source.IndexOf("Win") + 9);
-                                def = def + source.Remove(source.IndexOf(",")) + " )";
-                                def = def.Remove(def.IndexOf("-")) + def.Remove(0, def.IndexOf("-")).PadRight(30, ' ');
-                                source = source.Remove(0, source.IndexOf(",") + 1);
-                                kdsource = kdsource.Remove(0, kdsource.IndexOf("span class=\"KDA") + 17);
-                                def = def + "KDA: **" + kdsource.Remove(kdsource.IndexOf(":")) + "**     ( ";
-                                kdsource = kdsource.Remove(0, kdsource.IndexOf("KDAEach"));
-                                kdsource = kdsource.Remove(0, kdsource.IndexOf("Kill") + 6);
-                                def = def + kdsource.Remove(kdsource.IndexOf("<"));
-                                kdsource = kdsource.Remove(0, kdsource.IndexOf("Death") + 7);
-                                def = def + " / " + kdsource.Remove(kdsource.IndexOf("<"));
-                                kdsource = kdsource.Remove(0, kdsource.IndexOf("Assist") + 8);
-                                def = def + " / " + kdsource.Remove(kdsource.IndexOf("<")) + " )";
-                                embed.AddField(def.Remove(def.IndexOf("-")), def.Remove(0, def.IndexOf("-") + 1));
+                            def = source.Remove(source.IndexOf("Win")) + "(";
+                            source = source.Remove(0, source.IndexOf("Win") + 9);
+                            def = def + source.Remove(source.IndexOf(",")) + " )";
+                            def = def.Remove(def.IndexOf("-")) + def.Remove(0, def.IndexOf("-")).PadRight(30, ' ');
+                            source = source.Remove(0, source.IndexOf(",") + 1);
+                            kdsource = kdsource.Remove(0, kdsource.IndexOf("span class=\"KDA") + 17);
+                            def = def + "KDA: **" + kdsource.Remove(kdsource.IndexOf(":")) + "**     ( ";
+                            kdsource = kdsource.Remove(0, kdsource.IndexOf("KDAEach"));
+                            kdsource = kdsource.Remove(0, kdsource.IndexOf("Kill") + 6);
+                            def = def + kdsource.Remove(kdsource.IndexOf("<"));
+                            kdsource = kdsource.Remove(0, kdsource.IndexOf("Death") + 7);
+                            def = def + " / " + kdsource.Remove(kdsource.IndexOf("<"));
+                            kdsource = kdsource.Remove(0, kdsource.IndexOf("Assist") + 8);
+                            def = def + " / " + kdsource.Remove(kdsource.IndexOf("<")) + " )";
+                            embed.AddField(def.Remove(def.IndexOf("-")), def.Remove(0, def.IndexOf("-") + 1));
 
-                            }
                         }
-                        def = source.Remove(source.IndexOf("Win")) + "  (";
-                        source = source.Remove(0, source.IndexOf("Win") + 9);
-                        def = def + source + " )";
-                        def = def.Remove(def.IndexOf("-")) + def.Remove(0, def.IndexOf("-")).PadRight(30, ' ');
-                        kdsource = kdsource.Remove(0, kdsource.IndexOf("span class=\"KDA") + 17);
-                        def = def + "KDA: **" + kdsource.Remove(kdsource.IndexOf(":")) + "**     ( ";
-                        kdsource = kdsource.Remove(0, kdsource.IndexOf("KDAEach"));
-                        kdsource = kdsource.Remove(0, kdsource.IndexOf("Kill") + 6);
-                        def = def + kdsource.Remove(kdsource.IndexOf("<"));
-                        kdsource = kdsource.Remove(0, kdsource.IndexOf("Death") + 7);
-                        def = def + " / " + kdsource.Remove(kdsource.IndexOf("<"));
-                        kdsource = kdsource.Remove(0, kdsource.IndexOf("Assist") + 8);
-                        def = def + " / " + kdsource.Remove(kdsource.IndexOf("<")) + " )";
-                        embed.AddField(def.Remove(def.IndexOf("-")), def.Remove(0, def.IndexOf("-") + 1));
                     }
-                    else
-                    {
-                        await ReplyAsync("That Summoner has not been placed yet this season");
-                        return;
-                    }
+                    def = source.Remove(source.IndexOf("Win")) + "  (";
+                    source = source.Remove(0, source.IndexOf("Win") + 9);
+                    def = def + source + " )";
+                    def = def.Remove(def.IndexOf("-")) + def.Remove(0, def.IndexOf("-")).PadRight(30, ' ');
+                    kdsource = kdsource.Remove(0, kdsource.IndexOf("span class=\"KDA") + 17);
+                    def = def + "KDA: **" + kdsource.Remove(kdsource.IndexOf(":")) + "**     ( ";
+                    kdsource = kdsource.Remove(0, kdsource.IndexOf("KDAEach"));
+                    kdsource = kdsource.Remove(0, kdsource.IndexOf("Kill") + 6);
+                    def = def + kdsource.Remove(kdsource.IndexOf("<"));
+                    kdsource = kdsource.Remove(0, kdsource.IndexOf("Death") + 7);
+                    def = def + " / " + kdsource.Remove(kdsource.IndexOf("<"));
+                    kdsource = kdsource.Remove(0, kdsource.IndexOf("Assist") + 8);
+                    def = def + " / " + kdsource.Remove(kdsource.IndexOf("<")) + " )";
+                    embed.AddField(def.Remove(def.IndexOf("-")), def.Remove(0, def.IndexOf("-") + 1));
                 }
-                embed.WithFooter("Made with love");
-                embed.WithCurrentTimestamp();
-                await ReplyAsync("", false, embed.Build());
+                else
+                {
+                    await ReplyAsync("That Summoner has not been placed yet this season");
+                    return;
+                }
+                
+            await ReplyAsync("", false, embed.Build());
             }
         }
 
@@ -405,9 +388,7 @@ namespace JifBot.Commands
         public async Task Mastery(string region, [Remainder] string name)
         {
             var db = new BotBaseContext();
-            var embed = new EmbedBuilder();
-            var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
-            embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
+            var embed = new JifBotEmbedBuilder();
             {
                 name = name.Replace(" ", string.Empty);
                 System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
@@ -450,8 +431,6 @@ namespace JifBot.Commands
                     nums = nums.Remove(j) + "," + nums.Remove(0, j);
                 embed.Description = "Total score across top ten: " + nums;
 
-                embed.WithFooter("Made with love");
-                embed.WithCurrentTimestamp();
                 await ReplyAsync("", false, embed.Build());
             }
         }
@@ -570,9 +549,7 @@ namespace JifBot.Commands
         public EmbedBuilder ConstructEmbedInfo(IGuildUser user)
         {
             var db = new BotBaseContext();
-            var embed = new EmbedBuilder();
-            var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
-            embed.WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
+            var embed = new JifBotEmbedBuilder();
             embed.WithAuthor(user.Username + "#" + user.Discriminator, user.GetAvatarUrl());
             embed.ThumbnailUrl = user.GetAvatarUrl();
             embed.AddField("User ID", user.Id);
@@ -595,9 +572,6 @@ namespace JifBot.Commands
                     roles = roles + Context.Guild.GetRole(id).Name;
             }
             embed.AddField("Roles", roles);
-            embed.WithFooter("Made with love");
-
-            embed.WithCurrentTimestamp();
             return embed;
         }
     }

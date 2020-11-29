@@ -57,6 +57,8 @@ namespace JIfBot
             bot.UserLeft += eventHandler.AnnounceLeftUser;
             bot.MessageDeleted += eventHandler.SendMessageReport;
             bot.MessageReceived += eventHandler.HandleMessage;
+            bot.ReactionAdded += eventHandler.HandleReactionAdded;
+            bot.ReactionRemoved += eventHandler.HandleReactionRemoved;
 
             await commands.AddModulesAsync(Assembly.GetEntryAssembly(), map);
 
