@@ -253,10 +253,10 @@ namespace JifBot.Commands
             db.SaveChanges();
         }
 
-        [Command("placereactrole")]
+        [Command("placereactmessage")]
         [Remarks("-c-, -c- -d")]
-        [Summary("Places a message in the current channel that users can react to to assign themselves roles. To assign roles to be added to this message, see -p-reactroles. Using this command again will delete the old message, and send a new message. Using this command with -d will delete the message (but keep all pairings set with -p-reactroles)")]
-        public async Task PlaceReactRole([Remainder] string command = "")
+        [Summary("Places a message in the current channel that users can react to in order to assign themselves roles. To assign roles to be added to this message, see -p-reactroles. Using this command again will delete the old message, and send a new message. Using this command with -d will delete the message (but keep all pairings set with -p-reactroles)")]
+        public async Task PlaceReactMessage([Remainder] string command = "")
         {
             if (Context.Guild.OwnerId != Context.User.Id)
             {
@@ -307,7 +307,7 @@ namespace JifBot.Commands
 
         [Command("reactrole")]
         [Remarks("-c- @role 🦊, -c- @role -d")]
-        [Summary("Assigns role-reaction pairings to show in the message sent by -p-placereactrole. Ensure that Jif Bot is a higher role than any of the roles you would like to be assigned. Any use of -p-reactrole will be represented in the message sent by -p-placereactrole. The emote for a role can be changed by calling the command again with a different emote. A role can be removed by using -d in place of an emote.")]
+        [Summary("Assigns role-reaction pairings to show in the message sent by -p-placereactmessage. Ensure that Jif Bot is a higher role than any of the roles you would like to be assigned. Any use of -p-reactrole will be represented in the message sent by -p-placereactmessage, and can be used in a seperate channel. The emote for a role can be changed by calling the command again with a different emote. A role can be removed by using -d in place of an emote.")]
         public async Task ReactRole(string role, string emote)
         {
             if (Context.Guild.OwnerId != Context.User.Id)
