@@ -510,15 +510,25 @@ namespace JifBot.Commands
             }
         }
 
-        [Command("beefact")]
+        [Command("funfact")]
         [Remarks("-c-")]
-        [Alias("beefacts", "bee", "bees")]
-        [Summary("Provides a fact about bees.")]
+        [Alias("fact")]
+        [Summary("Provides a random fact.")]
         public async Task beeFact([Remainder] string useless = "")
         {
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            string fact = await client.GetStringAsync("http://thebuzz.writeonlymedia.com/api");
-            await ReplyAsync(fact.TrimStart('\"').TrimEnd('\"'));
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri("https://useless-facts.sameerkumar.website");
+            HttpResponseMessage response = await client.GetAsync("/api");
+            HttpContent content = response.Content;
+            string stuff = await content.ReadAsStringAsync();
+            var json = JObject.Parse(stuff);
+            if ((string)json.SelectToken("Response") == "False")
+            {
+                await ReplyAsync("Error retrieving fact");
+                return;
+            }
+            string fact = (string)json.SelectToken("data");
+            await ReplyAsync(fact);
         }
 
         async Task<bool> RemoteFileExists(string url)
