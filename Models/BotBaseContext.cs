@@ -42,15 +42,9 @@ namespace JifBot.Models
             {
                 entity.HasKey(e => e.Name);
 
-                entity.Property(e => e.Token);
-
-                entity.Property(e => e.DictId).IsRequired();
-
-                entity.Property(e => e.DictKey).IsRequired();
+                entity.Property(e => e.Token).IsRequired();
 
                 entity.Property(e => e.Prefix).IsRequired();
-
-                entity.Property(e => e.OmdbKey).IsRequired();
             });
 
             modelBuilder.Entity<Honk>(entity =>

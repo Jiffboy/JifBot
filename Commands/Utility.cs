@@ -396,6 +396,7 @@ namespace JifBot.Commands
                         {
                             QuoteResult result = JsonConvert.DeserializeObject<QuoteResult>(jsonResponse);
                             quoteList = result.List;
+                            var target = result.List;
                         }
                         catch (Exception ex)
                         {
@@ -408,9 +409,9 @@ namespace JifBot.Commands
             Random rnd = new Random();
             int num = rnd.Next(count);
             Quote quote = quoteList[num];
+            if(quote.author == null)
+                quote.author = "Author Unknown";
             await ReplyAsync("\"" + quote.text + "\"\n-" + quote.author);
-
-
         }
 
         public string getSmol(char orig)

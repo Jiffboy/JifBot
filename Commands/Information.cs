@@ -83,13 +83,14 @@ namespace JifBot.Commands
         public async Task Define([Remainder] string word)
         {
             var db = new BotBaseContext();
-            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+            var dictId = db.Variable.AsQueryable().Where(v => v.Name == "dictId").First();
+            var dictKey = db.Variable.AsQueryable().Where(v => v.Name == "dictKey").First();
             bool multiple = false;
 
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri("https://od-api.oxforddictionaries.com/api/v2/entries/en/");
-            client.DefaultRequestHeaders.Add("app_id", config.DictId);
-            client.DefaultRequestHeaders.Add("app_key", config.DictKey);
+            client.DefaultRequestHeaders.Add("app_id", dictId.Value);
+            client.DefaultRequestHeaders.Add("app_key", dictKey.Value);
             if (word.EndsWith(" -m"))
             {
                 word = word.Replace(" -m", "");
@@ -221,11 +222,11 @@ namespace JifBot.Commands
         public async Task Movie([Remainder] string word)
         {
             var db = new BotBaseContext();
-            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+            var omdbKey = db.Variable.AsQueryable().Where(v => v.Name == "omdbKey").First();
 
             HttpClient client = new HttpClient();
             client.BaseAddress = new Uri("http://www.omdbapi.com");
-            HttpResponseMessage response = await client.GetAsync($"?t={word}&plot=full&apikey={config.OmdbKey}");
+            HttpResponseMessage response = await client.GetAsync($"?t={word}&plot=full&apikey={omdbKey.Value}");
             HttpContent content = response.Content;
             string stuff = await content.ReadAsStringAsync();
             var json = JObject.Parse(stuff);

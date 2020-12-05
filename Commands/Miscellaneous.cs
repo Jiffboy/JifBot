@@ -4,6 +4,7 @@ using System.Linq;
 using Discord;
 using Discord.Commands;
 using JifBot.Models;
+using System.Text.RegularExpressions;
 
 namespace JifBot.Commands
 {
@@ -11,6 +12,8 @@ namespace JifBot.Commands
     {
         [Command("reese")]
         [Remarks("-c-")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         [Summary("Prompts ladies to hit him up.")]
         public async Task Reese()
         {
@@ -139,57 +142,64 @@ namespace JifBot.Commands
         }
 
         [Command("honkcount")]
-        [Remarks("-c-")]
-        [Summary("Reports the number of times you have said honk\"")]
-        public async Task honkCount([Remainder] string useless = "")
+        [Remarks("-c-, -c- @user")]
+        [Summary("Reports the number of times you have said \"honk\". If provided with a user ID (or by pinging a user), their honk count will be reported instead.")]
+        public async Task honkCount([Remainder] string msg = "")
         {
             var db = new BotBaseContext();
-            var honk = db.Honk.AsQueryable().Where(user => user.UserId == Context.Message.Author.Id).FirstOrDefault();
-            if (honk != null)
-                await ReplyAsync($"You have honked {honk.Count} times!");
-            else
-                await ReplyAsync("You have never honked! For shame!");
-        }
-
-        [Command("totalhonks")]
-        [Remarks("-c-")]
-        [Summary("Reports the total number of honks accross all users\"")]
-        public async Task totalHonks([Remainder] string useless = "")
-        {
-            var db = new BotBaseContext();
-            long count = 0;
-            foreach (Honk honk in db.Honk)
+            Honk honk = new Honk();
+            if (Regex.IsMatch(msg, @"[0-9]+"))
             {
-                count += honk.Count;
+                var id = Convert.ToUInt64(Regex.Match(msg, @"[0-9]+").Value);
+                honk = db.Honk.AsQueryable().Where(user => user.UserId == id).FirstOrDefault();
             }
-            await ReplyAsync($"{count} honks");
+            else
+                honk = db.Honk.AsQueryable().Where(user => user.UserId == Context.Message.Author.Id).FirstOrDefault();
+
+            if (honk != null)
+                await ReplyAsync($"Honked {honk.Count} times!");
+            else
+                await ReplyAsync("This user has never honked! For shame!");
         }
 
         [Command("honkboard")]
-        [Remarks("-c-")]
-        [Summary("Reports the top 5 users who have honked the most\"")]
-        public async Task honkBoard([Remainder] string useless = "")
+        [Remarks("-c-, -c- 10, -c- -a")]
+        [Alias("totalhonks")]
+        [Summary("Reports the top number of users who have honked the most. If a number is not specified, the top 5 will be reported. Additionally, to get all users, use -a.")]
+        public async Task honkBoard([Remainder] string msg = "")
         {
+            int results = 5;
             var db = new BotBaseContext();
             var honks = db.Honk.AsQueryable().OrderByDescending(honk => honk.Count);
             int count = 1;
+            long total = 0;
             string message = "";
+            if (Regex.IsMatch(msg, @"[0-9]+"))
+                results = Convert.ToInt32(Regex.Match(msg, @"[0-9]+").Value);
+            if (Regex.IsMatch(msg, @"-a"))
+                results = honks.Count() + 1;
+            
             foreach (Honk honk in honks)
             {
                 var user = db.User.AsQueryable().Where(user => user.UserId == honk.UserId).FirstOrDefault();
-                if (count == 1)
-                    message += "🥇";
-                else if (count == 2)
-                    message += "🥈";
-                else if (count == 3)
-                    message += "🥉";
-                else
-                    message += $"  {count}  ";
-                message += $" {user.Name}#{user.Number} - {honk.Count} honks\n";
+                if (count <= results)
+                {
+                    if (count == 1)
+                        message += "🥇";
+                    else if (count == 2)
+                        message += "🥈";
+                    else if (count == 3)
+                        message += "🥉";
+                    else if (count <= results)
+                        message += $"  {count}  ";
+                    message += $" {user.Name}#{user.Number} - **{honk.Count}** honks\n";
+                }
+                total += honk.Count;
+                if (count == results)
+                    message += $"**Top {count} honks:** {total}\n";
                 count++;
-                if (count > 5)
-                    break;
             }
+            message += $"**Total honks:** {total}";
             await ReplyAsync(message);
         }
     }
