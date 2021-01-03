@@ -288,21 +288,31 @@ namespace JifBot.Commands
         }
 
         [Command("dice")]
-        [Remarks("-c- 1d20")]
+        [Remarks("-c-, -c- 1d20")]
         [Alias("roll")]
-        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]")]
-        public async Task Dice([Remainder] string message)
+        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]. To quickly roll a 6 sided die, do not specify anything")]
+        public async Task Dice([Remainder] string message = "")
         {
             Match dice = Regex.Match(message, @"[0-9]+d[0-9]+");
-            if (!dice.Success)
+            if (!dice.Success && message != "")
             {
                 await ReplyAsync("Invalid, used [# dice]d[# sides]");
             }
 
             Random rnd = new Random();
-            MatchCollection vals = Regex.Matches(message, @"[0-9]+");
-            int numDice = Convert.ToInt32(vals[0].Value);
-            int diceSides = Convert.ToInt32(vals[1].Value);
+            int numDice;
+            int diceSides;
+            if (message == "")
+            {
+                numDice = 1;
+                diceSides = 6;
+            }
+            else
+            {
+                MatchCollection vals = Regex.Matches(message, @"[0-9]+");
+                numDice = Convert.ToInt32(vals[0].Value);
+                diceSides = Convert.ToInt32(vals[1].Value);
+            }
 
             if(numDice == 0 || diceSides == 0)
             {
@@ -372,8 +382,10 @@ namespace JifBot.Commands
             source = source.Replace("</p>", "\n");
             source = source.Replace("<ul>", "\n");
             source = source.Replace("<li>", "\n");
+            source = source.Replace("<em>", "*");
             source = source.Replace("</ul>", "\n");
             source = source.Replace("</li>", "\n");
+            source = source.Replace(">/em>", "*");
             await ReplyAsync(source);
         }
 
