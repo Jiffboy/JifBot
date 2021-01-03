@@ -12,8 +12,6 @@ namespace JifBot.Commands
     {
         [Command("reese")]
         [Remarks("-c-")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        [RequireBotPermission(ChannelPermission.ManageMessages)]
         [Summary("Prompts ladies to hit him up.")]
         public async Task Reese()
         {
