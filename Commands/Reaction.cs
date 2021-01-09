@@ -115,5 +115,13 @@ namespace JifBot.Commands
         {
             await Context.Channel.SendFileAsync("Media/no.jpg");
         }
+
+        [Command("horny")]
+        [Remarks("-c-")]
+        [Summary("Send someone to horny jail")]
+        public async Task Horny()
+        {
+            await Context.Channel.SendFileAsync("Media/horny.jpg");
+        }
     }
 }
