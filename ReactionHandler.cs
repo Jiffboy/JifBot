@@ -47,7 +47,7 @@ namespace JifBot
             if (words.ToLower().Contains("be") && words.ToLower().Contains("gone") && words.ToLower().Contains("thot"))
                 await msg.Channel.SendFileAsync("Media/thot.jpg");
 
-            if (words.ToLower().Contains("kms"))
+            if (words.ToLower().Contains(" kms ") || words.ToLower().Equals("kms") || words.ToLower().StartsWith("kms ") || words.ToLower().EndsWith(" kms"))
             {
                 await msg.Channel.SendFileAsync("Media/kms.png");
             }
