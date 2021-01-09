@@ -25,37 +25,38 @@ namespace JifBot
             string words = msg.Content.ToString();
             words = words.Replace("*", "");
             words = words.Replace("_", "");
+            words = words.ToLower();
 
-            if (words.ToLower().Contains("delet this") || words.ToLower().Contains("delete this"))
+            if (hasString(words, @"delete? this"))
                 await msg.Channel.SendFileAsync("Media/deletthis.jpg");
 
-            if (words.ToLower().Equals(":o") || words.Equals(":0"))
+            if (words.Equals(":o") || words.Equals(":0"))
                 await msg.Channel.SendMessageAsync(":O");
 
-            if (words.ToLower().Contains("fiora"))
+            if (hasString(words,"fiora"))
             {
                 await msg.Channel.SendFileAsync("Media/fiora.jpg");
                 await msg.Channel.SendMessageAsync("**Salty Reese activated**");
             }
 
-            if (words.ToLower().Contains(" nani ") || words.ToLower().Equals("nani") || words.ToLower().StartsWith("nani ") || words.ToLower().EndsWith(" nani"))
+            if (hasString(words, "nani"))
             {
                 await msg.Channel.SendFileAsync("Media/nani.jpg");
                 await msg.Channel.SendMessageAsync("**NANI?!?!**");
             }
 
-            if (words.ToLower().Contains("be") && words.ToLower().Contains("gone") && words.ToLower().Contains("thot"))
+            if (hasString(words, @"be *gone,* thot"))
                 await msg.Channel.SendFileAsync("Media/thot.jpg");
 
-            if (words.ToLower().Contains(" kms ") || words.ToLower().Equals("kms") || words.ToLower().StartsWith("kms ") || words.ToLower().EndsWith(" kms"))
+            if (hasString(words, "kms"))
             {
                 await msg.Channel.SendFileAsync("Media/kms.png");
             }
 
-            if (words.ToLower().Equals("stop"))
+            if (words.Equals("stop"))
                 await msg.Channel.SendFileAsync("Media/stop.png");
 
-            if (words.ToLower().Contains("bamboozle"))
+            if (hasString(words, "bamboozle"))
                 await msg.Channel.SendFileAsync("Media/bamboozle.png");
 
             if (words.ToLower().Equals("hi") || words.ToLower().Equals("hello") || words.ToLower().Equals("hey") || words.ToLower().Equals("yo") || words.ToLower().Equals("henlo"))
@@ -66,13 +67,13 @@ namespace JifBot
                 await msg.Channel.SendMessageAsync(greeting.Greeting1);
             }
 
-            if (words.ToLower().Contains("ahhhhh"))
+            if (hasString(words, @"ah{5,}"))
                 await msg.Channel.SendMessageAsync("https://www.youtube.com/watch?v=yBLdQ1a4-JI");
 
-            if (words.ToLower().Contains("@here") || words.ToLower().Contains("@everyone"))
+            if (hasString(words, "@here") || hasString(words, "@everyone"))
                 await msg.Channel.SendMessageAsync("<:ping:377208255132467233>");
 
-            if ((words.ToLower().Contains(" i mean ") || words.ToLower().Equals("i mean") || words.ToLower().StartsWith("i mean ") || words.ToLower().EndsWith(" i mean")) && msg.Author.Id == 150084781864910848)
+            if (hasString(words, "i mean") && msg.Author.Id == 150084781864910848)
             {
                 var count = db.Variable.AsQueryable().AsQueryable().Where(v => v.Name == "meanCount").First();
                 int num = Convert.ToInt32(count.Value) + 1;
@@ -82,7 +83,7 @@ namespace JifBot
 
             }
 
-            if (Regex.IsMatch(words.ToLower(), "fuck y?o?u jif ?bot"))
+            if (hasString(words, "fuck y?o?u jif ?bot"))
             {
                 await msg.DeleteAsync();
                 await msg.Channel.SendMessageAsync("Know your place, trash.");
@@ -111,7 +112,7 @@ namespace JifBot
                 }
             }
 
-            if (words.ToLower().Contains(" honk ") || words.ToLower().Equals("honk") || words.ToLower().StartsWith("honk ") || words.ToLower().EndsWith(" honk"))
+            if (hasString(words, "honk"))
             {
                 await msg.Channel.SendFileAsync("Media/honk.jpg");
                 await msg.Channel.SendMessageAsync("**HONK**");
@@ -144,6 +145,11 @@ namespace JifBot
                 Emoji react = new Emoji(signature.Signature1);
                 await msg.AddReactionAsync(react);
             }
+        }
+
+        private bool hasString(string message, string phrase)
+        {
+            return Regex.IsMatch(message, @"(?:^| +)" + phrase + @" *(?:$| +)");
         }
     }
 }
