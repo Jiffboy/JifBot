@@ -441,6 +441,7 @@ namespace JifBot.Commands
         [Summary("Gets varying pieces of Discord information for one or more users. Mention a user or provide their id to get their information, or do neither to get your own. To do more than 1 person, separate mentions/ids with spaces.")]
         public async Task MyInfo([Remainder] string ids = "")
         {
+            await Context.Guild.DownloadUsersAsync();
             var mention = Context.Message.MentionedUserIds;
             if (mention.Count != 0)
             {
@@ -471,6 +472,7 @@ namespace JifBot.Commands
         [Summary("Gets the avatar for one or more users. Mention a user or provide their id to get their avatar, or do neither to get your own. To do more than 1 person, separate mentions/ids with spaces.")]
         public async Task Avatar([Remainder] string ids = "")
         {
+            await Context.Guild.DownloadUsersAsync();
             var mention = Context.Message.MentionedUserIds;
             if (mention.Count != 0)
             {

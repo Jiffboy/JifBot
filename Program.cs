@@ -37,7 +37,8 @@ namespace JIfBot
             {
                 //WebSocketProvider = Discord.Net.Providers.WS4Net.WS4NetProvider.Instance
                 MessageCacheSize = 500,
-                LogLevel = LogSeverity.Verbose
+                LogLevel = LogSeverity.Verbose,
+                AlwaysDownloadUsers = true
             });
 
             client.Log += JifBot.EventHandler.WriteLog;
