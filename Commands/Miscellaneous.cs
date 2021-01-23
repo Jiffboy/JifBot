@@ -93,6 +93,7 @@ namespace JifBot.Commands
 
         [Command("whisper")]
         [Remarks("-c- \"name\" message")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         [Summary("Sends a private message to someone on the server. The message containing your command call will be deleted for anonymity. NOTE: the \"name\" is the person's Discord username without the numbers.")]
         public async Task Whisper([Remainder] string contents)
         {

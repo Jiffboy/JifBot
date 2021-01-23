@@ -45,6 +45,8 @@ namespace JifBot.Models
                 entity.Property(e => e.Token).IsRequired();
 
                 entity.Property(e => e.Prefix).IsRequired();
+
+                entity.Property(e => e.Id).IsRequired();
             });
 
             modelBuilder.Entity<Honk>(entity =>

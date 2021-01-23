@@ -30,6 +30,7 @@ namespace JifBot.Commands
 
         [Command("bigtext")]
         [Remarks("-c- phrase, -c- phrase -d")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         [Summary("Takes the user input for messages and turns it into large letters using emotes. If you end your command call with -d, it will delete your message calling the bot.")]
         public async Task bigtext([Remainder]string orig)
         {
@@ -54,6 +55,7 @@ namespace JifBot.Commands
         [Command("tinytext")]
         [Alias("smalltext")]
         [Remarks("-c- phrase, -c- phrase -d")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         [Summary("Takes the user input for messages and turns it into small letters. If you end your command call with -d, it will delete your message calling the bot.")]
         public async Task tinytext([Remainder]string orig)
         {
@@ -76,6 +78,7 @@ namespace JifBot.Commands
 
         [Command("widetext")]
         [Remarks("-c- phrase, -c- phrase -d")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         [Summary("Takes the user input for messages and turns it into a ＷＩＤＥ  ＢＯＩ. If you end your command call with -d, it will delete your message calling the bot.")]
         public async Task WideText([Remainder] string message)
         {
@@ -98,6 +101,7 @@ namespace JifBot.Commands
         [Command("owo")]
         [Alias("uwu")]
         [Remarks("-c- phrase, -c- phrase -d")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         [Summary("Takes the user input, and translates it into degenerate owo speak. If you end your command call with -d, it will delete your message calling the bot..")]
         public async Task Owo([Remainder] string message)
         {
@@ -242,6 +246,7 @@ namespace JifBot.Commands
 
         [Command("mock")]
         [Remarks("-c-, -c- message, -c- message -d")]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         [Summary("Mocks the text you provide it. If you end your command call with -d, it will delete your message calling the bot. If you do not specify any message, it will mock the most recent message sent in the text channel, and delete your command call.")]
         public async Task Mock([Remainder] string words = "")
         {

@@ -56,6 +56,7 @@ namespace JifBot.Commands
         [Command("togglesignature")]
         [Remarks("-c- :fox:")]
         [Alias("resetsignature", "setsignature")]
+        [RequireBotPermission(ChannelPermission.AddReactions)]
         [Summary("Sets for a specific emote to be reacted to every message you send. To remove a signature, call the command without specifying an emote, or using the emote you already have set. NOTE: Jif Bot does NOT have nitro, this will only work with emotes that are available on this server.")]
         public async Task ToggleSignature([Remainder] string sig = "")
         {
@@ -96,15 +97,10 @@ namespace JifBot.Commands
 
         [Command("togglereactions")]
         [Remarks("-c-, -c- all")]
-        [Summary("Toggles between enabling and disabling reactions for the channel the command was issued in. Reactions are set keywords that Jif Bot will respond to. This does not include commands. To disable/enable for all channels, follow the command with \"all\". If there is at least one channel in which reactions are disabled when using \"all\", all channels will be enabled, otherwise, all will be disabled. Only the server owner can execute this command.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Summary("Toggles between enabling and disabling reactions for the channel the command was issued in. Reactions are set keywords that Jif Bot will respond to. This does not include commands. To disable/enable for all channels, follow the command with \"all\". If there is at least one channel in which reactions are disabled when using \"all\", all channels will be enabled, otherwise, all will be disabled.")]
         public async Task ToggleReactions([Remainder] string args = "")
         {
-            if (Context.Guild.OwnerId != Context.User.Id)
-            {
-                await ReplyAsync("Command can only be used by server owner");
-                return;
-            }
-
             var db = new BotBaseContext();
             if (args.ToLower().Contains("all"))
             {
@@ -141,15 +137,10 @@ namespace JifBot.Commands
 
         [Command("setwelcome")]
         [Remarks("-c-")]
-        [Summary("Sets a channel to send messages to when new users join the server. To remove, issue the command in the channel the welcome is currently set to. Only the server owner can execute this command.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Summary("Sets a channel to send messages to when new users join the server. To remove, issue the command in the channel the welcome is currently set to.")]
         public async Task SetWelcome([Remainder] string args = "")
         {
-            if (Context.Guild.OwnerId != Context.User.Id)
-            {
-                await ReplyAsync("Command can only be used by server owner");
-                return;
-            }
-
             var db = new BotBaseContext();
             var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
             if (config != null)
@@ -179,15 +170,10 @@ namespace JifBot.Commands
 
         [Command("setgoodbye")]
         [Remarks("-c-")]
-        [Summary("Sets a channel to send messages to when users leave the server. To remove, issue the command in the channel the goodbye is currently set to. Only the server owner can execute this command.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Summary("Sets a channel to send messages to when users leave the server. To remove, issue the command in the channel the goodbye is currently set to.")]
         public async Task SetGoodbye([Remainder] string args = "")
         {
-            if (Context.Guild.OwnerId != Context.User.Id)
-            {
-                await ReplyAsync("Command can only be used by server owner");
-                return;
-            }
-
             var db = new BotBaseContext();
             var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
             if (config != null)
@@ -217,15 +203,10 @@ namespace JifBot.Commands
 
         [Command("setsnoop")]
         [Remarks("-c-")]
-        [Summary("Sets a channel to send messages to whenever a message gets deleted in the server. To remove, issue the command in the channel the goodbye is currently set to. Only the server owner can execute this command.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Summary("Sets a channel to send messages to whenever a message gets deleted in the server. To remove, issue the command in the channel the goodbye is currently set to.")]
         public async Task SetMessageReport([Remainder] string args = "")
         {
-            if (Context.Guild.OwnerId != Context.User.Id)
-            {
-                await ReplyAsync("Command can only be used by server owner");
-                return;
-            }
-
             var db = new BotBaseContext();
             var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
             if (config != null)
@@ -255,15 +236,10 @@ namespace JifBot.Commands
 
         [Command("placereactmessage")]
         [Remarks("-c-, -c- -d")]
+        [RequireUserPermission(GuildPermission.Administrator)]
         [Summary("Places a message in the current channel that users can react to in order to assign themselves roles. To assign roles to be added to this message, see -p-reactroles. Using this command again will delete the old message, and send a new message. Using this command with -d will delete the message (but keep all pairings set with -p-reactroles)")]
         public async Task PlaceReactMessage([Remainder] string command = "")
         {
-            if (Context.Guild.OwnerId != Context.User.Id)
-            {
-                await ReplyAsync("Command can only be used by server owner");
-                return;
-            }
-
             var db = new BotBaseContext();
             var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
             
@@ -303,22 +279,37 @@ namespace JifBot.Commands
                 config.ReactChannelId = message.Channel.Id;
             }
             db.SaveChanges();
+
+            var roles = db.ReactRole.AsQueryable().Where(r => r.ServerId == Context.Guild.Id).DefaultIfEmpty();
+            foreach (var role in roles)
+            {
+                var botConfig = db.Configuration.AsQueryable().Where(b => b.Name == Program.configName).First();
+                var bot = await Context.Guild.GetUserAsync(botConfig.Id);
+
+                // Emojis and Discord Emotes are handled differently
+                if (Regex.IsMatch(role.Emote, @"(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])"))
+                {
+                    Emoji dEmoji = new Emoji(role.Emote);
+                    await message.AddReactionAsync(dEmoji);
+                }
+                else
+                {
+                    Emote dEmote = Emote.Parse(role.Emote);
+                    await message.AddReactionAsync(dEmote);
+                }
+            }
         }
 
         [Command("reactrole")]
         [Remarks("-c- @role 🦊\n-c- @role 🦊 description\n-c- @role -d")]
+        [RequireUserPermission(GuildPermission.Administrator)]
         [Summary("Assigns role-reaction pairings to show in the message sent by -p-placereactmessage. Ensure that Jif Bot is a higher role than any of the roles you would like to be assigned. Any use of -p-reactrole will be represented in the message sent by -p-placereactmessage, and can be used in a seperate channel. The entry for a role can be changed by calling the command again with a different values. A role can be removed by using -d in place of an emote.")]
         public async Task ReactRole(string role, string emote, [Remainder] string description = "")
         {
-            if (Context.Guild.OwnerId != Context.User.Id)
-            {
-                await ReplyAsync("Command can only be used by server owner");
-                return;
-            }
-
             // Check to ensure the role is valid
             var db = new BotBaseContext();
-            if(!Regex.IsMatch(role, @"[0-9]+"))
+            Emote dEmote;
+            if (!Regex.IsMatch(role, @"[0-9]+"))
             {
                 await ReplyAsync("Not a valid role");
                 return;
@@ -350,13 +341,7 @@ namespace JifBot.Commands
             else
             {
                 // Check to ensure the emote is in a valid format
-                Emote useless;
-                if (Regex.IsMatch(emote, @"(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])"))
-                {
-                    Match match = Regex.Match(emote, "(\u00a9|\u00ae|[\u2000-\u3300] |\ud83c[\ud000 -\udfff] |\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])");
-                    emote = match.Value;
-                }
-                else if (!Emote.TryParse(emote, out useless))
+                if (!Regex.IsMatch(emote, @"(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])") && !Emote.TryParse(emote, out dEmote))
                 {
                     await ReplyAsync("Not a valid reaction emote");
                     return;
@@ -377,6 +362,7 @@ namespace JifBot.Commands
                     db.Add(new ReactRole { RoleId = roleId, Emote = emote, Description = description, ServerId = Context.Guild.Id });
                     db.SaveChanges();
                     await ReplyAsync("Role Added");
+                    react = db.ReactRole.AsQueryable().Where(s => s.RoleId == roleId).FirstOrDefault();
                 }
 
                 // update emote and description
@@ -393,6 +379,27 @@ namespace JifBot.Commands
             var channel = await Context.Guild.GetTextChannelAsync(config.ReactChannelId);
             var msg = (IUserMessage)await channel.GetMessageAsync(config.ReactMessageId);
             await msg.ModifyAsync(m => m.Embed = BuildReactMessage(Context.Guild));
+
+            var botConfig = db.Configuration.AsQueryable().Where(b => b.Name == Program.configName).First();
+            var bot = await Context.Guild.GetUserAsync(botConfig.Id);
+
+            // Emojis and Discord Emotes are handled differently
+            if (Regex.IsMatch(react.Emote, @"(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])"))
+            {
+                Emoji dEmoji = new Emoji(react.Emote);
+                if (emote == "-d")
+                    await msg.RemoveReactionAsync(dEmoji, bot);
+                else
+                    await msg.AddReactionAsync(dEmoji);
+            }
+            else
+            {
+                dEmote = Emote.Parse(react.Emote);
+                if (emote == "-d")
+                    await msg.RemoveReactionAsync(dEmote, bot);
+                else
+                    await msg.AddReactionAsync(dEmote);
+            }
         }
 
         public Embed BuildReactMessage(IGuild server)
