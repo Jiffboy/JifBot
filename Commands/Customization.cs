@@ -306,9 +306,9 @@ namespace JifBot.Commands
         }
 
         [Command("reactrole")]
-        [Remarks("-c- @role 🦊, -c- @role -d")]
-        [Summary("Assigns role-reaction pairings to show in the message sent by -p-placereactmessage. Ensure that Jif Bot is a higher role than any of the roles you would like to be assigned. Any use of -p-reactrole will be represented in the message sent by -p-placereactmessage, and can be used in a seperate channel. The emote for a role can be changed by calling the command again with a different emote. A role can be removed by using -d in place of an emote.")]
-        public async Task ReactRole(string role, string emote)
+        [Remarks("-c- @role 🦊\n-c- @role 🦊 description\n-c- @role -d")]
+        [Summary("Assigns role-reaction pairings to show in the message sent by -p-placereactmessage. Ensure that Jif Bot is a higher role than any of the roles you would like to be assigned. Any use of -p-reactrole will be represented in the message sent by -p-placereactmessage, and can be used in a seperate channel. The entry for a role can be changed by calling the command again with a different values. A role can be removed by using -d in place of an emote.")]
+        public async Task ReactRole(string role, string emote, [Remainder] string description = "")
         {
             if (Context.Guild.OwnerId != Context.User.Id)
             {
@@ -316,6 +316,7 @@ namespace JifBot.Commands
                 return;
             }
 
+            // Check to ensure the role is valid
             var db = new BotBaseContext();
             if(!Regex.IsMatch(role, @"[0-9]+"))
             {
@@ -330,8 +331,8 @@ namespace JifBot.Commands
             }
 
             var react = db.ReactRole.AsQueryable().Where(s => s.RoleId == roleId).FirstOrDefault();
-            var rRole = db.ReactRole.AsQueryable().Where(r => r.Emote == emote && r.ServerId == Context.Guild.Id).FirstOrDefault();
 
+            // specified to delete the react role
             if (emote == "-d")
             {
                 if (react != null)
@@ -346,22 +347,46 @@ namespace JifBot.Commands
                     return;
                 }
             }
-            else if (rRole != null)
+            else
             {
-                await ReplyAsync("Emote already being used");
-                return;
-            }
-            else if (react == null)
-            {
-                db.Add(new ReactRole { RoleId = roleId, Emote = emote, ServerId = Context.Guild.Id });
-                db.SaveChanges();
-                await ReplyAsync("Role Added");
-            }
-            else if (roleId == react.RoleId)
-            {
-                react.Emote = emote;
-                db.SaveChanges();
-                await ReplyAsync($"Updated emote for <@&{react.RoleId}>");
+                // Check to ensure the emote is in a valid format
+                Emote useless;
+                if (Regex.IsMatch(emote, @"(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])"))
+                {
+                    Match match = Regex.Match(emote, "(\u00a9|\u00ae|[\u2000-\u3300] |\ud83c[\ud000 -\udfff] |\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])");
+                    emote = match.Value;
+                }
+                else if (!Emote.TryParse(emote, out useless))
+                {
+                    await ReplyAsync("Not a valid reaction emote");
+                    return;
+                }
+
+                var rRole = db.ReactRole.AsQueryable().Where(r => r.Emote == emote && r.ServerId == Context.Guild.Id).FirstOrDefault();
+
+                // if there exists an entry in this server with the specified emote that is not the specified role
+                if (rRole != null && rRole.RoleId != roleId)
+                {
+                    await ReplyAsync("Emote already being used");
+                    return;
+                }
+
+                // if there is no entry for this role
+                else if (react == null)
+                {
+                    db.Add(new ReactRole { RoleId = roleId, Emote = emote, Description = description, ServerId = Context.Guild.Id });
+                    db.SaveChanges();
+                    await ReplyAsync("Role Added");
+                }
+
+                // update emote and description
+                else
+                {
+                    react.Emote = emote;
+                    react.Description = description;
+                    db.SaveChanges();
+                    await ReplyAsync($"Updated entry for <@&{react.RoleId}>");
+                }
             }
 
             var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
@@ -389,7 +414,10 @@ namespace JifBot.Commands
                 foreach (var role in roles)
                 {
                     var dRole = server.GetRole(role.RoleId);
-                    embed.Description += $"{role.Emote} -- <@&{role.RoleId}>\n\n";
+                    embed.Description += $"{role.Emote} -- {dRole.Mention}";
+                    if (role.Description != "")
+                        embed.Description += $"\n     {role.Description}";
+                    embed.Description += "\n\n";
                 }
             }
 

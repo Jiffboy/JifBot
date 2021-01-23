@@ -7,6 +7,7 @@ namespace JifBot.Models
     {
         public ulong RoleId { get; set; }
         public string Emote { get; set; }
+        public string Description { get; set; }
         public ulong ServerId { get; set; }
     }
 }

@@ -160,6 +160,8 @@ namespace JifBot.Models
 
                 entity.Property(e => e.Emote);
 
+                entity.Property(e => e.Description);
+
                 entity.Property(e => e.ServerId);
             });
 
