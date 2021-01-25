@@ -130,22 +130,24 @@ namespace JifBot.Commands
         {
             int waitTime = 0;
 
-            if (Regex.IsMatch(message, @"-m *[0-9]+"))
-                waitTime += Convert.ToInt32(Regex.Match(message, @"-m *[0-9]+").Value.Replace("-m", ""));
-
-            if (Regex.IsMatch(message, @"-h *[0-9]+"))
+            if (Regex.IsMatch(message, @"-(m *)?[0-9]+m?"))
             {
-                waitTime += (Convert.ToInt32(Regex.Match(message, @"-h *[0-9]+").Value.Replace("-h", "")) * 60);
+                waitTime += Convert.ToInt32(Regex.Match(message, @"-(m *)?[0-9]+m?").Value.Replace("-", "").Replace("m", ""));
             }
 
-            if (Regex.IsMatch(message, @"-d *[0-9]+"))
+            if (Regex.IsMatch(message, @"-(h *)?[0-9]+h?"))
             {
-                waitTime += (Convert.ToInt32(Regex.Match(message, @"-d *[0-9]+").Value.Replace("-d", "")) * 1440);
+                waitTime += (Convert.ToInt32(Regex.Match(message, @"-(h *)?[0-9]+h?").Value.Replace("-", "").Replace("h", "")) * 60);
             }
 
-            if (Regex.IsMatch(message, @"-w *[0-9]+"))
+            if (Regex.IsMatch(message, @"-(d *)?[0-9]+d?"))
             {
-                waitTime += (Convert.ToInt32(Regex.Match(message, @"-w *[0-9]+").Value.Replace("-w", "")) * 10080);
+                waitTime += (Convert.ToInt32(Regex.Match(message, @"-(d *)?[0-9]+d?").Value.Replace("-", "").Replace("d", "")) * 1440);
+            }
+
+            if (Regex.IsMatch(message, @"-(w *)?[0-9]+w?"))
+            {
+                waitTime += (Convert.ToInt32(Regex.Match(message, @"-(w *)?[0-9]+w?").Value.Replace("-", "").Replace("w", "")) * 10080);
             }
 
             if (waitTime == 0)
@@ -161,7 +163,7 @@ namespace JifBot.Commands
                 }
             }
 
-            message = Regex.Replace(message, @"-[m,h,d] *[0-9]+", "");
+            message = Regex.Replace(message, @"-([m,h,d,w] *)?[0-9]+[m,h,d,w]?", "");
             if (message.Replace(" ", "") == "")
                 message = "Times up!";
             Process proc = new System.Diagnostics.Process();
