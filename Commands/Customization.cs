@@ -20,7 +20,7 @@ namespace JifBot.Commands
             var message = db.Message.AsQueryable().Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
             var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
             if (message == null)
-                await ReplyAsync($"User does not have a message yet! use {config.Token}setmessage to set a message.");
+                await ReplyAsync($"User does not have a message yet! use {config.Prefix}setmessage to set a message.");
             else
                 await ReplyAsync(message.Message1);
         }
