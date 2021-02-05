@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Net;
 using System.Net.Http;
 using System.Diagnostics;
 using Discord;
@@ -13,6 +12,7 @@ using JifBot.Models;
 using JIfBot;
 using System.Drawing;
 using System.IO;
+using System.Data;
 
 namespace JifBot.Commands
 {
@@ -423,6 +423,17 @@ namespace JifBot.Commands
             if(quote.author == null)
                 quote.author = "Author Unknown";
             await ReplyAsync("\"" + quote.text + "\"\n-" + quote.author);
+        }
+
+        [Command("calculator")]
+        [Remarks("-c- ( 5 + 7 ) / 2")]
+        [Alias("calc", "math")]
+        [Summary("Solves an arithmetic equation")]
+        public async Task Calculator([Remainder] string equation)
+        {
+            DataTable dt = new DataTable();
+            var result = dt.Compute(equation,"");
+            await ReplyAsync(result.ToString());
         }
 
         public string getSmol(char orig)
