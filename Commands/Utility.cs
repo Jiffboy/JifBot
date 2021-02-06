@@ -13,6 +13,7 @@ using JIfBot;
 using System.Drawing;
 using System.IO;
 using System.Data;
+using Newtonsoft.Json.Linq;
 
 namespace JifBot.Commands
 {
@@ -434,6 +435,47 @@ namespace JifBot.Commands
             DataTable dt = new DataTable();
             var result = dt.Compute(equation,"");
             await ReplyAsync(result.ToString());
+        }
+
+        [Command("poll")]
+        [Remarks("-c- Question | Option 1 | Option 2")]
+        [Alias("strawpoll")]
+        [Summary("Creates a strawpoll and returns the link")]
+        public async Task Poll([Remainder] string input)
+        {
+            if (input.Split("|").Length < 3)
+            {
+                await ReplyAsync("Please provide a question and at least two options in the format: Question | Option1 | Option2 etc.");
+                return;
+            }
+
+            var db = new BotBaseContext();
+            string key = db.Variable.AsQueryable().Where(v => v.Name == "strawpollKey").First().Value;
+            string stringToSend = "{ \"poll\": {\"title\": \"";
+            int splitNum = 1;
+            foreach (string substring in input.Split("|"))
+            {
+                if (splitNum == 1)
+                    stringToSend += substring + "\",\"answers\": [";
+                else
+                    stringToSend += "\"" + substring + "\"";
+                
+                if (splitNum == input.Split("|").Length)
+                    stringToSend += "]}}";
+                else if (splitNum != 1)
+                    stringToSend += ",";
+                splitNum++;
+            }
+
+            var stringContent = new StringContent(stringToSend);
+
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("API-KEY", key);
+            HttpResponseMessage response = await client.PostAsync("https://strawpoll.com/api/poll", stringContent);
+            HttpContent content = response.Content;
+            string stuff = await content.ReadAsStringAsync();
+            var json = JObject.Parse(stuff);
+            await ReplyAsync("https://strawpoll.com/" + (string)json.SelectToken("content_id"));
         }
 
         public string getSmol(char orig)
