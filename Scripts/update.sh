@@ -20,14 +20,14 @@ sudo systemctl start jifbot.service
 python3 generatejs.py
 
 # get the latest verions of the website
-cd ../../Vertigeux.github.io/javascript
-git pull
+#cd ../../Vertigeux.github.io/javascript
+#git pull
 
 # if the generated version of commands.js is different, update website
 if [ -n "$(cmp commands.js ../../JifBot/Scripts/backup/commands.js)" ]
 then
-    cp ../../JifBot/Scripts/backup/commands.js commands.js
-    git add commands.js
+    cp ../../JifBot/Scripts/backup/commands.js ../Site/javascript/commands.js
+    git ../Site/javascript/commands.js
     git commit -m"Automatic command update from Jif Bot"
     git push
 fi

@@ -30,7 +30,7 @@ namespace JifBot.Commands
             var embed = new JifBotEmbedBuilder();
             
             embed.Title = "All commands will begin with a " + config.Prefix + " , for more information on individual commands, use: " + config.Prefix + "help commandName";
-            embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://vertigeux.github.io/jifbot.html";
+            embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://jifbot.com/";
 
             string cat = commands.First().Category;
             string list = "";
