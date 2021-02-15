@@ -27,7 +27,7 @@ python3 generatejs.py
 if [ -n "$(cmp ../Site/javascript/commands.js ../../JifBot/Scripts/backup/commands.js)" ]
 then
     cp ../../JifBot/Scripts/backup/commands.js ../Site/javascript/commands.js
-    git ../Site/javascript/commands.js
-    git commit -m"Automatic command update from Jif Bot"
-    git push
+    #git ../Site/javascript/commands.js
+    #git commit -m"Automatic command update from Jif Bot"
+    #git push
 fi

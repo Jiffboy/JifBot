@@ -33,8 +33,8 @@ function loadButtons(){
 }
 
 function loadCommands(category){
-    document.getElementById(selectedButton).style.backgroundColor = ""
-    document.getElementById(category).style.backgroundColor = "#ffa200"
+    document.getElementById(selectedButton).style.boxShadow = ""
+    document.getElementById(category).style.boxShadow = "0 3px #ffa200";
     selectedButton = category
     var json = JSON.parse(JSON.stringify(jifBotCommands));
     document.getElementById("commands").innerHTML = ""
