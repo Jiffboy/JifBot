@@ -24,7 +24,7 @@ python3 generatejs.py
 #git pull
 
 # if the generated version of commands.js is different, update website
-if [ -n "$(cmp commands.js ../../JifBot/Scripts/backup/commands.js)" ]
+if [ -n "$(cmp ../Site/javascript/commands.js ../../JifBot/Scripts/backup/commands.js)" ]
 then
     cp ../../JifBot/Scripts/backup/commands.js ../Site/javascript/commands.js
     git ../Site/javascript/commands.js
