@@ -40,13 +40,10 @@ function loadCommands(category){
     document.getElementById("commands").innerHTML = ""
     var command = document.createElement('th')
     var description = document.createElement('th')
-    var usage = document.createElement('th')
     command.innerHTML = "Command"
     description.innerHTML = "Description"
-    usage.innerHTML = "Usage"
     document.getElementById("commands").appendChild(command)
     document.getElementById("commands").appendChild(description)
-    document.getElementById("commands").appendChild(usage)
     for(var i = 0; i < json.length; i++){
         if(json[i].category == "Hidden"){
             continue;
@@ -56,7 +53,6 @@ function loadCommands(category){
             var row = document.createElement('tr')
             var command = document.createElement('td')
             var description = document.createElement('td')
-            var usage = document.createElement('td')
             command.innerHTML = json[i].command
             var alias = ""
             if("alias" in json[i]){
@@ -64,10 +60,9 @@ function loadCommands(category){
 			}
             command.innerHTML +='<span style="color:#ffe199;">' + alias + "</span>"
             description.innerHTML = json[i].description.replaceAll("\n","<br>").replaceAll("```","<br>");
-            usage.innerHTML = json[i].usage.replaceAll("\n","<br>").replaceAll(",","<br>")         
+            description.innerHTML += "<br>" + '<span style="color:#ffefcc;">' + json[i].usage.replaceAll("\n","<br>").replaceAll(",","<br>") + "</span>"
             row.appendChild(command)
             row.appendChild(description)
-            row.appendChild(usage)
             document.getElementById("commands").appendChild(row)
         }
     }
