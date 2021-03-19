@@ -33,7 +33,10 @@ h2 {
 }
 h3 {
   text-align: center;
-  color: black;
+  color: white;
+  font-family: "Smallest Pixel-7";
+  text-shadow: none;
+  
 }
 p {
   text-align: center;
@@ -128,4 +131,9 @@ a:hover {
 }
 #invite:hover {
   color: #2c2e3a;
+}
+
+#change {
+  padding-top: 25px;
+  font-size: 30px;
 }
