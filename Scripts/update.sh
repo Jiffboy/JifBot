@@ -14,6 +14,11 @@ dotnet build
 cd Scripts
 read -p "Make database updates and press enter to continue..."
 cp backup/* ../bin/Debug/netcoreapp3.1/Database/
+
+# update the changelog
+python3 updateChangelog.py
+
+# start JifBot
 sudo systemctl start jifbot.service
 
 # generate js file for website
@@ -24,9 +29,9 @@ python3 generatejs.py
 #git pull
 
 # if the generated version of commands.js is different, update website
-if [ -n "$(cmp ../Site/javascript/commands.js ../../JifBot/Scripts/backup/commands.js)" ]
+if [ -n "$(cmp ../Site/javascript/database.js ../../JifBot/Scripts/backup/database.js)" ]
 then
-    cp ../../JifBot/Scripts/backup/commands.js ../Site/javascript/commands.js
+    cp ../../JifBot/Scripts/backup/database.js ../Site/javascript/database.js
     #git ../Site/javascript/commands.js
     #git commit -m"Automatic command update from Jif Bot"
     #git push

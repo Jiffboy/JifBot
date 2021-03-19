@@ -38,7 +38,17 @@ for cmd in commands:
 
 json = json[:-1] + "]"
 
-file = open("backup/commands.js", "w", encoding="utf-8")
+file = open("backup/database.js", "w", encoding="utf-8")
+
+json += "\nvar jifBotChangelog = ["
+cursor.execute('SELECT * FROM ChangeLog ORDER BY Date DESC')
+changes = cursor.fetchall()
+
+for change in changes:
+    json += '{"date":"' + change[0]
+    json += '","change":"' + change[1] + '"},'
+json = json[:-1] + "]"
+
 file.write(json)
 
 file.close()
