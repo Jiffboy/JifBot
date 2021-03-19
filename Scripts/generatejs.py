@@ -46,7 +46,7 @@ changes = cursor.fetchall()
 
 for change in changes:
     json += '{"date":"' + change[0]
-    json += '","change":"' + change[1] + '"},'
+    json += '","change":"' + change[1].replace('"', r'\"') + '"},'
 json = json[:-1] + "]"
 
 file.write(json)
