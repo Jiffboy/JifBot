@@ -30,7 +30,7 @@ namespace JifBot.Commands
             var embed = new JifBotEmbedBuilder();
             
             embed.Title = "All commands will begin with a " + config.Prefix + " , for more information on individual commands, use: " + config.Prefix + "help commandName";
-            embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://jifbot.com";
+            embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://jifbot.com/commands.html";
 
             string cat = commands.First().Category;
             string list = "";
@@ -88,7 +88,7 @@ namespace JifBot.Commands
 
         [Command("changelog")]
         [Remarks("-c-")]
-        [Summary("Reports the last 3 updates made to Jif Bot")]
+        [Summary("Reports the last 3 updates made to Jif Bot.")]
         public async Task Changelog()
         {
             var db = new BotBaseContext();
@@ -208,7 +208,7 @@ namespace JifBot.Commands
         [Command("udefine")]
         [Remarks("-c- term")]
         [Alias("slang")]
-        [Summary("Gives the top definition for the term from urbandictionary.com")]
+        [Summary("Gives the top definition for the term from urbandictionary.com.")]
         public async Task DefineUrbanDictionary([Remainder] string phrase)
         {
             string URBAN_DICTIONARY_ENDPOINT = "http://api.urbandictionary.com/v0/define?term=";

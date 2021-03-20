@@ -132,7 +132,7 @@ namespace JifBot.Commands
 
         [Command("meancount")]
         [Remarks("-c-")]
-        [Summary("Reports the number of times Jif has said \"I mean\"")]
+        [Summary("Reports the number of times Jif has said \"I mean\".")]
         public async Task meanCount([Remainder] string useless = "")
         {
             var db = new BotBaseContext();

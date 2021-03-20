@@ -179,7 +179,7 @@ namespace JifBot.Commands
 
         [Command("choose")]
         [Remarks("-c- choice \"choice but with spaces\"")]
-        [Summary("Randomly makes a choice for you. You can use as many choices as you want, but seperate all choices using a space. If you wish for a choice to contain spaces, surround the choice with \"\"\n")]
+        [Summary("Randomly makes a choice for you. You can use as many choices as you want, but seperate all choices using a space. If you wish for a choice to contain spaces, surround the choice with \"\"\n.")]
         public async Task Choose([Remainder]string message)
         {
             int quotes = message.Split('\"').Length - 1;
@@ -300,7 +300,7 @@ namespace JifBot.Commands
         [Command("dice")]
         [Remarks("-c-, -c- 1d20")]
         [Alias("roll")]
-        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]. To quickly roll a 6 sided die, do not specify anything")]
+        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]. To quickly roll a 6 sided die, do not specify anything.")]
         public async Task Dice([Remainder] string message = "")
         {
             Match dice = Regex.Match(message, @"[0-9]+d[0-9]+");
@@ -429,7 +429,7 @@ namespace JifBot.Commands
         [Command("calculator")]
         [Remarks("-c- ( 5 + 7 ) / 2")]
         [Alias("calc", "math")]
-        [Summary("Solves an arithmetic equation")]
+        [Summary("Solves an arithmetic equation.")]
         public async Task Calculator([Remainder] string equation)
         {
             DataTable dt = new DataTable();
@@ -440,7 +440,7 @@ namespace JifBot.Commands
         [Command("poll")]
         [Remarks("-c- Question | Option 1 | Option 2")]
         [Alias("strawpoll")]
-        [Summary("Creates a strawpoll and returns the link")]
+        [Summary("Creates a strawpoll and returns the link.")]
         public async Task Poll([Remainder] string input)
         {
             if (input.Split("|").Length < 3)

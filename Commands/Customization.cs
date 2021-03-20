@@ -237,7 +237,7 @@ namespace JifBot.Commands
         [Command("placereactmessage")]
         [Remarks("-c-, -c- -d")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Summary("Places a message in the current channel that users can react to in order to assign themselves roles. To assign roles to be added to this message, see -p-reactroles. Using this command again will delete the old message, and send a new message. Using this command with -d will delete the message (but keep all pairings set with -p-reactroles)")]
+        [Summary("Places a message in the current channel that users can react to in order to assign themselves roles. To assign roles to be added to this message, see -p-reactroles. Using this command again will delete the old message, and send a new message. Using this command with -d will delete the message (but keep all pairings set with -p-reactroles).")]
         public async Task PlaceReactMessage([Remainder] string command = "")
         {
             var db = new BotBaseContext();
