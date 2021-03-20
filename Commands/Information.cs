@@ -77,6 +77,51 @@ namespace JifBot.Commands
             await ReplyAsync(msg);
         }
 
+        [Command("uptime")]
+        [Remarks("-c-")]
+        [Summary("Reports how long the bot has been running.")]
+        public async Task Uptime()
+        {
+            TimeSpan uptime = DateTime.Now - Program.startTime;
+            await ReplyAsync($"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s");
+        }
+
+        [Command("changelog")]
+        [Remarks("-c-")]
+        [Summary("Reports the last 3 updates made to Jif Bot")]
+        public async Task Changelog()
+        {
+            var db = new BotBaseContext();
+            var embed = new JifBotEmbedBuilder();
+            var totalEntries = db.ChangeLog.AsQueryable().OrderByDescending(e => e.Date);
+            var entriesToPrint = new Dictionary<string, string>();
+
+            foreach(ChangeLog entry in totalEntries)
+            {
+                if(!entriesToPrint.ContainsKey(entry.Date))
+                {
+                    if (entriesToPrint.Count >= 3)
+                    {
+                        break;
+                    }
+                    entriesToPrint.Add(entry.Date, $"\\> {entry.Change}");
+                }
+                else
+                {
+                    entriesToPrint[entry.Date] += $"\n\\> {entry.Change}";
+                }
+            }
+
+            embed.Title = "Last 3 Jif Bot updates";
+            embed.Description = "For a list of all updates, visit https://jifbot.com/changelog.html";
+            foreach (var entry in entriesToPrint)
+            {
+                var pieces = entry.Key.Split("-");
+                embed.AddField($"{pieces[1]}.{pieces[2]}.{pieces[0]}", entry.Value);
+            }
+            await ReplyAsync("", false, embed.Build());
+        }
+
         [Command("define")]
         [Remarks("-c- word OR -c- word -m")]
         [Summary("Defines any word in the Oxford English dictionary. For multiple definitions, use -m at the end of the command.")]

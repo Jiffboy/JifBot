@@ -18,6 +18,7 @@ namespace JIfBot
         private DiscordSocketClient client;
         public static string configName = "Live";
         public CommandService commands;
+        public static DateTime startTime = DateTime.Now;
         private DiscordSocketClient bot;
         private IServiceProvider map;
         private JifBot.EventHandler eventHandler;

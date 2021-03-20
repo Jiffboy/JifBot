@@ -27,6 +27,7 @@ namespace JifBot.Models
         public virtual DbSet<Command> Command { get; set; }
         public virtual DbSet<CommandAlias> CommandAlias { get; set; }
         public virtual DbSet<ReactRole> ReactRole { get; set; }
+        public virtual DbSet<ChangeLog> ChangeLog { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -165,6 +166,15 @@ namespace JifBot.Models
                 entity.Property(e => e.Description);
 
                 entity.Property(e => e.ServerId);
+            });
+
+            modelBuilder.Entity<ChangeLog>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.Property(e => e.Date);
+
+                entity.Property(e => e.Change);
             });
 
             OnModelCreatingPartial(modelBuilder);
