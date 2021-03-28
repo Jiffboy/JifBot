@@ -297,55 +297,106 @@ namespace JifBot.Commands
             await ReplyAsync(responses[num]);
         }
 
-        [Command("dice")]
-        [Remarks("-c-, -c- 1d20")]
-        [Alias("roll")]
-        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]. To quickly roll a 6 sided die, do not specify anything.")]
+        [Command("roll")]
+        [Remarks("-c-, -c- 1d20, -c- 2d6a + 4")]
+        [Alias("dice")]
+        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]. Dice can be rolled with advantage or disadvantage by adding a or d respectively following the dice. Multiple modifiers can be added by adding multiple \"+ #\"s to the end. To quickly roll a 6 sided die, do not specify anything.")]
         public async Task Dice([Remainder] string message = "")
         {
-            Match dice = Regex.Match(message, @"[0-9]+d[0-9]+");
+            Match dice = Regex.Match(message, @"[0-9]+d[0-9]+ *(?:a|d)? *(\+ *[0-9]+)*");
             if (!dice.Success && message != "")
             {
-                await ReplyAsync("Invalid, used [# dice]d[# sides]");
+                BotBaseContext db = new BotBaseContext();
+                var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+                await ReplyAsync($"Invalid syntax, use {config.Prefix}help roll for more info");
+                return;
             }
 
             Random rnd = new Random();
-            int numDice;
-            int diceSides;
-            if (message == "")
+            int numDice = 1;
+            int diceSides = 6;
+            int modifier = 0;
+            bool advantage = false;
+            int numRolls = 1;
+            string[] rolls = new string[] { "", "" };
+            int[] totals = new int[] { 0, 0 };
+            int printRoll = 0;
+            string msg = "";
+
+            if (message != "")
             {
-                numDice = 1;
-                diceSides = 6;
-            }
-            else
-            {
+                // Get values from Regex
+                message = dice.Value;
                 MatchCollection vals = Regex.Matches(message, @"[0-9]+");
                 numDice = Convert.ToInt32(vals[0].Value);
                 diceSides = Convert.ToInt32(vals[1].Value);
+                for (int i = 2; i < vals.Count; i++)
+                {
+                    modifier += Convert.ToInt32(vals[i].Value);
+                }
+
+                // advantage
+                if (message.Contains("a"))
+                {
+                    advantage = true;
+                    numRolls = 2;
+                }
+
+                // disadvantage
+                if (message.Count(d => d == 'd') == 2)
+                {
+                    numRolls = 2;
+                }
             }
 
-            if(numDice == 0 || diceSides == 0)
+            if (numDice == 0 || diceSides == 0)
             {
                 await ReplyAsync("Cannot be 0");
                 return;
             }
 
-            string msg = "";
-            int total = 0;
-
-            for(int i = 0; i < numDice; i++)
+            for (int i = 0; i < numRolls; i++)
             {
-                int num = rnd.Next(diceSides) + 1;
-                total += num;
-                msg += $"**{num}**, ";
+                for (int j = 0; j < numDice; j++)
+                {
+                    int num = rnd.Next(diceSides) + 1;
+                    totals[i] += num;
+                    rolls[i] += $"{num}, ";
+                }
+                totals[i] += modifier;
+                rolls[i] = rolls[i].Remove(rolls[i].LastIndexOf(", "));
             }
 
-            msg = msg.Remove(msg.LastIndexOf(", "));
+            if (numRolls > 1)
+            {
+                int high = 0;
+                msg = $"1st Roll: {rolls[0]}\n2nd Roll: {rolls[1]}";
 
-            if (numDice == 1)
-                await ReplyAsync($"Rolled: {msg}");
+                if (totals[1] > totals[0])
+                    high = 1;
+
+                //advantage
+                if (advantage && high == 1)
+                    printRoll = 1;
+
+                //disadvantage
+                else if (high == 0)
+                    printRoll = 1;
+
+                if (printRoll == 0)
+                    msg = msg.Replace("1st Roll", "**1st Roll**");
+                else
+                    msg = msg.Replace("2nd Roll", "**2nd Roll**");
+            }
             else
-                await ReplyAsync($"Rolled: {msg}\nTotal: **{total}**");
+                msg = rolls[0];
+
+            if (numDice == 1 && modifier == 0)
+                await ReplyAsync(msg);
+            else if (numDice == 1)
+                await ReplyAsync($"{totals[0]}");
+            else
+                await ReplyAsync($"{msg}\nTotal: **{totals[printRoll]}**");
 
         }
 
