@@ -328,8 +328,16 @@ namespace JifBot.Commands
                 // Get values from Regex
                 message = dice.Value;
                 MatchCollection vals = Regex.Matches(message, @"[0-9]+");
-                numDice = Convert.ToInt32(vals[0].Value);
-                diceSides = Convert.ToInt32(vals[1].Value);
+                try
+                {
+                    numDice = Convert.ToInt32(vals[0].Value);
+                    diceSides = Convert.ToInt32(vals[1].Value);
+                }
+                catch
+                {
+                    await Context.Channel.SendFileAsync("Media/joke.jpg");
+                    return;
+                }
                 for (int i = 2; i < vals.Count; i++)
                 {
                     modifier += Convert.ToInt32(vals[i].Value);
@@ -352,6 +360,12 @@ namespace JifBot.Commands
             if (numDice == 0 || diceSides == 0)
             {
                 await ReplyAsync("Cannot be 0");
+                return;
+            }
+
+            if (numDice > 200 || diceSides > 200)
+            {
+                await Context.Channel.SendFileAsync("Media/joke.jpg");
                 return;
             }
 
@@ -391,9 +405,7 @@ namespace JifBot.Commands
             else
                 msg = rolls[0];
 
-            if (numDice == 1 && modifier == 0)
-                await ReplyAsync(msg);
-            else if (numDice == 1)
+            if (numDice == 1 && numRolls == 1)
                 await ReplyAsync($"{totals[0]}");
             else
                 await ReplyAsync($"{msg}\nTotal: **{totals[printRoll]}**");
