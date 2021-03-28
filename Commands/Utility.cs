@@ -300,7 +300,7 @@ namespace JifBot.Commands
         [Command("roll")]
         [Remarks("-c-, -c- 1d20, -c- 2d6a + 4")]
         [Alias("dice")]
-        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]. Dice can be rolled with advantage or disadvantage by adding a or d respectively following the dice. Multiple modifiers can be added by adding multiple \"+ #\"s to the end. To quickly roll a 6 sided die, do not specify anything.")]
+        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]. Dice can be rolled with advantage or disadvantage by adding a or d respectively following the dice. Multiple modifiers can be added by adding multiple \"+ #\"s to the end. To quickly roll a 6 sided die, do not specify anything. Max values are 200 dice, 200 sides, and + 1000 modifiers")]
         public async Task Dice([Remainder] string message = "")
         {
             Match dice = Regex.Match(message, @"[0-9]+d[0-9]+ *(?:a|d)? *(\+ *[0-9]+)*");
@@ -328,16 +328,8 @@ namespace JifBot.Commands
                 // Get values from Regex
                 message = dice.Value;
                 MatchCollection vals = Regex.Matches(message, @"[0-9]+");
-                try
-                {
-                    numDice = Convert.ToInt32(vals[0].Value);
-                    diceSides = Convert.ToInt32(vals[1].Value);
-                }
-                catch
-                {
-                    await Context.Channel.SendFileAsync("Media/joke.jpg");
-                    return;
-                }
+                numDice = Convert.ToInt32(vals[0].Value);
+                diceSides = Convert.ToInt32(vals[1].Value);
                 for (int i = 2; i < vals.Count; i++)
                 {
                     modifier += Convert.ToInt32(vals[i].Value);
@@ -363,7 +355,7 @@ namespace JifBot.Commands
                 return;
             }
 
-            if (numDice > 200 || diceSides > 200)
+            if (numDice > 200 || diceSides > 200 || modifier > 1000)
             {
                 await Context.Channel.SendFileAsync("Media/joke.jpg");
                 return;
