@@ -386,7 +386,7 @@ namespace JifBot.Commands
                     printRoll = 1;
 
                 //disadvantage
-                else if (high == 0)
+                else if (!advantage && high == 0)
                     printRoll = 1;
 
                 if (printRoll == 0)
