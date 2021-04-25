@@ -22,11 +22,14 @@ namespace JifBot.Commands
         List<Quote> quoteList = new List<Quote>();
 
         [Command("invitelink")]
+        [Alias("link")]
         [Remarks("-c-")]
         [Summary("Provides a link which can be used should you want to spread Jif Bot to another server.")]
         public async Task InviteLink()
         {
-            await ReplyAsync("The following is a link to add me to another server. NOTE: You must have permissions on the server in order to add. Once on the server I must be given permission to send and delete messages, otherwise I will not work.\nhttps://discordapp.com/oauth2/authorize?client_id=315569278101225483&scope=bot");
+            var db = new BotBaseContext();
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+            await ReplyAsync($"The following is a link to add me to another server. NOTE: You must have permissions on the server in order to add. Once on the server I must be given permission to send and delete messages, otherwise I will not work.\nhttps://discordapp.com/oauth2/authorize?client_id={config.Id}&scope=bot");
         }
 
         [Command("bigtext")]

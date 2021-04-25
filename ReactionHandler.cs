@@ -5,6 +5,7 @@ using System;
 using JifBot.Models;
 using System.Linq;
 using System.Text.RegularExpressions;
+using JIfBot;
 
 namespace JifBot
 {
@@ -20,6 +21,8 @@ namespace JifBot
         {
             var db = new BotBaseContext();
             var react = db.ReactionBan.AsQueryable().AsQueryable().Where(c => c.ChannelId == msg.Channel.Id).FirstOrDefault();
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+
             if (react != null)
                 return;
             string words = msg.Content.ToString();
@@ -90,7 +93,7 @@ namespace JifBot
             }
             foreach (SocketUser mention in msg.MentionedUsers)
             {
-                if (mention.Id == 315569278101225483)
+                if (mention.Id == config.Id)
                 {
                     if (words.ToLower().Contains("play despacito"))
                         await msg.Channel.SendMessageAsync("https://www.youtube.com/watch?v=kJQP7kiw5Fk");
@@ -102,7 +105,7 @@ namespace JifBot
             }
 
             var channel = (SocketGuildChannel)msg.Channel;
-            SocketGuildUser jifBot = channel.Guild.GetUser(315569278101225483);
+            SocketGuildUser jifBot = channel.Guild.GetUser(config.Id);
             foreach(SocketRole role in msg.MentionedRoles)
             {
                 if(jifBot.Roles.Contains(role))

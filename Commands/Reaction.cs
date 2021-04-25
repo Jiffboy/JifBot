@@ -123,5 +123,13 @@ namespace JifBot.Commands
         {
             await Context.Channel.SendFileAsync("Media/horny.jpg");
         }
+
+        [Command("wack")]
+        [Remarks("-c-")]
+        [Summary("Express your discontent with the events that have transpired")]
+        public async Task Wack()
+        {
+            await Context.Channel.SendFileAsync("Media/wack.jpg");
+        }
     }
 }

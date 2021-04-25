@@ -16,7 +16,6 @@ namespace JifBot
         private DiscordSocketClient bot;
         private IServiceProvider map;
         private ReactionHandler reactionHandler;
-        private static string configName = Program.configName;
 
         public EventHandler(IServiceProvider service)
         {
@@ -122,17 +121,19 @@ namespace JifBot
         public async Task HandleReactionAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
         {
             var db = new BotBaseContext();
-            var config = db.ServerConfig.AsQueryable().Where(s => s.ReactMessageId == cache.Id).FirstOrDefault();
+            var serverConfig = db.ServerConfig.AsQueryable().Where(s => s.ReactMessageId == cache.Id).FirstOrDefault();
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+
             if (config != null)
             {
-                var role = db.ReactRole.AsQueryable().Where(s => s.ServerId == config.ServerId && s.Emote == reaction.Emote.ToString()).FirstOrDefault();
+                var role = db.ReactRole.AsQueryable().Where(s => s.ServerId == serverConfig.ServerId && s.Emote == reaction.Emote.ToString()).FirstOrDefault();
                 if (role != null)
                 {
-                    var server = bot.GetGuild(config.ServerId);
+                    var server = bot.GetGuild(serverConfig.ServerId);
                     var serverRole = server.GetRole(role.RoleId);
                     var user = server.GetUser(reaction.UserId);
                     
-                    if(serverRole != null)
+                    if(serverRole != null && user.Id != config.Id)
                         await user.AddRoleAsync((IRole)serverRole);
                 }
             }
@@ -178,7 +179,7 @@ namespace JifBot
             var context = new SocketCommandContext(bot, message);
             //Mark where the prefix ends and the command begins
             int argPos = 0;
-            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
 
             //Determine if the message has a valid prefix, adjust argPos
             if (message.HasStringPrefix(config.Prefix, ref argPos))
