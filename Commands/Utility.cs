@@ -303,10 +303,10 @@ namespace JifBot.Commands
         [Command("roll")]
         [Remarks("-c-, -c- 1d20, -c- 2d6a + 4")]
         [Alias("dice")]
-        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]. Dice can be rolled with advantage or disadvantage by adding a or d respectively following the dice. Multiple modifiers can be added by adding multiple \"+ #\"s to the end. To quickly roll a 6 sided die, do not specify anything. Max values are 200 dice, 200 sides, and + 1000 modifiers")]
+        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]. Dice can be rolled with advantage or disadvantage by adding a or d respectively following the dice. Multiple modifiers can be added by adding multiple \"+/- #\"s to the end. To quickly roll a 6 sided die, do not specify anything. Max values are 200 dice, 200 sides, and + 1000 modifiers")]
         public async Task Dice([Remainder] string message = "")
         {
-            Match dice = Regex.Match(message, @"[0-9]+d[0-9]+ *(?:a|d)? *(\+ *[0-9]+)*");
+            Match dice = Regex.Match(message, @"[0-9]+d[0-9]+ *(?:a|d)?( *(?:\+|-) *[0-9]+)*");
             if (!dice.Success && message != "")
             {
                 BotBaseContext db = new BotBaseContext();
@@ -331,11 +331,16 @@ namespace JifBot.Commands
                 // Get values from Regex
                 message = dice.Value;
                 MatchCollection vals = Regex.Matches(message, @"[0-9]+");
+                MatchCollection mods = Regex.Matches(message, @"( *(?:\+|-) *[0-9]+)");
                 numDice = Convert.ToInt32(vals[0].Value);
                 diceSides = Convert.ToInt32(vals[1].Value);
-                for (int i = 2; i < vals.Count; i++)
+                foreach (Match mod in mods)
                 {
-                    modifier += Convert.ToInt32(vals[i].Value);
+                    string val = Regex.Match(mod.Value, @"[0-9]+").Value;
+                    if(mod.Value.Contains(" + "))
+                        modifier += Convert.ToInt32(val);
+                    else
+                        modifier -= Convert.ToInt32(val);
                 }
 
                 // advantage
@@ -358,7 +363,7 @@ namespace JifBot.Commands
                 return;
             }
 
-            if (numDice > 200 || diceSides > 200 || modifier > 1000)
+            if (numDice > 200 || diceSides > 200 || modifier > 1000 || modifier < -1000)
             {
                 await Context.Channel.SendFileAsync("Media/joke.jpg");
                 return;
@@ -398,10 +403,12 @@ namespace JifBot.Commands
                     msg = msg.Replace("2nd Roll", "**2nd Roll**");
             }
             else
-                msg = rolls[0];
+                msg = "Rolled: " + rolls[0];
 
-            if (numDice == 1 && numRolls == 1)
+            if (numDice == 1 && numRolls == 1 && modifier == 0)
                 await ReplyAsync($"{totals[0]}");
+            else if (modifier == 0 && numDice == 1)
+                await ReplyAsync($"{msg}");
             else
                 await ReplyAsync($"{msg}\nTotal: **{totals[printRoll]}**");
 
