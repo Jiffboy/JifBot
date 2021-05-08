@@ -36,12 +36,6 @@ namespace JifBot
             if (words.Equals(":o") || words.Equals(":0"))
                 await msg.Channel.SendMessageAsync(":O");
 
-            if (hasString(words,"fiora"))
-            {
-                await msg.Channel.SendFileAsync("Media/fiora.jpg");
-                await msg.Channel.SendMessageAsync("**Salty Reese activated**");
-            }
-
             if (hasString(words, "nani"))
             {
                 await msg.Channel.SendFileAsync("Media/nani.jpg");
