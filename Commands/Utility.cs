@@ -11,6 +11,7 @@ using JifBot.Models;
 using JIfBot;
 using System.Data;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace JifBot.Commands
 {
@@ -359,6 +360,16 @@ namespace JifBot.Commands
                 embed.ImageUrl = url;
                 await ReplyAsync("", false, embed.Build());
             }
+        }
+
+        public async Task<IGuildUser> getUser(IGuild guild, ulong id)
+        {
+            await guild.DownloadUsersAsync();
+            RequestOptions request = new RequestOptions();
+            CancellationToken cancel = request.CancelToken;
+            IGuildUser user = await guild.GetUserAsync(id, mode: CacheMode.CacheOnly, options: request);
+
+            return user;
         }
 
         string formatMinutesToString(int minutes)

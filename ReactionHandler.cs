@@ -56,7 +56,7 @@ namespace JifBot
             if (hasString(words, "bamboozle"))
                 await msg.Channel.SendFileAsync("Media/bamboozle.png");
 
-            if (words.ToLower().Equals("hi") || words.ToLower().Equals("hello") || words.ToLower().Equals("hey") || words.ToLower().Equals("yo") || words.ToLower().Equals("henlo"))
+            if (words.ToLower().Equals("hi") || words.ToLower().Equals("hello") || words.ToLower().Equals("hey") || words.ToLower().Equals("yo") || words.ToLower().Equals("henlo") || words.ToLower().Equals("hiya") || words.ToLower().Equals("heya"))
             {
                 Random rnd = new Random();
                 int num = rnd.Next(db.Greeting.Count()) + 1;
