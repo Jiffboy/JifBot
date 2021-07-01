@@ -188,7 +188,7 @@ namespace JifBot.Commands
                 foreach (Match mod in mods)
                 {
                     string val = Regex.Match(mod.Value, @"[0-9]+").Value;
-                    if(mod.Value.Contains(" + "))
+                    if(mod.Value.Contains("+"))
                         modifier += Convert.ToInt32(val);
                     else
                         modifier -= Convert.ToInt32(val);
