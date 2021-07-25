@@ -132,5 +132,22 @@ namespace JifBot.Commands
             await Context.Channel.SendFileAsync("Media/rammus.png");
             await ReplyAsync("**P  R  A  I  S  E          R  A  M  M  U  S**");
         }
+
+        [Command("hang")]
+        [Remarks("-c-")]
+        [Summary("Get Jif Bot to come say hello")]
+        public async Task Hang()
+        {
+            var channels = await Context.Guild.GetVoiceChannelsAsync();
+            foreach (var channel in channels)
+            {
+                var user = await channel.GetUserAsync(Context.User.Id);
+                if (user != null)
+                {
+                    var client = await channel.ConnectAsync();
+
+                }
+            }
+        }
     }
 }

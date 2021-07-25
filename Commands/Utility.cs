@@ -12,6 +12,7 @@ using JIfBot;
 using System.Data;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using Discord.Audio;
 
 namespace JifBot.Commands
 {
