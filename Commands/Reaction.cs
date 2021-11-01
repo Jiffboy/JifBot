@@ -110,7 +110,7 @@ namespace JifBot.Commands
 
         [Command("no")]
         [Remarks("-c-")]
-        [Summary("Inform somebody that you will not be doing that")]
+        [Summary("Inform somebody that you will not be doing that.")]
         public async Task No()
         {
             await Context.Channel.SendFileAsync("Media/no.jpg");
@@ -118,10 +118,18 @@ namespace JifBot.Commands
 
         [Command("horny")]
         [Remarks("-c-")]
-        [Summary("Send someone to horny jail")]
+        [Summary("Send someone to horny jail.")]
         public async Task Horny()
         {
             await Context.Channel.SendFileAsync("Media/horny.jpg");
+        }
+
+        [Command("wack")]
+        [Remarks("-c-")]
+        [Summary("Express your discontent with the events that have transpired")]
+        public async Task Wack()
+        {
+            await Context.Channel.SendFileAsync("Media/wack.jpg");
         }
     }
 }

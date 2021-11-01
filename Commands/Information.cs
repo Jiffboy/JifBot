@@ -30,7 +30,7 @@ namespace JifBot.Commands
             var embed = new JifBotEmbedBuilder();
             
             embed.Title = "All commands will begin with a " + config.Prefix + " , for more information on individual commands, use: " + config.Prefix + "help commandName";
-            embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://jifbot.com";
+            embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://jifbot.com/commands.html";
 
             string cat = commands.First().Category;
             string list = "";
@@ -75,6 +75,62 @@ namespace JifBot.Commands
                     msg += $"{config.Prefix}{al.Alias} ";
             }
             await ReplyAsync(msg);
+        }
+
+        [Command("uptime")]
+        [Remarks("-c-")]
+        [Summary("Reports how long the bot has been running.")]
+        public async Task Uptime()
+        {
+            TimeSpan uptime = DateTime.Now - Program.startTime;
+            await ReplyAsync($"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s");
+        }
+
+        [Command("changelog")]
+        [Remarks("-c-")]
+        [Summary("Reports the last 3 updates made to Jif Bot.")]
+        public async Task Changelog()
+        {
+            var db = new BotBaseContext();
+            var embed = new JifBotEmbedBuilder();
+            var totalEntries = db.ChangeLog.AsQueryable().OrderByDescending(e => e.Date);
+            var entriesToPrint = new Dictionary<string, string>();
+
+            foreach(ChangeLog entry in totalEntries)
+            {
+                if(!entriesToPrint.ContainsKey(entry.Date))
+                {
+                    if (entriesToPrint.Count >= 3)
+                    {
+                        break;
+                    }
+                    entriesToPrint.Add(entry.Date, $"\\> {entry.Change}");
+                }
+                else
+                {
+                    entriesToPrint[entry.Date] += $"\n\\> {entry.Change}";
+                }
+            }
+
+            embed.Title = "Last 3 Jif Bot updates";
+            embed.Description = "For a list of all updates, visit https://jifbot.com/changelog.html";
+            foreach (var entry in entriesToPrint)
+            {
+                var pieces = entry.Key.Split("-");
+                embed.AddField($"{pieces[1]}.{pieces[2]}.{pieces[0]}", entry.Value);
+            }
+            await ReplyAsync("", false, embed.Build());
+        }
+
+        [Command("invitelink")]
+        [Alias("link")]
+        [Remarks("-c-")]
+        [Summary("Provides a link which can be used should you want to spread Jif Bot to another server.")]
+        public async Task InviteLink()
+        {
+            var db = new BotBaseContext();
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+            await ReplyAsync($"The following is a link to add me to another server. NOTE: You must have permissions on the server in order to add. Once on the server I must be given permission to send and delete messages, otherwise I will not work.\nhttps://discordapp.com/oauth2/authorize?client_id={config.Id}&scope=bot");
         }
 
         [Command("define")]
@@ -163,7 +219,7 @@ namespace JifBot.Commands
         [Command("udefine")]
         [Remarks("-c- term")]
         [Alias("slang")]
-        [Summary("Gives the top definition for the term from urbandictionary.com")]
+        [Summary("Gives the top definition for the term from urbandictionary.com.")]
         public async Task DefineUrbanDictionary([Remainder] string phrase)
         {
             string URBAN_DICTIONARY_ENDPOINT = "http://api.urbandictionary.com/v0/define?term=";
@@ -474,72 +530,6 @@ namespace JifBot.Commands
                 var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(Context.User.Id));
                 await ReplyAsync("", false, embed.Build());
             }
-        }
-
-        [Command("avatar")]
-        [Remarks("-c-, -c- @person1 @person2, -c- person1id person2id")]
-        [Summary("Gets the avatar for one or more users. Mention a user or provide their id to get their avatar, or do neither to get your own. To do more than 1 person, separate mentions/ids with spaces.")]
-        public async Task Avatar([Remainder] string ids = "")
-        {
-            await Context.Guild.DownloadUsersAsync();
-            var mention = Context.Message.MentionedUserIds;
-            if (mention.Count != 0)
-            {
-                foreach (ulong id in mention)
-                {
-                    var embed = new EmbedBuilder();
-                    IGuildUser user = Context.Guild.GetUserAsync(id).Result;
-                    string url = user.GetAvatarUrl();
-                    url = url.Remove(url.IndexOf("?size=128"));
-                    url = url + "?size=256";
-                    embed.ImageUrl = url;
-                    await ReplyAsync("", false, embed.Build());
-                }
-            }
-            else if (ids != "")
-            {
-                string[] idList = ids.Split(' ');
-                foreach (string id in idList)
-                {
-                    var embed = new EmbedBuilder();
-                    IGuildUser user = await Context.Guild.GetUserAsync(Convert.ToUInt64(id));
-                    string url = user.GetAvatarUrl();
-                    url = url.Remove(url.IndexOf("?size=128"));
-                    url = url + "?size=256";
-                    embed.ImageUrl = url;
-                    await ReplyAsync("", false, embed.Build());
-                }
-            }
-            else
-            {
-                var embed = new EmbedBuilder();
-                string url = Context.User.GetAvatarUrl();
-                url = url.Remove(url.IndexOf("?size=128"));
-                url = url + "?size=256";
-                embed.ImageUrl = url;
-                await ReplyAsync("", false, embed.Build());
-            }
-        }
-
-        [Command("funfact")]
-        [Remarks("-c-")]
-        [Alias("fact")]
-        [Summary("Provides a random fact.")]
-        public async Task beeFact([Remainder] string useless = "")
-        {
-            HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri("https://useless-facts.sameerkumar.website");
-            HttpResponseMessage response = await client.GetAsync("/api");
-            HttpContent content = response.Content;
-            string stuff = await content.ReadAsStringAsync();
-            var json = JObject.Parse(stuff);
-            if ((string)json.SelectToken("Response") == "False")
-            {
-                await ReplyAsync("Error retrieving fact");
-                return;
-            }
-            string fact = (string)json.SelectToken("data");
-            await ReplyAsync(fact);
         }
 
         async Task<bool> RemoteFileExists(string url)
