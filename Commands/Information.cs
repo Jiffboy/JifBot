@@ -271,6 +271,15 @@ namespace JifBot.Commands
 
         }
 
+        [Command("league")]
+        [Alias("lol")]
+        [Remarks("Asking for help is the first step towards recovery.")]
+        [Summary("How to uninstall league")]
+        public async Task LeagueOfLegends([Remainder] string word)
+        {
+            await ReplyAsync("https://www.youtube.com/watch?v=EjHKIJ90FtY");
+        }
+
         [Command("movie")]
         [Alias("imdb")]
         [Remarks("-c- airplane!")]
