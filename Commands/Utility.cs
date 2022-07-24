@@ -416,16 +416,4 @@ namespace JifBot.Commands
             return format;
         }
     }
-    class UrbanDictionaryDefinition
-    {
-        public string Definition { get; set; }
-        public string Example { get; set; }
-        public string Word { get; set; }
-        public string Written_On { get; set; }
-    }
-
-    class UrbanDictionaryResult
-    {
-        public List<UrbanDictionaryDefinition> List { get; set; }
-    }
 }

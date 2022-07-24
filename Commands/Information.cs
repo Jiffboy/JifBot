@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Globalization;
-using System.Threading;
+using System.Text.Json;
+using System.Net;
+using System.IO;
 using Discord;
 using Discord.Commands;
 using Newtonsoft.Json.Linq;
 using System.Web;
-using Newtonsoft.Json;
 using JifBot.Models;
 using JIfBot;
 
@@ -134,89 +134,58 @@ namespace JifBot.Commands
         }
 
         [Command("define")]
-        [Remarks("-c- word OR -c- word -m")]
-        [Summary("Defines any word in the Oxford English dictionary. For multiple definitions, use -m at the end of the command.")]
+        [Remarks("-c- word")]
+        [Summary("Defines any word in the dictionary.")]
         public async Task Define([Remainder] string word)
         {
-            var db = new BotBaseContext();
-            var dictId = db.Variable.AsQueryable().Where(v => v.Name == "dictId").First();
-            var dictKey = db.Variable.AsQueryable().Where(v => v.Name == "dictKey").First();
-            bool multiple = false;
+            string DICTIONARY_ENDPOINT = "https://api.dictionaryapi.dev/api/v2/entries/en/" + word;
+            List<DictionaryResult> definitionList = new List<DictionaryResult>();
+            var embed = new JifBotEmbedBuilder();
 
-            HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri("https://od-api.oxforddictionaries.com/api/v2/entries/en/");
-            client.DefaultRequestHeaders.Add("app_id", dictId.Value);
-            client.DefaultRequestHeaders.Add("app_key", dictKey.Value);
-            if (word.EndsWith(" -m"))
+            using (HttpClient client = new HttpClient())
             {
-                word = word.Replace(" -m", "");
-                multiple = true;
-            }
-            HttpResponseMessage response = await client.GetAsync(word);
-            if (response.StatusCode.ToString() == "NotFound")
-            {
-                await Context.Channel.SendFileAsync("Media/damage.png");
-                return;
-            }
-
-            if (response.StatusCode.ToString() == "Forbidden")
-            {
-                await ReplyAsync("Unable to retrieve definition");
-                return;
-            }
-            HttpContent content = response.Content;
-            string stuff = await content.ReadAsStringAsync();
-            var json = JObject.Parse(stuff);
-            if (multiple)
-            {
-                var embed = new JifBotEmbedBuilder();
-                string def = "1.) " + (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].definitions[0]");
-                string example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].examples[0].text");
-                if (example == null)
+                using (var response = await client.GetAsync(DICTIONARY_ENDPOINT))
                 {
-                    example = "(no example available)";
-                }
-                embed.AddField(def, example);
-                for (int i = 0; i < 4; i++)
-                {
-                    def = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].subsenses[" + i.ToString() + "].definitions[0]");
-                    example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].subsenses[" + i.ToString() + "].examples[0].text");
-                    if (def != null)
+                    if (response.StatusCode == HttpStatusCode.OK)
                     {
-                        def = (i + 2).ToString() + ".) " + def;
-                        if (example == null)
+                        string jsonResponse = await response.Content.ReadAsStringAsync();
+                        List<DictionaryResult> defineResult = JsonSerializer.Deserialize<List<DictionaryResult>>(jsonResponse);
+                        embed.Title = defineResult[0].word;
+                        if (defineResult.Count > 1)
+                            embed.Description = "phonetically: " + defineResult[0].phonetics[1].text;
+                        foreach (DictionaryMeaning meaning in defineResult[0].meanings)
                         {
-                            example = "(no example available)";
+                            string definitions = "";
+                            foreach (DictionaryDefinition definition in meaning.definitions)
+                            {
+                                definitions += " - " + definition.definition + "\n";
+                            }
+                            embed.AddField(meaning.partOfSpeech, definitions);
                         }
-                        embed.AddField(def, example);
+
+                        await ReplyAsync("", false, embed.Build());
+                        if (defineResult.Count > 1 && defineResult[0].phonetics[1].audio != "")
+                        {
+                            byte[] soundData = null;
+                            using (var wc = new System.Net.WebClient())
+                                soundData = wc.DownloadData(defineResult[0].phonetics[1].audio);
+                            Stream stream = new MemoryStream(soundData);
+                            await Context.Channel.SendFileAsync(stream, embed.Title + ".mp3");
+                        }
+                    }
+                    else if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        await ReplyAsync(word + " is not an existing word, or is, or relates to a proper noun.");
+                    }
+                    else
+                    {
+                        await ReplyAsync("Something has gone wrong, please try again later.");
                     }
                 }
-                await ReplyAsync("", false, embed.Build());
-            }
-            else
-            {
-                CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
-                TextInfo textInfo = cultureInfo.TextInfo;
-                string name = textInfo.ToTitleCase(word);
-                var type = json.SelectToken("results[0].lexicalEntries[0].lexicalCategory.text");
-                string spelling = (string)json.SelectToken("results[0].lexicalEntries[0].pronunciations[0].phoneticSpelling");
-                string definition = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].definitions[0]");
-                string example = (string)json.SelectToken("results[0].lexicalEntries[0].entries[0].senses[0].examples[0].text");
-                string message = name + " (" + type + ")";
-                if (spelling != null)
-                {
-                    message += "     /" + spelling + "/";
-                }
-                message += "\n**Definition: **" + definition;
-                if (example != null)
-                {
-                    message += "\n**Example: **" + example;
-                }
-                await ReplyAsync(message);
             }
         }
 
-        [Command("udefine")]
+        /*[Command("udefine")]
         [Remarks("-c- term")]
         [Alias("slang")]
         [Summary("Gives the top definition for the term from urbandictionary.com.")]
@@ -269,7 +238,7 @@ namespace JifBot.Commands
                 await ReplyAsync($"{phrase} is not an existing word/phrase");
             }
 
-        }
+        }*/
 
         [Command("league")]
         [Alias("lol")]
@@ -586,5 +555,41 @@ namespace JifBot.Commands
             embed.AddField("Roles", roles);
             return embed;
         }
+    }
+
+    class UrbanDictionaryDefinition
+    {
+        public string Definition { get; set; }
+        public string Example { get; set; }
+        public string Word { get; set; }
+        public string Written_On { get; set; }
+    }
+
+    class UrbanDictionaryResult
+    {
+        public List<UrbanDictionaryDefinition> List { get; set; }
+    }
+
+    class DictionaryResult
+    {
+        public string word { get; set; }
+        public List<DictionaryMeaning> meanings { get; set; }
+        public List<DictionaryPhonetic> phonetics { get; set; }
+    }
+
+    class DictionaryPhonetic
+    {
+        public string text { get; set; }
+        public string audio { get; set; }
+    }
+
+    class DictionaryMeaning
+    {
+        public string partOfSpeech { get; set; }
+        public List<DictionaryDefinition> definitions { get; set; }
+    }
+    class DictionaryDefinition
+    {
+        public string definition { get; set; }
     }
 }
