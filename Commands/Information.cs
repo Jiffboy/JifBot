@@ -150,17 +150,28 @@ namespace JifBot.Commands
                     {
                         string jsonResponse = await response.Content.ReadAsStringAsync();
                         List<DictionaryResult> defineResult = JsonSerializer.Deserialize<List<DictionaryResult>>(jsonResponse);
+                        List<String> variantsHit = new List<String>();
                         embed.Title = defineResult[0].word;
                         if (defineResult.Count > 1)
                             embed.Description = "phonetically: " + defineResult[0].phonetics[1].text;
                         foreach (DictionaryMeaning meaning in defineResult[0].meanings)
                         {
-                            string definitions = "";
-                            foreach (DictionaryDefinition definition in meaning.definitions)
+                            // Some bizarre cases like plural words will cause for various types of the same part of speech, for simplicity
+                            // we will ignore any duplicates
+                            if (!variantsHit.Contains(meaning.partOfSpeech))
                             {
-                                definitions += " - " + definition.definition + "\n";
+                                variantsHit.Add(meaning.partOfSpeech);
+                                string definitions = "";
+                                foreach (DictionaryDefinition definition in meaning.definitions)
+                                {
+                                    // Don't want this to spill over
+                                    if ((definitions + " - " + definition.definition + "\n").Length < 1024)
+                                    {
+                                        definitions += " - " + definition.definition + "\n";
+                                    }
+                                }
+                                embed.AddField(meaning.partOfSpeech, definitions);
                             }
-                            embed.AddField(meaning.partOfSpeech, definitions);
                         }
 
                         await ReplyAsync("", false, embed.Build());
@@ -220,6 +231,12 @@ namespace JifBot.Commands
                 embed.Title = word;
                 embed.Description = $"Written: {cleanDate}";
                 embed.Url = definitionList[0].permalink;
+
+                if(cleanDefinition.Length >= 1024)
+                    cleanDefinition = cleanDefinition.Substring(0, 1021) + "...";
+
+                if (cleanExample.Length >= 1024)
+                    cleanExample = cleanExample.Substring(0, 1021) + "...";
 
                 embed.AddField("Definition", cleanDefinition);
                 embed.AddField("Example", cleanExample);
