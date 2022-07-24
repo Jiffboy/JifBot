@@ -152,7 +152,7 @@ namespace JifBot.Commands
                         List<DictionaryResult> defineResult = JsonSerializer.Deserialize<List<DictionaryResult>>(jsonResponse);
                         List<String> variantsHit = new List<String>();
                         embed.Title = defineResult[0].word;
-                        if (defineResult.Count > 1)
+                        if (defineResult[0].phonetics.Count > 1)
                             embed.Description = "phonetically: " + defineResult[0].phonetics[1].text;
                         foreach (DictionaryMeaning meaning in defineResult[0].meanings)
                         {
@@ -175,7 +175,7 @@ namespace JifBot.Commands
                         }
 
                         await ReplyAsync("", false, embed.Build());
-                        if (defineResult.Count > 1 && defineResult[0].phonetics[1].audio != "")
+                        if(defineResult[0].phonetics.Count > 1 && defineResult[0].phonetics[1].audio != "")
                         {
                             byte[] soundData = null;
                             using (var wc = new System.Net.WebClient())
