@@ -185,7 +185,7 @@ namespace JifBot.Commands
             }
         }
 
-        /*[Command("udefine")]
+        [Command("udefine")]
         [Remarks("-c- term")]
         [Alias("slang")]
         [Summary("Gives the top definition for the term from urbandictionary.com.")]
@@ -195,58 +195,41 @@ namespace JifBot.Commands
 
             string encodedSearchTerm = HttpUtility.UrlEncode(phrase);
             List<UrbanDictionaryDefinition> definitionList = new List<UrbanDictionaryDefinition>();
+            var embed = new JifBotEmbedBuilder();
 
             using (HttpClient client = new HttpClient())
             {
                 using (var response = await client.GetAsync(URBAN_DICTIONARY_ENDPOINT + encodedSearchTerm))
                 {
                     string jsonResponse = await response.Content.ReadAsStringAsync();
-                    try
-                    {
-                        UrbanDictionaryResult udefineResult = JsonConvert.DeserializeObject<UrbanDictionaryResult>(jsonResponse);
-                        definitionList = udefineResult.List;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
-                    }
+                    UrbanDictionaryResult udefineResult = JsonSerializer.Deserialize<UrbanDictionaryResult>(jsonResponse);
+                    definitionList = udefineResult.list;
                 }
             }
 
             if (definitionList.Count > 0)
             {
                 // Urban Dictionary uses square brackets for links in its markup; they'll never appear as part of the definition text.
-                var cleanDefinition = definitionList[0].Definition.Replace("[", "").Replace("]", "");
-                var cleanExample = definitionList[0].Example.Replace("[", "").Replace("]", "");
-                var year = definitionList[0].Written_On.Substring(0, definitionList[0].Written_On.IndexOf("-"));
-                var dayMonth = definitionList[0].Written_On.Substring(definitionList[0].Written_On.IndexOf("-") + 1, 5);
+                var cleanDefinition = definitionList[0].definition.Replace("[", "").Replace("]", "");
+                var cleanExample = definitionList[0].example.Replace("[", "").Replace("]", "");
+                var year = definitionList[0].written_on.Substring(0, definitionList[0].written_on.IndexOf("-"));
+                var dayMonth = definitionList[0].written_on.Substring(definitionList[0].written_on.IndexOf("-") + 1, 5);
                 var cleanDate = dayMonth.Replace("-", "/") + "/" + year;
-                var word = definitionList[0].Word;
-                var msg = $"{word} - {cleanDate}\n**Definition:** {cleanDefinition}\n**Example:** {cleanExample}";
+                var word = definitionList[0].word;
 
-                while(msg.Length > 2000)
-                {
-                    var index = msg.Substring(0, 2000).LastIndexOf(" ");
-                    await ReplyAsync(msg.Substring(0, index));
-                    msg = msg.Substring(index, msg.Length - index);
-                }
+                embed.Title = word;
+                embed.Description = $"Written: {cleanDate}";
+                embed.Url = definitionList[0].permalink;
 
-                await ReplyAsync(msg);
+                embed.AddField("Definition", cleanDefinition);
+                embed.AddField("Example", cleanExample);
+
+                await ReplyAsync("", false, embed.Build());
             }
             else
             {
                 await ReplyAsync($"{phrase} is not an existing word/phrase");
             }
-
-        }*/
-
-        [Command("league")]
-        [Alias("lol")]
-        [Remarks("Asking for help is the first step towards recovery.")]
-        [Summary("How to uninstall league")]
-        public async Task LeagueOfLegends([Remainder] string word)
-        {
-            await ReplyAsync("https://www.youtube.com/watch?v=EjHKIJ90FtY");
         }
 
         [Command("movie")]
@@ -559,15 +542,16 @@ namespace JifBot.Commands
 
     class UrbanDictionaryDefinition
     {
-        public string Definition { get; set; }
-        public string Example { get; set; }
-        public string Word { get; set; }
-        public string Written_On { get; set; }
+        public string definition { get; set; }
+        public string example { get; set; }
+        public string word { get; set; }
+        public string written_on { get; set; }
+        public string permalink { get; set; }
     }
 
     class UrbanDictionaryResult
     {
-        public List<UrbanDictionaryDefinition> List { get; set; }
+        public List<UrbanDictionaryDefinition> list { get; set; }
     }
 
     class DictionaryResult

@@ -347,6 +347,15 @@ namespace JifBot.Commands
                 await Context.Channel.SendFileAsync(ms, "tiltycat.png");
             }
         }
+
+        [Command("league")]
+        [Alias("lol")]
+        [Remarks("Asking for help is the first step towards recovery.")]
+        [Summary("How to uninstall league")]
+        public async Task LeagueOfLegends()
+        {
+            await ReplyAsync("https://www.youtube.com/watch?v=EjHKIJ90FtY");
+        }
         class TiltyEmoji
         {
             private const string TILTY_CAT = "Media/tiltycat.png";
