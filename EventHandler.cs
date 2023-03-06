@@ -45,16 +45,16 @@ namespace JifBot
             }
         }
 
-        public async Task AnnounceLeftUser(SocketGuildUser user)
+        public async Task AnnounceLeftUser(SocketGuild guild, SocketUser user)
         {
-            Console.WriteLine("User " + user.Username + " Left " + user.Guild.Name);
+            Console.WriteLine("User " + user.Username + " Left " + guild.Name);
 
             var db = new BotBaseContext();
-            var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == user.Guild.Id).FirstOrDefault();
+            var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == guild.Id).FirstOrDefault();
 
             if (config != null && config.LeaveId != 0)
             {
-                IGuild server = user.Guild;
+                IGuild server = guild;
                 ITextChannel channel = await server.GetTextChannelAsync(config.LeaveId);
 
                 var embed = new JifBotEmbedBuilder();
@@ -65,9 +65,10 @@ namespace JifBot
             }
         }
 
-        public async Task SendMessageReport(Cacheable<IMessage, ulong> cache, ISocketMessageChannel channel)
+        public async Task SendMessageReport(Cacheable<IMessage, ulong> cache, Cacheable<IMessageChannel,ulong> channel)
         {
-            SocketGuildChannel socketChannel = (SocketGuildChannel)channel;
+            /*SocketGuildChannel socketChannel = (SocketGuildChannel)channel;
+            
             var db = new BotBaseContext();
             var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == socketChannel.Guild.Id).FirstOrDefault();
 
@@ -90,7 +91,7 @@ namespace JifBot
                     embed.AddField("in " + channel.Name, "message unknown");
                 }
                 await sendChannel.SendMessageAsync("", false, embed.Build());
-            }
+            }*/
         }
 
         public static Task WriteLog(LogMessage lmsg)
@@ -118,7 +119,7 @@ namespace JifBot
             return Task.CompletedTask;
         }
 
-        public async Task HandleReactionAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
+        public async Task HandleReactionAdded(Cacheable<IUserMessage, ulong> cache, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             var db = new BotBaseContext();
             var serverConfig = db.ServerConfig.AsQueryable().Where(s => s.ReactMessageId == cache.Id).FirstOrDefault();
@@ -139,7 +140,7 @@ namespace JifBot
             }
         }
 
-        public async Task HandleReactionRemoved(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
+        public async Task HandleReactionRemoved(Cacheable<IUserMessage, ulong> cache, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             var db = new BotBaseContext();
             var config = db.ServerConfig.AsQueryable().Where(s => s.ReactMessageId == cache.Id).FirstOrDefault();

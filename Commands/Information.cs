@@ -538,10 +538,10 @@ namespace JifBot.Commands
                 embed.AddField("Nickname", user.Username);
             else
                 embed.AddField("Nickname", user.Nickname);
-            if (user.Activity == null)
+            /*if (user.Activity == null)
                 embed.AddField("Currently Playing", "[nothing]");
             else
-                embed.AddField("Currently " + user.Activity.Type.ToString(), user.Activity.Name);
+                embed.AddField("Currently " + user.Activity.Type.ToString(), user.Activity.Name);*/
             embed.AddField("Account Creation Date", FormatTime(user.CreatedAt));
             embed.AddField("Server Join Date", FormatTime(user.JoinedAt.Value));
             string roles = "";
