@@ -330,10 +330,17 @@ namespace JifBot.Commands
         {
             var response = await _spoonacularClient.GetSauceRecipe(sauceSearchText);
 
-            Random rnd = new Random();
-            int num = rnd.Next(response.TotalResults);
+            if (response == null || response.TotalResults == 0)
+            {
+                await RespondAsync($"Could not find a {sauceSearchText} sauce");
+            }
+            else
+            {
+                Random rnd = new Random();
+                int num = rnd.Next(response.TotalResults);
 
-            await RespondAsync(response.Results[num].Image);
+                await RespondAsync(response.Results[num].Image);
+            }
         }
     }
 }
