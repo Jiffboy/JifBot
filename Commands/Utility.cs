@@ -14,11 +14,19 @@ using System.Data;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using Discord.Audio;
+using JifBot.HttpClients;
 
 namespace JifBot.Commands
 {
     public class Utility : InteractionModuleBase<SocketInteractionContext>
     {
+        private ISpoonacularClient _spoonacularClient;
+
+        public Utility(ISpoonacularClient spoonacularClient)
+        {
+            _spoonacularClient = spoonacularClient;
+        }
+
         [SlashCommand("timer", "Sets a reminder to ping you after a certain amount of time has passed.")]
         [Remarks("-c- -h2 -m30 message, -c- 150 message")]
         public async Task Timer(int minutes=0, int hours=0, int days=0, int weeks=0, string message="")
@@ -315,6 +323,17 @@ namespace JifBot.Commands
                 format = format.Remove(format.Length - 2, 2);
 
             return format;
+        }
+
+        [SlashCommand("sauce", "Searches for a kind of sauce.")]
+        public async Task SearchSauce(string sauceSearchText = "")
+        {
+            var response = await _spoonacularClient.GetSauceRecipe(sauceSearchText);
+
+            Random rnd = new Random();
+            int num = rnd.Next(response.TotalResults);
+
+            await RespondAsync(response.Results[num].Image);
         }
     }
 }
