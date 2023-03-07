@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Diagnostics;
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using JifBot.Models;
 using JIfBot;
 using System.Data;
@@ -16,49 +17,26 @@ using Discord.Audio;
 
 namespace JifBot.Commands
 {
-    public class Utility : ModuleBase
+    public class Utility : InteractionModuleBase<SocketInteractionContext>
     {
-        [Command("timer")]
+        [SlashCommand("timer", "Sets a reminder to ping you after a certain amount of time has passed.")]
         [Remarks("-c- -h2 -m30 message, -c- 150 message")]
-        [Summary("Sets a reminder to ping you after a certain amount of time has passed. A message can be specified along with the time to be printed back to you at the end of the timer. Times can be specified using any combination of -m[minutes], -h[hours], -d[days], and -w[weeks] anywhere in the message. Additionally, to set a quick timer for a number of minutes, just do -p-timer [minutes] message.")]
-        public async Task Timer([Remainder]string message = "")
+        public async Task Timer(int minutes=0, int hours=0, int days=0, int weeks=0, string message="")
         {
             int waitTime = 0;
-
-            if (Regex.IsMatch(message, @"-(m *[0-9]+|[0-9]+m)"))
-            {
-                waitTime += Convert.ToInt32(Regex.Match(message, @"-(m *[0-9]+|[0-9]+m)").Value.Replace("-", "").Replace("m", ""));
-            }
-
-            if (Regex.IsMatch(message, @"-(h *[0-9]+|[0-9]+h)"))
-            {
-                waitTime += (Convert.ToInt32(Regex.Match(message, @"-(h *[0-9]+|[0-9]+h)").Value.Replace("-", "").Replace("h", "")) * 60);
-            }
-
-            if (Regex.IsMatch(message, @"-(d *[0-9]+|[0-9]+d)"))
-            {
-                waitTime += (Convert.ToInt32(Regex.Match(message, @"-(d *[0-9]+|[0-9]+d)").Value.Replace("-", "").Replace("d", "")) * 1440);
-            }
-
-            if (Regex.IsMatch(message, @"-(w *[0-9]+|[0-9]+w)"))
-            {
-                waitTime += (Convert.ToInt32(Regex.Match(message, @"-(w *[0-9]+|[0-9]+w)").Value.Replace("-", "").Replace("w", "")) * 10080);
-            }
+            waitTime += minutes;
+            waitTime += hours * 60;
+            waitTime += days * 1440;
+            waitTime += weeks * 10080;
 
             if (waitTime == 0)
             {
-                if (Regex.IsMatch(message, @" *[0-9]+"))
-                    waitTime = Convert.ToInt32(message.Split(" ")[0]);
-                else
-                {
-                    var db = new BotBaseContext();
-                    var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
-                    await ReplyAsync($"Please provide an amount of time to wait for. For assistance, use {config.Prefix}help.");
-                    return;
-                }
+                var db = new BotBaseContext();
+                var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+                await RespondAsync($"Please provide an amount of time to wait for. For assistance, use {config.Prefix}help.");
+                return;
             }
 
-            message = Regex.Replace(message, @"-([m,h,d,w] *[0-9]+|[0-9]+[m,h,d,w])", "");
             if (message.Replace(" ", "") == "")
                 message = "Times up!";
             Process proc = new System.Diagnostics.Process();
@@ -68,154 +46,112 @@ namespace JifBot.Commands
             proc.StartInfo.RedirectStandardOutput = true;
             proc.Start();
 
-            await ReplyAsync("Setting timer for " + formatMinutesToString(waitTime) + " from now.");
+            await RespondAsync("Setting timer for " + formatMinutesToString(waitTime) + " from now.");
         }
 
-        [Command("choose")]
-        [Remarks("-c- choice \"choice but with spaces\"")]
-        [Summary("Randomly makes a choice for you. You can use as many choices as you want, but seperate all choices using a space. If you wish for a choice to contain spaces, surround the choice with \"\"\n.")]
-        public async Task Choose([Remainder]string message)
+        [SlashCommand("choose", "Randomly makes a choice for you.")]
+        [Remarks("You can use as many choices as you want, but seperate all choices using a space. If you wish for a choice to contain spaces, surround the choice with \"\"\n. -c- choice \"choice but with spaces\"")]
+        public async Task Choose(string choices)
         {
-            int quotes = message.Split('\"').Length - 1;
+            int quotes = choices.Split('\"').Length - 1;
             if (quotes % 2 != 0)
             {
-                await ReplyAsync("please ensure all quotations are closed");
+                await RespondAsync("please ensure all quotations are closed");
                 return;
             }
 
-            List<string> choices = new List<string>();
+            List<string> choiceList = new List<string>();
             int count = 0;
-            message = message.TrimEnd();
+            choices = choices.TrimEnd();
             while (true)
             {
-                message = message.TrimStart();
+                choices = choices.TrimStart();
                 string choice;
-                if (message == "")
+                if (choices == "")
                 {
                     break;
                 }
-                if (message[0] == '\"')
+                if (choices[0] == '\"')
                 {
-                    message = message.Remove(0, 1);
-                    choice = message.Remove(message.IndexOf("\""));
-                    message = message.Remove(0, message.IndexOf("\"") + 1);
+                    choices = choices.Remove(0, 1);
+                    choice = choices.Remove(choices.IndexOf("\""));
+                    choices = choices.Remove(0, choices.IndexOf("\"") + 1);
                 }
                 else
                 {
-                    if (message.Contains(" "))
+                    if (choices.Contains(" "))
                     {
-                        choice = message.Remove(message.IndexOf(" "));
-                        message = message.Remove(0, message.IndexOf(" "));
+                        choice = choices.Remove(choices.IndexOf(" "));
+                        choices = choices.Remove(0, choices.IndexOf(" "));
                     }
                     else
                     {
-                        choice = message;
-                        message = "";
+                        choice = choices;
+                        choices = "";
                     }
                 }
-                choices.Add(choice);
+                choiceList.Add(choice);
                 count++;
             }
 
             if (count < 2)
             {
-                await ReplyAsync("Please provide at least two choices.");
+                await RespondAsync("Please provide at least two choices.");
                 return;
             }
 
             Random rnd = new Random();
             int num = rnd.Next(count);
-            await ReplyAsync("The robot overlords have chosen: **" + choices[num] + "**");
+            await RespondAsync("The robot overlords have chosen: **" + choiceList[num] + "**");
         }
 
-        [Command("youtube")]
-        [Remarks("-c- video title")]
-        [Summary("Takes whatever you give it and searches for it on YouTube, it will return the first search result that appears.")]
-        public async Task Youtube([Remainder]string vid)
+        
+        [SlashCommand("youtube", "Takes whatever you give it and searches for it on YouTube.")]
+        [Remarks("-c- video title it will return the first search result that appears.")]
+        public async Task Youtube(string search)
         {
-            vid = "https://www.youtube.com/results?search_query=" + vid.Replace(" ", "+");
+            search = "https://www.youtube.com/results?search_query=" + search.Replace(" ", "+");
             System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            string html = await client.GetStringAsync(vid);
+            string html = await client.GetStringAsync(search);
             html = html.Remove(0, html.IndexOf("?v=") + 3);
             html = html.Remove(html.IndexOf("\""));
-            await ReplyAsync("https://www.youtube.com/watch?v=" + html);
+            await RespondAsync("https://www.youtube.com/watch?v=" + html);
         }
 
-        [Command("8ball")]
+        
+        [SlashCommand("8ball", "Asks the magic 8 ball a question.")]
         [Remarks("-c-")]
-        [Summary("asks the magic 8 ball a question.")]
-        public async Task eightBall([Remainder] string useless = "")
+        public async Task eightBall(string question="")
         {
             string[] responses = new string[] { "it is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful" };
             Random rnd = new Random();
             int num = rnd.Next(20);
-            await ReplyAsync(responses[num]);
+            await RespondAsync(responses[num]);
         }
 
-        [Command("roll")]
-        [Remarks("-c-, -c- 1d20, -c- 2d6a + 4")]
-        [Alias("dice")]
-        [Summary("Rolls a specified number of dice, with a specified number of sides, denoted as: [# rolls]d[# sides]. Dice can be rolled with advantage or disadvantage by adding a or d respectively following the dice. Multiple modifiers can be added by adding multiple \"+/- #\"s to the end. To quickly roll a 6 sided die, do not specify anything. Max values are 200 dice, 200 sides, and + 1000 modifiers")]
-        public async Task Dice([Remainder] string message = "")
+        [SlashCommand("roll", "Rolls a specified number of dice, with a specified number of sides.")]
+        [Remarks("-c-, -c- 1d20, -c- 2d6a + 4  To quickly roll a 6 sided die, do not specify anything. Max values are 200 dice, 200 sides, and + 1000 modifiers")]
+        public async Task Dice(int dice=1, int sides=20, int modifier=0, bool advantage=false, bool disadvantage=false)
         {
-            Match dice = Regex.Match(message, @"[0-9]+d[0-9]+ *(?:a|d)?( *(?:\+|-) *[0-9]+)*");
-            if (!dice.Success && message != "")
-            {
-                BotBaseContext db = new BotBaseContext();
-                var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
-                await ReplyAsync($"Invalid syntax, use {config.Prefix}help roll for more info");
-                return;
-            }
 
             Random rnd = new Random();
-            int numDice = 1;
-            int diceSides = 6;
-            int modifier = 0;
-            bool advantage = false;
-            int numRolls = 1;
             string[] rolls = new string[] { "", "" };
             int[] totals = new int[] { 0, 0 };
             int printRoll = 0;
             string msg = "";
-
-            if (message != "")
+            int numRolls = 1;
+            if(advantage || disadvantage)
             {
-                // Get values from Regex
-                message = dice.Value;
-                MatchCollection vals = Regex.Matches(message, @"[0-9]+");
-                MatchCollection mods = Regex.Matches(message, @"( *(?:\+|-) *[0-9]+)");
-                numDice = Convert.ToInt32(vals[0].Value);
-                diceSides = Convert.ToInt32(vals[1].Value);
-                foreach (Match mod in mods)
-                {
-                    string val = Regex.Match(mod.Value, @"[0-9]+").Value;
-                    if(mod.Value.Contains("+"))
-                        modifier += Convert.ToInt32(val);
-                    else
-                        modifier -= Convert.ToInt32(val);
-                }
-
-                // advantage
-                if (message.Contains("a"))
-                {
-                    advantage = true;
-                    numRolls = 2;
-                }
-
-                // disadvantage
-                if (message.Count(d => d == 'd') == 2)
-                {
-                    numRolls = 2;
-                }
+                numRolls = 2;
             }
 
-            if (numDice == 0 || diceSides == 0)
+            if (dice == 0 || sides == 0)
             {
-                await ReplyAsync("Cannot be 0");
+                await RespondAsync("Cannot be 0");
                 return;
             }
 
-            if (numDice > 200 || diceSides > 200 || modifier > 1000 || modifier < -1000)
+            if (dice > 200 || sides > 200 || modifier > 1000 || modifier < -1000)
             {
                 await Context.Channel.SendFileAsync("Media/joke.jpg");
                 return;
@@ -223,9 +159,9 @@ namespace JifBot.Commands
 
             for (int i = 0; i < numRolls; i++)
             {
-                for (int j = 0; j < numDice; j++)
+                for (int j = 0; j < dice; j++)
                 {
-                    int num = rnd.Next(diceSides) + 1;
+                    int num = rnd.Next(sides) + 1;
                     totals[i] += num;
                     rolls[i] += $"{num}, ";
                 }
@@ -246,7 +182,7 @@ namespace JifBot.Commands
                     printRoll = 1;
 
                 //disadvantage
-                else if (!advantage && high == 0)
+                else if (disadvantage && high == 0)
                     printRoll = 1;
 
                 if (printRoll == 0)
@@ -257,27 +193,25 @@ namespace JifBot.Commands
             else
                 msg = "Rolled: " + rolls[0];
 
-            if (numDice == 1 && numRolls == 1 && modifier == 0)
-                await ReplyAsync($"{totals[0]}");
-            else if (modifier == 0 && numDice == 1)
-                await ReplyAsync($"{msg}");
+            if (dice == 1 && numRolls == 1 && modifier == 0)
+                await RespondAsync($"{totals[0]}");
+            else if (modifier == 0 && dice == 1)
+                await RespondAsync($"{msg}");
             else
-                await ReplyAsync($"{msg}\nTotal: **{totals[printRoll]}**");
+                await RespondAsync($"{msg}\nTotal: **{totals[printRoll]}**");
 
         }
 
-        [Command("calculator")]
+        [SlashCommand("calculator", "Solves an arithmetic equation.")]
         [Remarks("-c- ( 5 + 7 ) / 2")]
-        [Alias("calc", "math")]
-        [Summary("Solves an arithmetic equation.")]
-        public async Task Calculator([Remainder] string equation)
+        public async Task Calculator(string equation)
         {
             DataTable dt = new DataTable();
             var result = dt.Compute(equation,"");
-            await ReplyAsync(result.ToString());
+            await RespondAsync(result.ToString());
         }
 
-        [Command("poll")]
+        /*[Command("poll")]
         [Remarks("-c- Question | Option 1 | Option 2")]
         [Alias("strawpoll")]
         [Summary("Creates a strawpoll and returns the link.")]
@@ -285,7 +219,7 @@ namespace JifBot.Commands
         {
             if (input.Split("|").Length < 3)
             {
-                await ReplyAsync("Please provide a question and at least two options in the format: Question | Option1 | Option2 etc.");
+                await RespondAsync("Please provide a question and at least two options in the format: Question | Option1 | Option2 etc.");
                 return;
             }
 
@@ -315,52 +249,19 @@ namespace JifBot.Commands
             HttpContent content = response.Content;
             string stuff = await content.ReadAsStringAsync();
             var json = JObject.Parse(stuff);
-            await ReplyAsync("https://strawpoll.com/" + (string)json.SelectToken("content_id"));
-        }
+            await RespondAsync("https://strawpoll.com/" + (string)json.SelectToken("content_id"));
+        }*/
 
-        [Command("avatar")]
+        [SlashCommand("avatar", "Gets the avatar for a user.")]
         [Remarks("-c-, -c- @person1 @person2, -c- person1id person2id")]
-        [Summary("Gets the avatar for one or more users. Mention a user or provide their id to get their avatar, or do neither to get your own. To do more than 1 person, separate mentions/ids with spaces.")]
-        public async Task Avatar([Remainder] string ids = "")
+        public async Task Avatar(IUser user)
         {
-            await Context.Guild.DownloadUsersAsync();
-            var mention = Context.Message.MentionedUserIds;
-            if (mention.Count != 0)
-            {
-                foreach (ulong id in mention)
-                {
-                    var embed = new EmbedBuilder();
-                    IGuildUser user = Context.Guild.GetUserAsync(id).Result;
-                    string url = user.GetAvatarUrl();
-                    url = url.Remove(url.IndexOf("?size=128"));
-                    url = url + "?size=256";
-                    embed.ImageUrl = url;
-                    await ReplyAsync("", false, embed.Build());
-                }
-            }
-            else if (ids != "")
-            {
-                string[] idList = ids.Split(' ');
-                foreach (string id in idList)
-                {
-                    var embed = new EmbedBuilder();
-                    IGuildUser user = await Context.Guild.GetUserAsync(Convert.ToUInt64(id));
-                    string url = user.GetAvatarUrl();
-                    url = url.Remove(url.IndexOf("?size=128"));
-                    url = url + "?size=256";
-                    embed.ImageUrl = url;
-                    await ReplyAsync("", false, embed.Build());
-                }
-            }
-            else
-            {
-                var embed = new EmbedBuilder();
-                string url = Context.User.GetAvatarUrl();
-                url = url.Remove(url.IndexOf("?size=128"));
-                url = url + "?size=256";
-                embed.ImageUrl = url;
-                await ReplyAsync("", false, embed.Build());
-            }
+            var embed = new EmbedBuilder();
+            string url = user.GetAvatarUrl();
+            url = url.Remove(url.IndexOf("?size=128"));
+            url = url + "?size=256";
+            embed.ImageUrl = url;
+            await RespondAsync("", embed:embed.Build());
         }
 
         public async Task<IGuildUser> getUser(IGuild guild, ulong id)
@@ -372,7 +273,7 @@ namespace JifBot.Commands
 
             return user;
         }
-
+        
         string formatMinutesToString(int minutes)
         {
             string format = "";

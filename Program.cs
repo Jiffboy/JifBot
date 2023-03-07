@@ -70,7 +70,7 @@ namespace JIfBot
             {
                 throw new ArgumentNullException("InteractionService cannot be null.");
             }
-            await interactions.RegisterCommandsGloballyAsync();
+           await interactions.RegisterCommandsGloballyAsync();
 
             var db = new BotBaseContext();
             var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
