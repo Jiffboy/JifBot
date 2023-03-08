@@ -60,48 +60,17 @@ namespace JifBot.Commands
                 return;
             }
 
-            List<string> choiceList = new List<string>();
-            int count = 0;
-            choices = choices.TrimEnd();
-            while (true)
-            {
-                choices = choices.TrimStart();
-                string choice;
-                if (choices == "")
-                {
-                    break;
-                }
-                if (choices[0] == '\"')
-                {
-                    choices = choices.Remove(0, 1);
-                    choice = choices.Remove(choices.IndexOf("\""));
-                    choices = choices.Remove(0, choices.IndexOf("\"") + 1);
-                }
-                else
-                {
-                    if (choices.Contains(" "))
-                    {
-                        choice = choices.Remove(choices.IndexOf(" "));
-                        choices = choices.Remove(0, choices.IndexOf(" "));
-                    }
-                    else
-                    {
-                        choice = choices;
-                        choices = "";
-                    }
-                }
-                choiceList.Add(choice);
-                count++;
-            }
+            MatchCollection matchList = Regex.Matches(choices, @"[^\s""]+|""([^""]*)""");
+            List<string> choiceList = matchList.Cast<Match>().Select(match => match.Value.Replace("\"","")).ToList();
 
-            if (count < 2)
+            if (choiceList.Count < 2)
             {
                 await RespondAsync("Please provide at least two choices.");
                 return;
             }
 
             Random rnd = new Random();
-            int num = rnd.Next(count);
+            int num = rnd.Next(choiceList.Count);
             await RespondAsync("The robot overlords have chosen: **" + choiceList[num] + "**");
         }
 
@@ -211,34 +180,34 @@ namespace JifBot.Commands
             await RespondAsync(result.ToString());
         }
 
-        /*[Command("poll")]
+        [SlashCommand("poll", "Creates a strawpoll and returns the link.")]
         [Remarks("-c- Question | Option 1 | Option 2")]
-        [Alias("strawpoll")]
-        [Summary("Creates a strawpoll and returns the link.")]
-        public async Task Poll([Remainder] string input)
+        public async Task Poll(string question, string answers)
         {
-            if (input.Split("|").Length < 3)
+            MatchCollection matchList = Regex.Matches(answers, @"[^\s""]+|""([^""]*)""");
+            List<string> answerList = matchList.Cast<Match>().Select(match => match.Value.Replace("\"", "")).ToList();
+
+            if (answerList.Count < 2)
             {
-                await RespondAsync("Please provide a question and at least two options in the format: Question | Option1 | Option2 etc.");
+                await RespondAsync("Please provide at least two answer options.");
                 return;
             }
 
             var db = new BotBaseContext();
             string key = db.Variable.AsQueryable().Where(v => v.Name == "strawpollKey").First().Value;
-            string stringToSend = "{ \"poll\": {\"title\": \"";
-            int splitNum = 1;
-            foreach (string substring in input.Split("|"))
+            string stringToSend = "{ \"poll\": {\"title\": \"" + question + "\",\"answers\": [";
+            foreach (string answer in answerList)
             {
-                if (splitNum == 1)
-                    stringToSend += substring + "\",\"answers\": [";
-                else
-                    stringToSend += "\"" + substring + "\"";
+                stringToSend += "\"" + answer + "\"";
                 
-                if (splitNum == input.Split("|").Length)
+                if(answer == answerList.Last())
+                {
                     stringToSend += "]}}";
-                else if (splitNum != 1)
+                }
+                else
+                {
                     stringToSend += ",";
-                splitNum++;
+                }
             }
 
             var stringContent = new StringContent(stringToSend);
@@ -250,7 +219,7 @@ namespace JifBot.Commands
             string stuff = await content.ReadAsStringAsync();
             var json = JObject.Parse(stuff);
             await RespondAsync("https://strawpoll.com/" + (string)json.SelectToken("content_id"));
-        }*/
+        }
 
         [SlashCommand("avatar", "Gets the avatar for a user.")]
         [Remarks("-c-, -c- @person1 @person2, -c- person1id person2id")]
