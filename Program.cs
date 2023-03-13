@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using JifBot.Models;
 using System.Linq;
 using System.Reflection;
+using JifBot.HttpClients;
 
 namespace JIfBot
 {
@@ -113,8 +114,9 @@ namespace JIfBot
                 }))
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                 .AddSingleton(new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false }))
-                .AddSingleton<JifBot.CommandHandler>();
-            var provider = new DefaultServiceProviderFactory().CreateServiceProvider(services);
+                .AddSingleton<JifBot.CommandHandler>()
+                .AddHttpClient<ISpoonacularClient, SpoonacularClient>();
+            var provider = new DefaultServiceProviderFactory().CreateServiceProvider((IServiceCollection)services);
             return provider;
         }
     }
