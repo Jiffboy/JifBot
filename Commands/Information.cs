@@ -71,7 +71,7 @@ namespace JifBot.Commands
             if(alias.Any())
             {
                 msg += "\nAlso works for: ";
-                foreach(CommandAlias al in alias)
+                foreach(CommandParameter al in alias)
                     msg += $"{config.Prefix}{al.Alias} ";
             }
             await ReplyAsync(msg);

@@ -115,6 +115,10 @@ namespace JifBot
                     break;
             }
             Console.WriteLine($"{DateTime.Now} [{lmsg.Severity,8}] {lmsg.Source}: {lmsg.Message}");
+            if(lmsg.Exception != null)
+            {
+                Console.WriteLine($" >> {lmsg.Exception.Message}");
+            }
             Console.ForegroundColor = cc;
             return Task.CompletedTask;
         }

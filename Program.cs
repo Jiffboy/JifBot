@@ -72,6 +72,28 @@ namespace JIfBot
             }
             await interactions.RegisterCommandsGloballyAsync();
             await client.SetGameAsync("Big Snooze Simulator");
+            WriteCommandsToDb(interactions);
+
+        }
+
+        private void WriteCommandsToDb(InteractionService interaction)
+        {
+            var db = new BotBaseContext();
+            db.Command.RemoveRange(db.Command);
+            db.CommandParameter.RemoveRange(db.CommandParameter);
+
+            foreach (var command in interactions.SlashCommands)
+            {
+                db.Add(new Command { Name = command.Name, Description = command.Description, Category = command.Module.Name });
+                foreach (var variable in command.Parameters)
+                {
+                    Console.WriteLine(variable.Name + " | " + variable.Description + " | " + variable.IsRequired);
+                    db.Add(new CommandParameter { Command = command.Name, Name = variable.Name, Description = variable.Description, Required = variable.IsRequired });
+                }
+            }
+            var update = db.Variable.AsQueryable().Where(V => V.Name == "lastCmdUpdateTime").FirstOrDefault();
+            update.Value = DateTime.Now.ToLocalTime().ToString();
+            db.SaveChanges();
         }
 
         public IServiceProvider ConfigureServices()
