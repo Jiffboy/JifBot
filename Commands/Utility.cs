@@ -36,7 +36,7 @@ namespace JifBot.Commands
             {
                 var db = new BotBaseContext();
                 var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
-                await RespondAsync($"Please provide an amount of time to wait for. For assistance, use {config.Prefix}help.");
+                await RespondAsync($"Please provide an amount of time to wait for.", ephemeral: true);
                 return;
             }
 
@@ -59,7 +59,7 @@ namespace JifBot.Commands
             int quotes = choices.Split('\"').Length - 1;
             if (quotes % 2 != 0)
             {
-                await RespondAsync("please ensure all quotations are closed");
+                await RespondAsync("please ensure all quotations are closed", ephemeral: true);
                 return;
             }
 
@@ -68,7 +68,7 @@ namespace JifBot.Commands
 
             if (choiceList.Count < 2)
             {
-                await RespondAsync("Please provide at least two choices.");
+                await RespondAsync("Please provide at least two choices.", ephemeral: true);
                 return;
             }
 
@@ -121,15 +121,15 @@ namespace JifBot.Commands
                 numRolls = 2;
             }
 
-            if (dice == 0 || sides == 0)
+            if (dice <= 0 || sides <= 0)
             {
-                await RespondAsync("Cannot be 0");
+                await RespondAsync("Dice and sides must be greater than 0.", ephemeral: true);
                 return;
             }
 
             if (dice > 200 || sides > 200 || modifier > 1000 || modifier < -1000)
             {
-                await Context.Channel.SendFileAsync("Media/joke.jpg");
+                await RespondWithFileAsync("Media/joke.jpg");
                 return;
             }
 
@@ -197,7 +197,7 @@ namespace JifBot.Commands
 
             if (answerList.Count < 2)
             {
-                await RespondAsync("Please provide at least two answer options.");
+                await RespondAsync("Please provide at least two answer options.", ephemeral: true);
                 return;
             }
 
@@ -238,7 +238,7 @@ namespace JifBot.Commands
             url = url.Remove(url.IndexOf("?size=128"));
             url = url + "?size=256";
             embed.ImageUrl = url;
-            await RespondAsync("", embed:embed.Build());
+            await RespondAsync(embed: embed.Build());
         }
 
         public async Task<IGuildUser> getUser(IGuild guild, ulong id)

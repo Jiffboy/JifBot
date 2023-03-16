@@ -7,7 +7,7 @@ using System.Text.Json;
 using System.Net;
 using System.IO;
 using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 using Newtonsoft.Json.Linq;
 using System.Web;
 using JifBot.Models;
@@ -15,12 +15,9 @@ using JIfBot;
 
 namespace JifBot.Commands
 {
-    public class Information : ModuleBase
+    public class Information : InteractionModuleBase<SocketInteractionContext>
     {
-        [Command("commands")]
-        [Remarks("-c-")]
-        [Alias("help")]
-        [Summary("Shows all available commands.")]
+        [SlashCommand("commands", "Shows all available commands.")]
         public async Task Commands()
         {
             var db = new BotBaseContext();
@@ -29,7 +26,7 @@ namespace JifBot.Commands
 
             var embed = new JifBotEmbedBuilder();
             
-            embed.Title = "All commands will begin with a " + config.Prefix + " , for more information on individual commands, use: " + config.Prefix + "help commandName";
+            embed.Title = "For more information on individual commands, use: /help";
             embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://jifbot.com/commands.html";
 
             string cat = commands.First().Category;
@@ -45,50 +42,40 @@ namespace JifBot.Commands
                 list += command.Name + ", ";
             }
             embed.AddField(cat, list.Remove(list.LastIndexOf(", ")));
-            await ReplyAsync("", false, embed.Build());
+            await RespondAsync(embed: embed.Build());
         }
 
-        [Command("help")]
-        [Remarks("-c- commandName")]
-        [Summary("Used to get the descriptions of other commands.")]
-        public async Task Help([Remainder] string commandName)
+        [SlashCommand("help", "Gets information for a specified Jif Bot command.")]
+        public async Task Help(
+            [Summary("command","The command you would like help with")] string commandName)
         {
             var db = new BotBaseContext();
             var command = db.Command.AsQueryable().Where(cmd => cmd.Name == commandName).FirstOrDefault();
             var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
             if(command == null)
             {
-                var cmdAlias = db.CommandAlias.AsQueryable().Where(cmd => cmd.Alias == commandName).FirstOrDefault();
-                if(cmdAlias == null)
-                {
-                    await ReplyAsync($"{commandName} is not a command, make sure the spelling is correct.");
-                    return;
-                }
-                command = db.Command.AsQueryable().Where(cmd => cmd.Name == cmdAlias.Command).First();
+                await RespondAsync($"{commandName} is not a command, make sure the spelling is correct.", ephemeral: true);
+                return;
             }
-            var alias = db.CommandAlias.AsQueryable().Where(als => als.Command == command.Name);
-            string msg = $"{command.Description}\n**Usage**: {command.Usage}";
-            if(alias.Any())
+            var parameters = db.CommandParameter.AsQueryable().Where(p => p.Command == command.Name);
+            string msg = $"{command.Description}";
+            if(parameters.Any())
             {
-                msg += "\nAlso works for: ";
-                foreach(CommandParameter al in alias)
-                    msg += $"{config.Prefix}{al.Alias} ";
+                msg += "\n**Parameters:**\n";
+                foreach(CommandParameter parameter in parameters)
+                    msg += $"{(parameter.Required? "[Required]":"[Optional]")} **{parameter.Name}**: {parameter.Description}\n";
             }
-            await ReplyAsync(msg);
+            await RespondAsync(msg);
         }
 
-        [Command("uptime")]
-        [Remarks("-c-")]
-        [Summary("Reports how long the bot has been running.")]
+        [SlashCommand("uptime", "Reports how long the bot has been running.")]
         public async Task Uptime()
         {
             TimeSpan uptime = DateTime.Now - Program.startTime;
-            await ReplyAsync($"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s");
+            await RespondAsync($"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s");
         }
 
-        [Command("changelog")]
-        [Remarks("-c-")]
-        [Summary("Reports the last 3 updates made to Jif Bot.")]
+        [SlashCommand("changelog", "Reports the last 3 updates made to Jif Bot.")]
         public async Task Changelog()
         {
             var db = new BotBaseContext();
@@ -119,24 +106,20 @@ namespace JifBot.Commands
                 var pieces = entry.Key.Split("-");
                 embed.AddField($"{pieces[1]}.{pieces[2]}.{pieces[0]}", entry.Value);
             }
-            await ReplyAsync("", false, embed.Build());
+            await RespondAsync(embed: embed.Build());
         }
 
-        [Command("invitelink")]
-        [Alias("link")]
-        [Remarks("-c-")]
-        [Summary("Provides a link which can be used should you want to spread Jif Bot to another server.")]
+        [SlashCommand("invitelink", "Provides a link which can be used should you want to spread Jif Bot to another server.")]
         public async Task InviteLink()
         {
             var db = new BotBaseContext();
             var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
-            await ReplyAsync($"The following is a link to add me to another server. NOTE: You must have permissions on the server in order to add. Once on the server I must be given permission to send and delete messages, otherwise I will not work.\nhttps://discordapp.com/oauth2/authorize?client_id={config.Id}&scope=bot");
+            await RespondAsync($"The following is a link to add me to another server. NOTE: You must have permissions on the server in order to add. Once on the server I must be given permission to send and delete messages, otherwise I will not work.\nhttps://discordapp.com/oauth2/authorize?client_id={config.Id}&scope=bot");
         }
 
-        [Command("define")]
-        [Remarks("-c- word")]
-        [Summary("Defines any word in the dictionary.")]
-        public async Task Define([Remainder] string word)
+        [SlashCommand("define", "Defines any word in the dictionary.")]
+        public async Task Define(
+            [Summary("word", "The word you would like the definition for.")] string word)
         {
             string DICTIONARY_ENDPOINT = "https://api.dictionaryapi.dev/api/v2/entries/en/" + word;
             List<DictionaryResult> definitionList = new List<DictionaryResult>();
@@ -174,7 +157,7 @@ namespace JifBot.Commands
                             }
                         }
 
-                        await ReplyAsync("", false, embed.Build());
+                        await RespondAsync(embed: embed.Build());
                         if(defineResult[0].phonetics.Count > 1 && defineResult[0].phonetics[1].audio != "")
                         {
                             byte[] soundData = null;
@@ -186,21 +169,19 @@ namespace JifBot.Commands
                     }
                     else if (response.StatusCode == HttpStatusCode.NotFound)
                     {
-                        await ReplyAsync(word + " is not an existing word, or is, or relates to a proper noun.");
+                        await RespondAsync(word + " is not an existing word, or is, or relates to a proper noun.");
                     }
                     else
                     {
-                        await ReplyAsync("Something has gone wrong, please try again later.");
+                        await RespondAsync("Something has gone wrong, please try again later.");
                     }
                 }
             }
         }
 
-        [Command("udefine")]
-        [Remarks("-c- term")]
-        [Alias("slang")]
-        [Summary("Gives the top definition for the term from urbandictionary.com.")]
-        public async Task DefineUrbanDictionary([Remainder] string phrase)
+        [SlashCommand("udefine", "Gives the top definition for a specified phrase from urbandictionary.com.")]
+        public async Task DefineUrbanDictionary(
+            [Summary("phrase", "The disgusting thing you're trying to look up.")] string phrase)
         {
             string URBAN_DICTIONARY_ENDPOINT = "http://api.urbandictionary.com/v0/define?term=";
 
@@ -241,19 +222,17 @@ namespace JifBot.Commands
                 embed.AddField("Definition", cleanDefinition);
                 embed.AddField("Example", cleanExample);
 
-                await ReplyAsync("", false, embed.Build());
+                await RespondAsync(embed: embed.Build());
             }
             else
             {
-                await ReplyAsync($"{phrase} is not an existing word/phrase");
+                await RespondAsync($"{phrase} is not an existing word/phrase");
             }
         }
 
-        [Command("movie")]
-        [Alias("imdb")]
-        [Remarks("-c- airplane!")]
-        [Summary("Provides information for a movie as specified by name.")]
-        public async Task Movie([Remainder] string word)
+        [SlashCommand("movie", "Provides information for a movie as specified by name.")]
+        public async Task Movie(
+            [Summary("movie", "The name of the movie you'd like information on.")] string word)
         {
             var db = new BotBaseContext();
             var omdbKey = db.Variable.AsQueryable().Where(v => v.Name == "omdbKey").First();
@@ -266,7 +245,7 @@ namespace JifBot.Commands
             var json = JObject.Parse(stuff);
             if ((string)json.SelectToken("Response") == "False")
             {
-                await ReplyAsync("Movie not found");
+                await RespondAsync("Movie not found");
                 return;
             }
             var embed = new JifBotEmbedBuilder();
@@ -294,13 +273,13 @@ namespace JifBot.Commands
             embed.AddField("Starring", (string)json.SelectToken("Actors"));
             embed.AddField("Directed By", (string)json.SelectToken("Director"), inline: true);
             embed.WithUrl("https://www.imdb.com/title/" + (string)json.SelectToken("imdbID"));
-            await ReplyAsync("", false, embed.Build());
+            await RespondAsync(embed: embed.Build());
         }
 
-        [Command("stats")]
-        [Remarks("-c- region username")]
-        [Summary("Gives the stats for a league player on any region. The region name is the abbreviated verson of the region name. Example: na = North America.")]
-        public async Task Stats(string region, [Remainder] string name)
+        [SlashCommand("stats", "Gives the stats for a League of Legends player.")]
+        public async Task Stats(
+            [Summary("region", "The abbreviated name of the region the account is on.")] string region,
+            [Summary("name", "The username of the player.")] string name)
         {
             name = name.Replace(" ", string.Empty);
 
@@ -315,7 +294,7 @@ namespace JifBot.Commands
                     source = await client.GetStringAsync("http://www.op.gg/summoner/userName=" + name);
                 else
                 {
-                    await ReplyAsync("That is not a valid summoner name / region");
+                    await RespondAsync("That is not a valid summoner name / region");
                     return;
                 }
             }
@@ -325,13 +304,13 @@ namespace JifBot.Commands
                     source = await client.GetStringAsync("http://" + region + ".op.gg/summoner/userName=" + name);
                 else
                 {
-                    await ReplyAsync("That is not a valid summoner name / region");
+                    await RespondAsync("That is not a valid summoner name / region");
                     return;
                 }
             }
             if (source.IndexOf("This summoner is not registered at OP.GG. Please check spelling.") != -1)
             {
-                await ReplyAsync("That Summoner does not exist");
+                await RespondAsync("That Summoner does not exist");
                 return;
             }
             else
@@ -409,18 +388,18 @@ namespace JifBot.Commands
                 }
                 else
                 {
-                    await ReplyAsync("That Summoner has not been placed yet this season");
+                    await RespondAsync("That Summoner has not been placed yet this season");
                     return;
                 }
                 
-            await ReplyAsync("", false, embed.Build());
+            await RespondAsync(embed: embed.Build());
             }
         }
 
-        [Command("mastery")]
-        [Remarks("-c- region username")]
-        [Summary("Gives the number of mastery points for the top 10 most played champions for a user on any server.")]
-        public async Task Mastery(string region, [Remainder] string name)
+        [SlashCommand("mastery", "Gives the total mastery points for the top 10 most played champions for a League of Legends player.")]
+        public async Task Mastery(
+            [Summary("region", "The abbreviated name of the region the account is on.")] string region,
+            [Summary("name", "The username of the player.")] string name)
         {
             var db = new BotBaseContext();
             var embed = new JifBotEmbedBuilder();
@@ -434,7 +413,7 @@ namespace JifBot.Commands
                 }
                 catch
                 {
-                    await ReplyAsync("That summoner does not exist");
+                    await RespondAsync("That summoner does not exist");
                     return;
                 }
                 html = html.Remove(0, html.IndexOf("/img/profile"));
@@ -466,38 +445,7 @@ namespace JifBot.Commands
                     nums = nums.Remove(j) + "," + nums.Remove(0, j);
                 embed.Description = "Total score across top ten: " + nums;
 
-                await ReplyAsync("", false, embed.Build());
-            }
-        }
-
-        [Command("info")]
-        [Remarks("-c-, -c- @person1 @person2, -c- person1id person2id")]
-        [Summary("Gets varying pieces of Discord information for one or more users. Mention a user or provide their id to get their information, or do neither to get your own. To do more than 1 person, separate mentions/ids with spaces.")]
-        public async Task MyInfo([Remainder] string ids = "")
-        {
-            await Context.Guild.DownloadUsersAsync();
-            var mention = Context.Message.MentionedUserIds;
-            if (mention.Count != 0)
-            {
-                foreach (ulong id in mention)
-                {
-                    var embed = ConstructEmbedInfo(Context.Guild.GetUserAsync(id).Result);
-                    await ReplyAsync("", false, embed.Build());
-                }
-            }
-            else if (ids != "")
-            {
-                string[] idList = ids.Split(' ');
-                foreach (string id in idList)
-                {
-                    var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(Convert.ToUInt64(id)));
-                    await ReplyAsync("", false, embed.Build());
-                }
-            }
-            else
-            {
-                var embed = ConstructEmbedInfo(await Context.Guild.GetUserAsync(Context.User.Id));
-                await ReplyAsync("", false, embed.Build());
+                await RespondAsync(embed: embed.Build());
             }
         }
 
