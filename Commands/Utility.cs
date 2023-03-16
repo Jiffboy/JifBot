@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Net.Http;
 using System.Diagnostics;
 using Discord;
-using Discord.Commands;
 using Discord.Interactions;
 using JifBot.Models;
 using JIfBot;
@@ -20,8 +19,13 @@ namespace JifBot.Commands
     public class Utility : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("timer", "Sets a reminder to ping you after a certain amount of time has passed.")]
-        [Remarks("-c- -h2 -m30 message, -c- 150 message")]
-        public async Task Timer(int minutes=0, int hours=0, int days=0, int weeks=0, string message="")
+        public async Task Timer(
+            [Summary("minutes","The number of minutes to wait.")] int minutes=0,
+            [Summary("hours", "The number of hours to wait.")] int hours=0,
+            [Summary("days", "The number of days to wait.")]int days=0,
+            [Summary("weeks", "The number of weeks to wait.")] int weeks=0,
+            [Summary("message", "The message to ping you with after the time runs out")] string message="")
+
         {
             int waitTime = 0;
             waitTime += minutes;
@@ -50,8 +54,8 @@ namespace JifBot.Commands
         }
 
         [SlashCommand("choose", "Randomly makes a choice for you.")]
-        [Remarks("You can use as many choices as you want, but seperate all choices using a space. If you wish for a choice to contain spaces, surround the choice with \"\"\n. -c- choice \"choice but with spaces\"")]
-        public async Task Choose(string choices)
+        public async Task Choose(
+            [Summary("choices", "The choices to choose from, separated by spaces. Surround options with spaces with quotation marks.")] string choices)
         {
             int quotes = choices.Split('\"').Length - 1;
             if (quotes % 2 != 0)
@@ -75,9 +79,9 @@ namespace JifBot.Commands
         }
 
         
-        [SlashCommand("youtube", "Takes whatever you give it and searches for it on YouTube.")]
-        [Remarks("-c- video title it will return the first search result that appears.")]
-        public async Task Youtube(string search)
+        [SlashCommand("youtube", "Takes whatever you give it and searches for it on YouTube, returning the first result.")]
+        public async Task Youtube(
+            [Summary("search", "The video title you wish to search for.")] string search)
         {
             search = "https://www.youtube.com/results?search_query=" + search.Replace(" ", "+");
             System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
@@ -89,8 +93,8 @@ namespace JifBot.Commands
 
         
         [SlashCommand("8ball", "Asks the magic 8 ball a question.")]
-        [Remarks("-c-")]
-        public async Task eightBall(string question="")
+        public async Task eightBall(
+            [Summary("Question", "The question to ask the Magic 8 ball. This isn't necessary, but it is more fun!")] string question="")
         {
             string[] responses = new string[] { "it is certain", "It is decidedly so", "Without a doubt", "Yes definitely", "You may rely on it", "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes", "Reply hazy try again", "Ask again later", "Better not tell you now", "Cannot predict now", "Concentrate and ask again", "Don't count on it", "My reply is no", "My sources say no", "Outlook not so good", "Very doubtful" };
             Random rnd = new Random();
@@ -98,9 +102,13 @@ namespace JifBot.Commands
             await RespondAsync(responses[num]);
         }
 
-        [SlashCommand("roll", "Rolls a specified number of dice, with a specified number of sides.")]
-        [Remarks("-c-, -c- 1d20, -c- 2d6a + 4  To quickly roll a 6 sided die, do not specify anything. Max values are 200 dice, 200 sides, and + 1000 modifiers")]
-        public async Task Dice(int dice=1, int sides=20, int modifier=0, bool advantage=false, bool disadvantage=false)
+        [SlashCommand("roll", "Rolls a specified number of dice, with a specified number of sides. Rolls a 1d20 if unspecified.")]
+        public async Task Dice(
+            [Summary("dice", "The number of dice to be rolled. Maximum of 200.")] int dice=1,
+            [Summary("sides", "The number of sides on the dice being rolled. Maximum of 200.")] int sides=20,
+            [Summary("modifier", "The value to be added onto the end result. This value can be negative. Maximum value of 1000.")] int modifier=0,
+            [Summary("advantage", "When set to true, rolls the values twice, and keeps the higher number.")] bool advantage=false,
+            [Summary("disadvantage", "When set to true, rolls the values twice, and keeps the lower number.")] bool disadvantage=false)
         {
 
             Random rnd = new Random();
@@ -172,8 +180,8 @@ namespace JifBot.Commands
         }
 
         [SlashCommand("calculator", "Solves an arithmetic equation.")]
-        [Remarks("-c- ( 5 + 7 ) / 2")]
-        public async Task Calculator(string equation)
+        public async Task Calculator(
+            [Summary("equation", "The arithmetic equation to solve in plain text.")] string equation)
         {
             DataTable dt = new DataTable();
             var result = dt.Compute(equation,"");
@@ -181,8 +189,9 @@ namespace JifBot.Commands
         }
 
         [SlashCommand("poll", "Creates a strawpoll and returns the link.")]
-        [Remarks("-c- Question | Option 1 | Option 2")]
-        public async Task Poll(string question, string answers)
+        public async Task Poll(
+            [Summary("question", "The question being asked.")] string question,
+            [Summary("answers", "The answers to choose from, separated by spaces.Surround options with spaces with quotation marks.")] string answers)
         {
             MatchCollection matchList = Regex.Matches(answers, @"[^\s""]+|""([^""]*)""");
             List<string> answerList = matchList.Cast<Match>().Select(match => match.Value.Replace("\"", "")).ToList();
@@ -222,8 +231,8 @@ namespace JifBot.Commands
         }
 
         [SlashCommand("avatar", "Gets the avatar for a user.")]
-        [Remarks("-c-, -c- @person1 @person2, -c- person1id person2id")]
-        public async Task Avatar(IUser user)
+        public async Task Avatar(
+            [Summary("user", "The Discord user to retrieve the avatar for.")] IUser user)
         {
             var embed = new EmbedBuilder();
             string url = user.GetAvatarUrl();

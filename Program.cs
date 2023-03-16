@@ -70,33 +70,8 @@ namespace JIfBot
             {
                 throw new ArgumentNullException("InteractionService cannot be null.");
             }
-           await interactions.RegisterCommandsGloballyAsync();
-
-            var db = new BotBaseContext();
-            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
-            await client.SetGameAsync(config.Prefix + "commands");
-            db.Command.RemoveRange(db.Command);
-            db.CommandAlias.RemoveRange(db.CommandAlias);
-            foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
-            {
-                if (c.Module.Name != "Hidden")
-                {
-                    if (c.Aliases.Count > 1)
-                    {
-                        foreach (string alias in c.Aliases)
-                        {
-                            if (alias != c.Name)
-                            {
-                                db.Add(new CommandAlias { Alias = alias, Command = c.Name });
-                            }
-                        }
-                    }
-                    db.Add(new Command { Name = c.Name, Category = c.Module.Name, Usage = c.Remarks.Replace("-c-", $"{config.Prefix}{c.Name}"), Description = c.Summary.Replace("-p-", config.Prefix) });
-                }
-            }
-            var update = db.Variable.AsQueryable().Where(V => V.Name == "lastCmdUpdateTime").FirstOrDefault();
-            update.Value = DateTime.Now.ToLocalTime().ToString();
-            db.SaveChanges();
+            await interactions.RegisterCommandsGloballyAsync();
+            await client.SetGameAsync("Big Snooze Simulator");
         }
 
         public IServiceProvider ConfigureServices()
