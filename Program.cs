@@ -87,7 +87,6 @@ namespace JIfBot
                 db.Add(new Command { Name = command.Name, Description = command.Description, Category = command.Module.Name });
                 foreach (var variable in command.Parameters)
                 {
-                    Console.WriteLine(variable.Name + " | " + variable.Description + " | " + variable.IsRequired);
                     db.Add(new CommandParameter { Command = command.Name, Name = variable.Name, Description = variable.Description, Required = variable.IsRequired });
                 }
             }
