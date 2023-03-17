@@ -198,6 +198,64 @@ namespace JifBot.Commands
             await RespondAsync("https://www.youtube.com/watch?v=EjHKIJ90FtY");
         }
 
+        [SlashCommand("imean", "Reports the number of times Jif has said \"I mean\".")]
+        public async Task MeanCount()
+        {
+            var db = new BotBaseContext();
+            var count = db.Variable.AsQueryable().Where(v => v.Name == "meanCount").First();
+            await ReplyAsync("I mean, I've said it " + count.Value + " times since 12/13/18.");
+        }
+
+        [SlashCommand("react","Posts a specified reaction image.")]
+        public async Task React(
+            [Choice("neener", "neener.gif")]
+            [Choice("bully", "bully.gif")]
+            [Choice("stfu", "stfu.jpg")]
+            [Choice("edgy", "edgy.jpg")]
+            [Choice("gay", "gay.jpg")]
+            [Choice("biggay", "biggay.jpg")]
+            [Choice("wheeze", "wheeze.png")]
+            [Choice("no", "no.jpg")]
+            [Choice("horny", "horny.jpg")]
+            [Choice("wack", "wack.jpg")]
+            [Choice("lobster", "lobster.jpg")]
+            [Choice("flat", "flat.png")]
+            [Choice("shrug", "shrug.png")]
+            [Summary("reaction", "The reaction image to post.")] string reaction)
+        {
+            await RespondWithFileAsync($"Media/react/{reaction}");
+        }
+
+        [SlashCommand("wtf", "Shows your disbelief as to what your fellow server goers have just done.")]
+        public async Task WTF()
+        {
+            await RespondAsync("https://www.youtube.com/watch?v=wKbU8B-QVZk");
+        }
+
+        [SlashCommand("cheer", "Displays one of several gifs of cute characters cheering you on.")]
+        public async Task Cheer()
+        {
+            Random rnd = new Random();
+            int num = rnd.Next(10);
+            string gif = "Media/cheer/cheer" + num + ".gif";
+            await RespondWithFileAsync(gif);
+        }
+
+        [SlashCommand("lewd", "Displays a random image to react to someones lewd comment.")]
+        public async Task Lewd()
+        {
+            Random rnd = new Random();
+            int num = rnd.Next(8);
+            string png = "Media/lewd/" + num + ".png";
+            await RespondWithFileAsync(png);
+        }
+
+        [SlashCommand("reese", "Reese.")]
+        public async Task Reese()
+        {
+            await RespondWithFileAsync("Media/smoochie.mp4", text: "Ladies hit him up.");
+        }
+
         private string MockText(string text)
         {
             string end = string.Empty;
