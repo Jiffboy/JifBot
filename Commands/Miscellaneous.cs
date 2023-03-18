@@ -226,12 +226,6 @@ namespace JifBot.Commands
             await RespondWithFileAsync($"Media/react/{reaction}");
         }
 
-        [SlashCommand("wtf", "Shows your disbelief as to what your fellow server goers have just done.")]
-        public async Task WTF()
-        {
-            await RespondAsync("https://www.youtube.com/watch?v=wKbU8B-QVZk");
-        }
-
         [SlashCommand("cheer", "Displays one of several gifs of cute characters cheering you on.")]
         public async Task Cheer()
         {

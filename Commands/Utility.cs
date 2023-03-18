@@ -231,10 +231,19 @@ namespace JifBot.Commands
 
         [SlashCommand("avatar", "Gets the avatar for a user.")]
         public async Task Avatar(
-            [Summary("user", "The Discord user to retrieve the avatar for.")] IUser user)
+            [Summary("user", "The Discord user to retrieve the avatar for.")] IGuildUser user,
+            [Summary("serverAvatar", "Specifies to get the server avatar instead of the profile avatar. Defaults to true.")] bool serverAvatar=true)
         {
             var embed = new EmbedBuilder();
-            string url = user.GetAvatarUrl();
+            string url = "";
+            if (serverAvatar)
+            {
+                url = user.GetGuildAvatarUrl();
+            }
+            else
+            {
+                url = user.GetAvatarUrl();
+            }
             url = url.Remove(url.IndexOf("?size=128"));
             url = url + "?size=256";
             embed.ImageUrl = url;

@@ -35,7 +35,11 @@ namespace JifBot
             try
             {
                 var context = new SocketInteractionContext(_client, arg);
-                await _interactions.ExecuteCommandAsync(context, _services);
+                var result = await _interactions.ExecuteCommandAsync(context, _services);
+                if(!result.IsSuccess)
+                {
+                    await context.Interaction.RespondAsync($"**ERROR:** {result.ErrorReason}");
+                }
             }
             catch (Exception ex)
             {
