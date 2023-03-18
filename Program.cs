@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
+using Discord.Interactions;
 using Microsoft.Extensions.DependencyInjection;
 using JifBot.Models;
 using System.Linq;
@@ -15,12 +16,12 @@ namespace JIfBot
         public static void Main(string[] args) =>
             new Program().Start(args).GetAwaiter().GetResult();
 
-        private DiscordSocketClient client;
         public static string configName = "Live";
-        public CommandService commands;
         public static DateTime startTime = DateTime.Now;
-        private DiscordSocketClient bot;
-        private IServiceProvider map;
+        private DiscordSocketClient client;
+        private InteractionService interactions;
+        public CommandService commands;
+        public JifBot.CommandHandler commandHandler;
         private JifBot.EventHandler eventHandler;
 
         public async Task Start(string[] args)
@@ -33,78 +34,82 @@ namespace JIfBot
                     configName = "Test";
                 }
             }
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
+            IServiceProvider services = ConfigureServices();
 
-            client = new DiscordSocketClient(new DiscordSocketConfig
-            {
-                //WebSocketProvider = Discord.Net.Providers.WS4Net.WS4NetProvider.Instance
-                MessageCacheSize = 500,
-                LogLevel = LogSeverity.Verbose,
-                AlwaysDownloadUsers = true
-            });
+            client = services.GetService<DiscordSocketClient>();
+            interactions = services.GetService<InteractionService>();
+            commands = services.GetService<CommandService>();
+            commandHandler = services.GetService<JifBot.CommandHandler>();
+            eventHandler = new JifBot.EventHandler(services);
 
             client.Log += JifBot.EventHandler.WriteLog;
+            interactions.Log += JifBot.EventHandler.WriteLog;
             client.Ready += OnReady;
 
-            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
+            client.UserJoined += eventHandler.AnnounceUserJoined;
+            client.UserLeft += eventHandler.AnnounceLeftUser;
+            client.MessageDeleted += eventHandler.SendMessageReport;
+            client.MessageReceived += eventHandler.HandleMessage;
+            client.ReactionAdded += eventHandler.HandleReactionAdded;
+            client.ReactionRemoved += eventHandler.HandleReactionRemoved;
+
+            await commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
 
             await client.LoginAsync(TokenType.Bot, config.Token);
             await client.StartAsync();
-
-            map = ConfigureServices();
-            bot = map.GetService<DiscordSocketClient>();
-            commands = map.GetService<CommandService>();
-            eventHandler = new JifBot.EventHandler(map);
-
-            bot.UserJoined += eventHandler.AnnounceUserJoined;
-            bot.UserLeft += eventHandler.AnnounceLeftUser;
-            bot.MessageDeleted += eventHandler.SendMessageReport;
-            bot.MessageReceived += eventHandler.HandleMessage;
-            bot.ReactionAdded += eventHandler.HandleReactionAdded;
-            bot.ReactionRemoved += eventHandler.HandleReactionRemoved;
-
-            await commands.AddModulesAsync(Assembly.GetEntryAssembly(), map);
+            await commandHandler.InitializeAsync();
 
             //Block this program untill it is closed
             await Task.Delay(-1);
         }
 
-        private Task OnReady()
+        private async Task OnReady()
+        {
+            if (interactions == null)
+            {
+                throw new ArgumentNullException("InteractionService cannot be null.");
+            }
+            await interactions.RegisterCommandsGloballyAsync();
+            await client.SetGameAsync("Big Snooze Simulator");
+            WriteCommandsToDb(interactions);
+
+        }
+
+        private void WriteCommandsToDb(InteractionService interaction)
         {
             var db = new BotBaseContext();
-            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == configName).First();
-            client.SetGameAsync(config.Prefix + "commands");
             db.Command.RemoveRange(db.Command);
-            db.CommandAlias.RemoveRange(db.CommandAlias);
-            foreach (Discord.Commands.CommandInfo c in this.commands.Commands)
+            db.CommandParameter.RemoveRange(db.CommandParameter);
+
+            foreach (var command in interactions.SlashCommands)
             {
-                if (c.Module.Name != "Hidden")
+                db.Add(new Command { Name = command.Name, Description = command.Description, Category = command.Module.Name });
+                foreach (var variable in command.Parameters)
                 {
-                    if (c.Aliases.Count > 1)
-                    {
-                        foreach (string alias in c.Aliases)
-                        {
-                            if (alias != c.Name)
-                            {
-                                db.Add(new CommandAlias { Alias = alias, Command = c.Name });
-                            }
-                        }
-                    }
-                    db.Add(new Command { Name = c.Name, Category = c.Module.Name, Usage = c.Remarks.Replace("-c-", $"{config.Prefix}{c.Name}"), Description = c.Summary.Replace("-p-", config.Prefix) });
+                    db.Add(new CommandParameter { Command = command.Name, Name = variable.Name, Description = variable.Description, Required = variable.IsRequired });
                 }
             }
             var update = db.Variable.AsQueryable().Where(V => V.Name == "lastCmdUpdateTime").FirstOrDefault();
             update.Value = DateTime.Now.ToLocalTime().ToString();
             db.SaveChanges();
-
-            return Task.CompletedTask;
         }
 
         public IServiceProvider ConfigureServices()
         {
             var services = new ServiceCollection()
                 //.AddSingleton(new AudioService())
-                .AddSingleton(client)
-                .AddSingleton(new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false }));
+                .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
+                {
+                    //WebSocketProvider = Discord.Net.Providers.WS4Net.WS4NetProvider.Instance
+                    MessageCacheSize = 500,
+                    LogLevel = LogSeverity.Verbose,
+                    AlwaysDownloadUsers = true,
+                    GatewayIntents = GatewayIntents.All
+                }))
+                .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
+                .AddSingleton(new CommandService(new CommandServiceConfig { CaseSensitiveCommands = false }))
+                .AddSingleton<JifBot.CommandHandler>();
             var provider = new DefaultServiceProviderFactory().CreateServiceProvider(services);
             return provider;
         }

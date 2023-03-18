@@ -60,7 +60,6 @@ function loadCommands(category){
 			}
             command.innerHTML +='<span style="color:#ffe199;">' + alias + "</span>"
             description.innerHTML = json[i].description.replaceAll("\n","<br>").replaceAll("```","<br>");
-            description.innerHTML += "<br>" + '<span style="color:#ffefcc;">' + json[i].usage.replaceAll("\n","<br>").replaceAll(",","<br>") + "</span>"
             row.appendChild(command)
             row.appendChild(description)
             document.getElementById("commands").appendChild(row)

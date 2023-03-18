@@ -22,17 +22,7 @@ commands = cursor.fetchall()
 for cmd in commands:
     json += '{"command":"' + cmd[0]
     json += '","category":"' + cmd[1]
-    json += '","usage":"' + cmd[2].replace('\n', '\\n').replace('"', r'\"')
-    json += '","description":"' + cmd[3].replace('\n', '\\n').replace('"', r'\"') + '"'
-    
-    cursor.execute("SELECT Alias FROM CommandAlias WHERE Command = '" + cmd[0] + "'")
-    alias = cursor.fetchall()
-    
-    if len(alias) > 0:
-        json += ',"alias":"'
-        for ali in alias:
-            json += ali[0] + ", "
-        json = json[:-2] + r'"'
+    json += '","description":"' + cmd[2].replace('\n', '\\n').replace('"', r'\"') + '"'
         
     json += "},"
 

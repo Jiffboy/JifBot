@@ -45,16 +45,16 @@ namespace JifBot
             }
         }
 
-        public async Task AnnounceLeftUser(SocketGuildUser user)
+        public async Task AnnounceLeftUser(SocketGuild guild, SocketUser user)
         {
-            Console.WriteLine("User " + user.Username + " Left " + user.Guild.Name);
+            Console.WriteLine("User " + user.Username + " Left " + guild.Name);
 
             var db = new BotBaseContext();
-            var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == user.Guild.Id).FirstOrDefault();
+            var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == guild.Id).FirstOrDefault();
 
             if (config != null && config.LeaveId != 0)
             {
-                IGuild server = user.Guild;
+                IGuild server = guild;
                 ITextChannel channel = await server.GetTextChannelAsync(config.LeaveId);
 
                 var embed = new JifBotEmbedBuilder();
@@ -65,9 +65,11 @@ namespace JifBot
             }
         }
 
-        public async Task SendMessageReport(Cacheable<IMessage, ulong> cache, ISocketMessageChannel channel)
+        public async Task SendMessageReport(Cacheable<IMessage, ulong> cache, Cacheable<IMessageChannel,ulong> channelcache)
         {
-            SocketGuildChannel socketChannel = (SocketGuildChannel)channel;
+            var channel = await channelcache.GetOrDownloadAsync();
+            IGuildChannel socketChannel = channel as IGuildChannel;
+            
             var db = new BotBaseContext();
             var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == socketChannel.Guild.Id).FirstOrDefault();
 
@@ -114,11 +116,15 @@ namespace JifBot
                     break;
             }
             Console.WriteLine($"{DateTime.Now} [{lmsg.Severity,8}] {lmsg.Source}: {lmsg.Message}");
+            if(lmsg.Exception != null)
+            {
+                Console.WriteLine($" >> {lmsg.Exception.Message}");
+            }
             Console.ForegroundColor = cc;
             return Task.CompletedTask;
         }
 
-        public async Task HandleReactionAdded(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
+        public async Task HandleReactionAdded(Cacheable<IUserMessage, ulong> cache, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             var db = new BotBaseContext();
             var serverConfig = db.ServerConfig.AsQueryable().Where(s => s.ReactMessageId == cache.Id).FirstOrDefault();
@@ -139,7 +145,7 @@ namespace JifBot
             }
         }
 
-        public async Task HandleReactionRemoved(Cacheable<IUserMessage, ulong> cache, ISocketMessageChannel channel, SocketReaction reaction)
+        public async Task HandleReactionRemoved(Cacheable<IUserMessage, ulong> cache, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             var db = new BotBaseContext();
             var config = db.ServerConfig.AsQueryable().Where(s => s.ReactMessageId == cache.Id).FirstOrDefault();
@@ -161,6 +167,15 @@ namespace JifBot
         public async Task HandleMessage(SocketMessage pMsg)
         {
             var message = pMsg as SocketUserMessage;
+            var channel = message.Channel as SocketGuildChannel;
+            
+            // Check if reactions have been disabled for this server/channel
+            BotBaseContext db = new BotBaseContext();
+            var channelreact = db.ReactionBan.AsQueryable().AsQueryable().Where(c => c.ChannelId == message.Channel.Id).FirstOrDefault();
+            var serverreact = db.ReactionBan.AsQueryable().AsQueryable().Where(c => c.ChannelId == channel.Guild.Id).FirstOrDefault();
+
+            if (channelreact != null || serverreact != null)
+                return;
 
             //Don't handle if system message
             if (message == null)
@@ -169,29 +184,7 @@ namespace JifBot
             if (message.Author.IsBot)
                 return;
 
-            await handleCommand(message);
             await reactionHandler.ParseReactions(message);
-        }
-
-        private async Task handleCommand(SocketUserMessage message)
-        {
-            var db = new BotBaseContext();
-            var context = new SocketCommandContext(bot, message);
-            //Mark where the prefix ends and the command begins
-            int argPos = 0;
-            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
-
-            //Determine if the message has a valid prefix, adjust argPos
-            if (message.HasStringPrefix(config.Prefix, ref argPos))
-            {
-                //Execute the command, store the result
-                var result = await commands.ExecuteAsync(context, argPos, map);
-
-                //If the command failed, notify the user
-                if (!result.IsSuccess && result.ErrorReason != "Unknown command.")
-
-                    await message.Channel.SendMessageAsync($"**Error:** {result.ErrorReason}");
-            }
         }
     }
 }

@@ -25,7 +25,7 @@ namespace JifBot.Models
         public virtual DbSet<ReactionBan> ReactionBan { get; set; }
         public virtual DbSet<ServerConfig> ServerConfig { get; set; }
         public virtual DbSet<Command> Command { get; set; }
-        public virtual DbSet<CommandAlias> CommandAlias { get; set; }
+        public virtual DbSet<CommandParameter> CommandParameter { get; set; }
         public virtual DbSet<ReactRole> ReactRole { get; set; }
         public virtual DbSet<ChangeLog> ChangeLog { get; set; }
 
@@ -140,19 +140,17 @@ namespace JifBot.Models
 
                 entity.Property(e => e.Category);
 
-                entity.Property(e => e.Usage);
-
                 entity.Property(e => e.Description);
             });
 
 
-            modelBuilder.Entity<CommandAlias>(entity =>
+            modelBuilder.Entity<CommandParameter>(entity =>
             {
-                entity.HasKey(e => e.Alias);
+                entity.HasKey(e => new { e.Command, e.Name });
 
-                entity.Property(e => e.Alias);
+                entity.Property(e => e.Description);
 
-                entity.Property(e => e.Command);
+                entity.Property(e => e.Required);
             });
 
             modelBuilder.Entity<ReactRole>(entity =>
