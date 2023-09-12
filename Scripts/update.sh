@@ -5,6 +5,10 @@ sudo systemctl stop jifbot.service
 mkdir -p backup
 cp ../bin/Debug/netcoreapp3.1/Database/* backup/
 
+# update some environment variables just in case
+export DOTNET_ROOT=$HOME/dotnet
+export PATH=$PATH:$HOME/dotnet
+
 # build any new changes
 cd ..
 git pull
