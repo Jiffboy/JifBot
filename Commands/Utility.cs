@@ -56,19 +56,11 @@ namespace JifBot.Commands
         public async Task Choose(
             [Summary("choices", "The choices to choose from, separated by spaces. Surround options with spaces with quotation marks.")] string choices)
         {
-            int quotes = choices.Split('\"').Length - 1;
-            if (quotes % 2 != 0)
-            {
-                await RespondAsync("please ensure all quotations are closed", ephemeral: true);
-                return;
-            }
-
-            MatchCollection matchList = Regex.Matches(choices, @"[^\s""]+|""([^""]*)""");
-            List<string> choiceList = matchList.Cast<Match>().Select(match => match.Value.Replace("\"","")).ToList();
+            List<string> choiceList = listFromString(choices);
 
             if (choiceList.Count < 2)
             {
-                await RespondAsync("Please provide at least two choices.", ephemeral: true);
+                await RespondAsync("Invalid choices. Ensure all quotes are closed, and there are at least two options.", ephemeral: true);
                 return;
             }
 
@@ -192,12 +184,11 @@ namespace JifBot.Commands
             [Summary("question", "The question being asked.")] string question,
             [Summary("answers", "The answers to choose from, separated by spaces.Surround options with spaces with quotation marks.")] string answers)
         {
-            MatchCollection matchList = Regex.Matches(answers, @"[^\s""]+|""([^""]*)""");
-            List<string> answerList = matchList.Cast<Match>().Select(match => match.Value.Replace("\"", "")).ToList();
+            List<string> answerList = listFromString(answers);
 
             if (answerList.Count < 2)
             {
-                await RespondAsync("Please provide at least two answer options.", ephemeral: true);
+                await RespondAsync("Invalid choices. Ensure all quotes are closed, and there are at least two options.", ephemeral: true);
                 return;
             }
 
@@ -247,6 +238,77 @@ namespace JifBot.Commands
             url = url.Remove(url.IndexOf("?size=128"));
             url = url + "?size=256";
             embed.ImageUrl = url;
+            await RespondAsync(embed: embed.Build());
+        }
+
+        [SlashCommand("inhouse", "Used to randomly select teams for inhouses")]
+         public async Task Inhouse(
+            [Summary("players", "The players to choose from, separated by spaces.Surround options with spaces with quotation marks.")] string players,
+            [Summary("teams", "The number of teams to create. Defaults to 2")] int teamCount=2,
+            [Summary("teamSize", "The maximum number of players on a team. Defaults to 5")] int teamSize=5)
+        {
+            List<string> playerList = listFromString(players);
+            if (playerList.Count < 2)
+            {
+                await RespondAsync("Invalid choices. Ensure all quotes are closed, and there are at least two options.", ephemeral: true);
+                return;
+            }
+
+            List<List<string>> teams = new List<List<string>>();
+            Random rnd = new Random();
+            int currTeam = 0;
+
+            for (int i = 0; i < teamCount; i++)
+            {
+                teams.Add(new List<string>());
+            }
+
+            while (playerList.Count > 0)
+            {
+                // We've exceeded max team size
+                if (teams[currTeam].Count == teamSize)
+                {
+                    break;
+                }
+
+                int num = rnd.Next(playerList.Count);
+                teams[currTeam].Add(playerList[num]);
+                playerList.RemoveAt(num);
+                currTeam++;
+
+                // We've gone through all teams, back to the first
+                if(currTeam == teamCount)
+                {
+                    currTeam = 0;
+                }
+            }
+            var embed = new JifBotEmbedBuilder();
+            embed.Title = "Team Allocation";
+            embed.Description = "May your battle be bloody and righteous.";
+
+            currTeam = 1;
+
+            foreach (List<String> team in teams)
+            {
+                string teamString = "";
+                foreach (string teammate in team)
+                {
+                    teamString += $"- {teammate}\n";
+                }
+                embed.AddField($"Team {currTeam}", teamString);
+                currTeam++;
+            }
+
+            if(playerList.Count > 0)
+            {
+                string teamString = "";
+                foreach (string teammate in playerList)
+                {
+                    teamString += $"- {teammate}\n";
+                }
+                embed.AddField("Benched", teamString);
+            }
+
             await RespondAsync(embed: embed.Build());
         }
 
@@ -301,6 +363,21 @@ namespace JifBot.Commands
                 format = format.Remove(format.Length - 2, 2);
 
             return format;
+        }
+
+        List<string> listFromString(string choices)
+        {
+            List<string> choiceList = new List<string>();
+            int quotes = choices.Split('\"').Length - 1;
+            if (quotes % 2 != 0)
+            {
+                return choiceList;
+            }
+
+            MatchCollection matchList = Regex.Matches(choices, @"[^\s""]+|""([^""]*)""");
+            choiceList = matchList.Cast<Match>().Select(match => match.Value.Replace("\"", "")).ToList();
+
+            return choiceList;
         }
     }
 }
