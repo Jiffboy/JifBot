@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Discord;
 using Discord.WebSocket;
 using Discord.Commands;
@@ -18,6 +19,8 @@ namespace JIfBot
 
         public static string configName = "Live";
         public static DateTime startTime = DateTime.Now;
+        public static string currLeagueVersion = "";
+        public static Dictionary<string, string> championLookup = new Dictionary<string, string>();
         private DiscordSocketClient client;
         private InteractionService interactions;
         public CommandService commands;

@@ -17,6 +17,8 @@ namespace JifBot.Commands
 {
     public class Information : InteractionModuleBase<SocketInteractionContext>
     {
+        private bool leagueUpToDate = false;
+
         [SlashCommand("commands", "Shows all available commands.")]
         public async Task Commands()
         {
@@ -276,196 +278,74 @@ namespace JifBot.Commands
             await RespondAsync(embed: embed.Build());
         }
 
-        [SlashCommand("stats", "Gives the stats for a League of Legends player.")]
-        public async Task Stats(
-            [Summary("region", "The abbreviated name of the region the account is on.")] string region,
-            [Summary("name", "The username of the player.")] string name)
-        {
-            name = name.Replace(" ", string.Empty);
-
-            string SearchText = "<meta name=\"description\" content=\"";
-            string SearchText2 = "\"/>";
-
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            string source = "";
-            if (region == "kr")
-            {
-                if (await RemoteFileExists("http://www.op.gg/summoner/userName=" + name))
-                    source = await client.GetStringAsync("http://www.op.gg/summoner/userName=" + name);
-                else
-                {
-                    await RespondAsync("That is not a valid summoner name / region");
-                    return;
-                }
-            }
-            else
-            {
-                if (await RemoteFileExists("http://" + region + ".op.gg/summoner/userName=" + name))
-                    source = await client.GetStringAsync("http://" + region + ".op.gg/summoner/userName=" + name);
-                else
-                {
-                    await RespondAsync("That is not a valid summoner name / region");
-                    return;
-                }
-            }
-            if (source.IndexOf("This summoner is not registered at OP.GG. Please check spelling.") != -1)
-            {
-                await RespondAsync("That Summoner does not exist");
-                return;
-            }
-            else
-            {
-                var db = new BotBaseContext();
-                var embed = new JifBotEmbedBuilder();
-                
-                string kdsource = source.Remove(0, source.IndexOf("summoner-id=\"") + 13);
-                kdsource = kdsource.Remove(kdsource.IndexOf("\""));
-                if (region == "kr")
-                    kdsource = "http://www." + "op.gg/summoner/champions/ajax/champions.most/summonerId=" + kdsource + "&season=11";
-                else
-                    kdsource = "http://" + region + ".op.gg/summoner/champions/ajax/champions.most/summonerId=" + kdsource + "&season=11";
-                System.Net.Http.HttpClient client2 = new System.Net.Http.HttpClient();
-                kdsource = await client2.GetStringAsync(kdsource);
-                string url = source.Remove(0, source.IndexOf("ProfileIcon"));
-                url = url.Remove(0, url.IndexOf("<img src=\"//") + 12);
-                url = url.Remove(url.IndexOf("\""));
-                url = "http://" + url;
-                embed.ThumbnailUrl = url;
-                Int32 start = source.IndexOf(SearchText) + SearchText.Length;
-                source = source.Remove(0, start);
-                Int32 end = source.IndexOf(SearchText2);
-                source = source.Remove(end);
-
-                source = source.Replace("&#039;", "'");
-                if (source.IndexOf("Lv. ") == -1 && source.IndexOf("Unranked") == -1)
-                {
-                    string def = "Information for: " + source.Remove(source.IndexOf("/")) + "\n";
-                    source = source.Remove(0, source.IndexOf("/") + 1);
-                    embed.Title = def;
-                    def = "Current Ranking: " + source.Remove(source.IndexOf("/")) + "\n";
-                    source = source.Remove(0, source.IndexOf("/") + 1);
-                    def = def + "Win Record: " + source.Remove(source.IndexOf("Win")) + "  (";
-                    source = source.Remove(0, source.IndexOf("o") + 1);
-                    def = def + source.Remove(source.IndexOf("/")) + ")\n\nTop 5 Champions:\n";
-                    source = source.Remove(0, source.IndexOf("/") + 1);
-                    embed.Description = def;
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (source.IndexOf(",") != -1)
-                        {
-                            def = source.Remove(source.IndexOf("Win")) + "(";
-                            source = source.Remove(0, source.IndexOf("Win") + 9);
-                            def = def + source.Remove(source.IndexOf(",")) + " )";
-                            def = def.Remove(def.IndexOf("-")) + def.Remove(0, def.IndexOf("-")).PadRight(30, ' ');
-                            source = source.Remove(0, source.IndexOf(",") + 1);
-                            kdsource = kdsource.Remove(0, kdsource.IndexOf("span class=\"KDA") + 17);
-                            def = def + "KDA: **" + kdsource.Remove(kdsource.IndexOf(":")) + "**     ( ";
-                            kdsource = kdsource.Remove(0, kdsource.IndexOf("KDAEach"));
-                            kdsource = kdsource.Remove(0, kdsource.IndexOf("Kill") + 6);
-                            def = def + kdsource.Remove(kdsource.IndexOf("<"));
-                            kdsource = kdsource.Remove(0, kdsource.IndexOf("Death") + 7);
-                            def = def + " / " + kdsource.Remove(kdsource.IndexOf("<"));
-                            kdsource = kdsource.Remove(0, kdsource.IndexOf("Assist") + 8);
-                            def = def + " / " + kdsource.Remove(kdsource.IndexOf("<")) + " )";
-                            embed.AddField(def.Remove(def.IndexOf("-")), def.Remove(0, def.IndexOf("-") + 1));
-
-                        }
-                    }
-                    def = source.Remove(source.IndexOf("Win")) + "  (";
-                    source = source.Remove(0, source.IndexOf("Win") + 9);
-                    def = def + source + " )";
-                    def = def.Remove(def.IndexOf("-")) + def.Remove(0, def.IndexOf("-")).PadRight(30, ' ');
-                    kdsource = kdsource.Remove(0, kdsource.IndexOf("span class=\"KDA") + 17);
-                    def = def + "KDA: **" + kdsource.Remove(kdsource.IndexOf(":")) + "**     ( ";
-                    kdsource = kdsource.Remove(0, kdsource.IndexOf("KDAEach"));
-                    kdsource = kdsource.Remove(0, kdsource.IndexOf("Kill") + 6);
-                    def = def + kdsource.Remove(kdsource.IndexOf("<"));
-                    kdsource = kdsource.Remove(0, kdsource.IndexOf("Death") + 7);
-                    def = def + " / " + kdsource.Remove(kdsource.IndexOf("<"));
-                    kdsource = kdsource.Remove(0, kdsource.IndexOf("Assist") + 8);
-                    def = def + " / " + kdsource.Remove(kdsource.IndexOf("<")) + " )";
-                    embed.AddField(def.Remove(def.IndexOf("-")), def.Remove(0, def.IndexOf("-") + 1));
-                }
-                else
-                {
-                    await RespondAsync("That Summoner has not been placed yet this season");
-                    return;
-                }
-                
-            await RespondAsync(embed: embed.Build());
-            }
-        }
-
         [SlashCommand("mastery", "Gives the total mastery points for the top 10 most played champions for a League of Legends player.")]
         public async Task Mastery(
-            [Summary("region", "The abbreviated name of the region the account is on.")] string region,
-            [Summary("name", "The username of the player.")] string name)
+            [Choice("BR1", "br1")]
+            [Choice("EUN1", "eun1")]
+            [Choice("EUW1", "euw1")]
+            [Choice("JP1", "jp1")]
+            [Choice("KR", "kr")]
+            [Choice("LA1", "la1")]
+            [Choice("LA2", "la2")]
+            [Choice("NA1", "na1")]
+            [Choice("OC1", "oc1")]
+            [Choice("TR1", "tr1")]
+            [Choice("RU", "ru")]
+            [Choice("PH2", "ph2")]
+            [Choice("SG2", "sg2")]
+            [Choice("TH2", "th2")]
+            [Choice("TW2", "tw2")]
+            [Choice("VN2", "vn2")]
+            [Summary("region", "The abbreviated name of the region the account is on.")] string platform,
+            [Summary("name", "The display name of the player.")] string name,
+            [Summary("tag", "The identifying tag of the account. Example: NA1")] string tag)
         {
             var db = new BotBaseContext();
+            var key = db.Variable.AsQueryable().Where(v => v.Name == "leagueKey").First();
+            var region = GetRegionFromPlatform(platform);
             var embed = new JifBotEmbedBuilder();
             {
-                name = name.Replace(" ", string.Empty);
-                System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-                string html = "";
-                try
+                string puuid = await GetPUUID(name, tag, region, key.Value);
+                using (HttpClient client = new HttpClient())
                 {
-                    html = await client.GetStringAsync("https://championmasterylookup.derpthemeus.com/summoner?summoner=" + name + "&region=" + region.ToUpper());
-                }
-                catch
-                {
-                    await RespondAsync("That summoner does not exist");
-                    return;
-                }
-                html = html.Remove(0, html.IndexOf("/img/profile"));
-                embed.ThumbnailUrl = "https://championmasterylookup.derpthemeus.com" + html.Remove(html.IndexOf("\""));
-                html = html.Remove(0, html.IndexOf("userName=") + 9);
-                embed.Title = "Top ten mastery scores for " + (html.Remove(html.IndexOf("\"")).Replace("%20", " "));
-                string champ = "";
-                string nums = "";
-                int count = 0;
-                for (int i = 1; i <= 10; i++)
-                {
-                    if (html.IndexOf("/champion?") == html.IndexOf("/champion?champion=-1"))
-                        break;
-                    html = html.Remove(0, html.IndexOf("/champion?"));
-                    html = html.Remove(0, html.IndexOf(">") + 1);
-                    champ = html.Remove(html.IndexOf("<"));
-                    champ = champ.Replace("&#x27;", "'");
-                    html = html.Remove(0, html.IndexOf("\"") + 1);
-                    nums = html.Remove(html.IndexOf("\""));
-                    count = count + Convert.ToInt32(nums);
-                    for (int j = nums.Length - 3; j > 0; j = j - 3)
-                        nums = nums.Remove(j) + "," + nums.Remove(0, j);
+                    using (var response = await client.GetAsync($"https://{platform}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/{puuid}?api_key={key.Value}"))
+                    {
+                        embed.Title = $"Top ten mastery scores for {name}#{tag}";
+                        string jsonResponse = await response.Content.ReadAsStringAsync();
+                        List<Mastery> masteryResult = JsonSerializer.Deserialize<List<Mastery>>(jsonResponse);
+                        int i = 1;
+                        long totalMastery = 0;
+                        foreach(Mastery mastery in masteryResult)
+                        {
+                            string champion = await GetChampionById(mastery.championId.ToString());
+                            if ( i == 1 )
+                            {
+                                embed.ThumbnailUrl = $"https://ddragon.leagueoflegends.com/cdn/{Program.currLeagueVersion}/img/champion/{champion}.png";
+                            }
 
-                    embed.AddField(i + ". " + champ, nums + " points", inline: true);
+                            if (i <= 10)
+                            {
+                                DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                                dateTime = dateTime.AddSeconds(mastery.lastPlayTime / 1000);
+                                string date = dateTime.ToLocalTime().ToShortDateString();
+                                string descText = "";
+                                descText += $"Level: {mastery.championLevel}";
+                                descText += $"\n{mastery.championPoints:n0} points";
+                                descText += $"\nPlayed: {date}";
+                                embed.AddField($"{i}. {champion}", descText, inline: true);
+                            }
+
+                            totalMastery += mastery.championPoints;
+                            i++;
+                        }
+                        embed.Description = $"Total Mastery Points: {totalMastery:n0}";
+                    }
                 }
-
-                nums = Convert.ToString(count);
-                for (int j = nums.Length - 3; j > 0; j = j - 3)
-                    nums = nums.Remove(j) + "," + nums.Remove(0, j);
-                embed.Description = "Total score across top ten: " + nums;
-
+                
                 await RespondAsync(embed: embed.Build());
             }
         }
 
-        async Task<bool> RemoteFileExists(string url)
-        {
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            try
-            {
-                string response = await client.GetStringAsync(url);
-                if (response.Length == 0) return false;
-                else
-                {
-                    return true;
-                }
-            }
-            catch
-            {
-                return false;
-            }
-        }
         public string FormatTime(DateTimeOffset orig)
         {
             string str = "";
@@ -502,6 +382,88 @@ namespace JifBot.Commands
             }
             embed.AddField("Roles", roles);
             return embed;
+        }
+
+        async private Task<string> GetChampionById(string id)
+        {
+            if (!leagueUpToDate)
+            {
+                await ReloadLeagueVersion();
+            }
+            return Program.championLookup[id];
+        }
+
+        async private Task ReloadLeagueVersion()
+        {
+            string version = "";
+            using (HttpClient client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync("https://ddragon.leagueoflegends.com/api/versions.json");
+                HttpContent content = response.Content;
+                string stuff = await content.ReadAsStringAsync();
+                version = stuff.Remove(0, 1).Split(',').ToList()[0].Replace("\"", "");
+            }
+            if (Program.currLeagueVersion != version)
+            {
+                Program.currLeagueVersion = version;
+                using (HttpClient client = new HttpClient())
+                {
+                    using (var response = await client.GetAsync($"https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion.json"))
+                    {
+                        string jsonResponse = await response.Content.ReadAsStringAsync();
+                        ChampionResult championResult = JsonSerializer.Deserialize<ChampionResult>(jsonResponse);
+                        Program.championLookup.Clear();
+                        foreach(var champion in championResult.data)
+                        {
+                            Program.championLookup.Add(champion.Value.key, champion.Value.id);
+                        }
+                    }
+                }
+            }
+            leagueUpToDate = true;
+        }
+
+        private string GetRegionFromPlatform(string platform)
+        {
+            switch (platform)
+            {
+                case "eun1":
+                case "euw1":
+                case "ru":
+                case "tr1":
+                    return "europe";
+
+                case "oc1":
+                case "ph2":
+                case "vn2":
+                case "th2":
+                case "sg2":
+                    return "sea";
+
+                case "jp1":
+                case "kr":
+                case "tw2":
+                    return "asia";
+
+                case "br1":
+                case "la1":
+                case "la2":
+                case "na1":
+                default:
+                    return "americas";
+            }
+        }
+
+        async private Task<string> GetPUUID(string name, string tag, string region, string apiKey)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                HttpResponseMessage response = await client.GetAsync($"https://{region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{name}/{tag}?api_key={apiKey}");
+                HttpContent content = response.Content;
+                string stuff = await content.ReadAsStringAsync();
+                var json = JObject.Parse(stuff);
+                return (string)json.SelectToken("puuid");
+            }
         }
     }
 
@@ -540,5 +502,24 @@ namespace JifBot.Commands
     class DictionaryDefinition
     {
         public string definition { get; set; }
+    }
+
+    class ChampionResult
+    {
+        public Dictionary<string, Champion> data { get; set; }
+    }
+
+    class Champion
+    {
+        public string id { get; set; }
+        public string key { get; set; }
+    }
+
+    class Mastery
+    {
+        public long lastPlayTime { get; set; }
+        public int championLevel { get; set; }
+        public long championId { get; set; }
+        public int championPoints { get; set; }
     }
 }

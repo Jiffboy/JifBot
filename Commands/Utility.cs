@@ -306,7 +306,7 @@ namespace JifBot.Commands
                 {
                     teamString += $"- {teammate}\n";
                 }
-                embed.AddField("Benched", teamString);
+                embed.AddField("Benched", teamString, inline: true);
             }
 
             await RespondAsync(embed: embed.Build());
