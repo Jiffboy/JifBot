@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 
-connection = sqlite3.connect("../bin/Debug/netcoreapp3.1/Database/BotBase.db")
+connection = sqlite3.connect($JIFBOT_DB)
 cursor = connection.cursor()
 
 today = datetime.today().strftime('%Y-%m-%d')
