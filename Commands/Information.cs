@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Net;
 using System.IO;
+using System.Text.RegularExpressions;
 using Discord;
 using Discord.Interactions;
 using Newtonsoft.Json.Linq;
@@ -15,6 +16,19 @@ using JIfBot;
 
 namespace JifBot.Commands
 {
+    enum LeagueQueue: int
+    {
+        Custom = 0,
+        Draft = 400,
+        Ranked = 420,
+        Blind = 430,
+        Flex = 440,
+        ARAM = 450,
+        Quickplay = 490,
+        Clash = 700,
+        Arena = 1700
+    }
+
     public class Information : InteractionModuleBase<SocketInteractionContext>
     {
         private bool leagueUpToDate = false;
@@ -304,49 +318,242 @@ namespace JifBot.Commands
             var key = db.Variable.AsQueryable().Where(v => v.Name == "leagueKey").First();
             var region = GetRegionFromPlatform(platform);
             var embed = new JifBotEmbedBuilder();
+
+            string puuid = await GetPUUID(name, tag, region, key.Value);
+            Summoner summoner = await GetSummoner(platform, puuid, key.Value);
+            using (HttpClient client = new HttpClient())
             {
-                string puuid = await GetPUUID(name, tag, region, key.Value);
-                using (HttpClient client = new HttpClient())
+                using (var response = await client.GetAsync($"https://{platform}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/{puuid}?api_key={key.Value}"))
                 {
-                    using (var response = await client.GetAsync($"https://{platform}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/{puuid}?api_key={key.Value}"))
+                    embed.Title = $"Top ten mastery scores for {name}#{tag}";
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+                    List<Mastery> masteryResult = JsonSerializer.Deserialize<List<Mastery>>(jsonResponse);
+                    int i = 1;
+                    long totalMastery = 0;
+                    foreach(Mastery mastery in masteryResult)
                     {
-                        embed.Title = $"Top ten mastery scores for {name}#{tag}";
-                        string jsonResponse = await response.Content.ReadAsStringAsync();
-                        List<Mastery> masteryResult = JsonSerializer.Deserialize<List<Mastery>>(jsonResponse);
-                        int i = 1;
-                        long totalMastery = 0;
-                        foreach(Mastery mastery in masteryResult)
+                        string champion = await GetChampionById(mastery.championId.ToString());
+                        if ( i == 1 )
                         {
-                            string champion = await GetChampionById(mastery.championId.ToString());
-                            if ( i == 1 )
-                            {
-                                embed.ThumbnailUrl = $"https://ddragon.leagueoflegends.com/cdn/{Program.currLeagueVersion}/img/champion/{champion}.png";
-                            }
-
-                            if (i <= 10)
-                            {
-                                DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                                dateTime = dateTime.AddSeconds(mastery.lastPlayTime / 1000);
-                                string date = dateTime.ToLocalTime().ToShortDateString();
-                                string descText = "";
-                                descText += $"Level: {mastery.championLevel}";
-                                descText += $"\n{mastery.championPoints:n0} points";
-                                descText += $"\nPlayed: {date}";
-                                embed.AddField($"{i}. {champion}", descText, inline: true);
-                            }
-
-                            totalMastery += mastery.championPoints;
-                            i++;
+                            embed.ThumbnailUrl = $"https://ddragon.leagueoflegends.com/cdn/{Program.currLeagueVersion}/img/champion/{champion}.png";
                         }
-                        embed.Description = $"Total Mastery Points: {totalMastery:n0}";
+
+                        if (i <= 10)
+                        {
+                            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                            dateTime = dateTime.AddSeconds(mastery.lastPlayTime / 1000);
+                            string date = dateTime.ToLocalTime().ToShortDateString();
+                            string descText = "";
+                            descText += $"Level: {mastery.championLevel}";
+                            descText += $"\n{mastery.championPoints:n0} points";
+                            descText += $"\nPlayed: {date}";
+                            embed.AddField($"{i}. {champion}", descText, inline: true);
+                        }
+
+                        totalMastery += mastery.championPoints;
+                        i++;
                     }
+                    embed.Description = $"Summoner Level: {summoner.summonerLevel}\nTotal Mastery Points: {totalMastery:n0}";
                 }
-                
-                await RespondAsync(embed: embed.Build());
             }
+                
+            await RespondAsync(embed: embed.Build());
         }
 
-        public string FormatTime(DateTimeOffset orig)
+        [SlashCommand("match", "Returns info for the last 10 matches played in league of legends.")]
+        public async Task Match(
+            [Choice("BR1", "br1")]
+            [Choice("EUN1", "eun1")]
+            [Choice("EUW1", "euw1")]
+            [Choice("JP1", "jp1")]
+            [Choice("KR", "kr")]
+            [Choice("LA1", "la1")]
+            [Choice("LA2", "la2")]
+            [Choice("NA1", "na1")]
+            [Choice("OC1", "oc1")]
+            [Choice("TR1", "tr1")]
+            [Choice("RU", "ru")]
+            [Choice("PH2", "ph2")]
+            [Choice("SG2", "sg2")]
+            [Choice("TH2", "th2")]
+            [Choice("TW2", "tw2")]
+            [Choice("VN2", "vn2")]
+            [Summary("region", "The abbreviated name of the region the account is on.")] string platform,
+            [Summary("name", "The display name of the player.")] string name,
+            [Summary("tag", "The identifying tag of the account. Example: NA1")] string tag,
+            [Choice("Blind Pick", "blind")]
+            [Choice("Draft Pick", "draft")]
+            [Choice("Ranked Solo", "ranked")]
+            [Choice("Ranked Flex", "flex")]
+            [Choice("Clash", "clash")]
+            [Choice("ARAM", "aram")]
+            [Choice("Arena", "arena")]
+            [Choice("Custom Match", "custom")]
+            [Choice("Quickplay", "quickplay")]
+            [Summary("mode", "The type of game to get match history for")] string mode,
+            [Summary("count", "The number of matches to retrieve. Defaults to 12. Max of 25")] int count = 12)
+        {
+            await RespondAsync("Processing... Please wait.");
+            var db = new BotBaseContext();
+            var key = db.Variable.AsQueryable().Where(v => v.Name == "leagueKey").First();
+            var embed = new JifBotEmbedBuilder();
+            var region = GetRegionFromPlatform(platform);
+            string puuid = await GetPUUID(name, tag, region, key.Value);
+
+            var (queue, gameMode, queueTitle) = GetQueueInfo(mode);
+            var champMap = new Dictionary<string, int>();
+            var roleMap = new Dictionary<string, int>();
+            int totalKills = 0;
+            int totalDeaths = 0;
+            int totalAssists = 0;
+            int winCount = 0;
+            int lossCount = 0;
+
+            if (count > 25)
+            {
+                count = 25;
+            }
+
+            using (HttpClient client = new HttpClient())
+            {
+                using (var response = await client.GetAsync($"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?type={gameMode}&queue={queue}&count={count}&api_key={key.Value}"))
+                {
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+                    List<string> matches = JsonSerializer.Deserialize<List<string>>(jsonResponse);
+                    count = matches.Count;
+                    if(count == 0)
+                    {
+                        await ModifyOriginalResponseAsync(m => { m.Content = "No matches for this game mode. Get to work!"; });
+                        return;
+                    }
+                    foreach(var match in matches)
+                    {
+                        using (var matchResponse = await client.GetAsync($"https://{region}.api.riotgames.com/lol/match/v5/matches/{match}?api_key={key.Value}"))
+                        {
+                            string matchJsonResponse = await matchResponse.Content.ReadAsStringAsync();
+                            MatchResponse matchData = JsonSerializer.Deserialize<MatchResponse>(matchJsonResponse);
+                            Participant targetParticipant = new Participant();
+
+                            foreach(var participant in matchData.info.participants)
+                            {
+                                if(participant.puuid == puuid)
+                                {
+                                    targetParticipant = participant;
+                                    break;
+                                }
+                            }
+
+                            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                            dateTime = dateTime.AddSeconds(matchData.info.gameStartTimestamp / 1000);
+                            string date = dateTime.ToLocalTime().ToShortDateString();
+
+                            TimeSpan timeSpan = TimeSpan.FromSeconds(matchData.info.gameDuration);
+                            string gameDuration = string.Format("{0:###}:{1:D2}", timeSpan.Minutes + timeSpan.Hours*60, timeSpan.Seconds);
+
+                            string titleEntry = "";
+                            string outcome = targetParticipant.win ? "✅" : "❌";
+                            string champion = Regex.Replace(targetParticipant.championName, @"([A-Z][a-z]*)([A-Z][a-z]*)*", @"$1 $2").TrimEnd(' ');
+                            string position = targetParticipant.individualPosition == "Invalid" ? "" : char.ToUpper(targetParticipant.individualPosition[0]) + targetParticipant.individualPosition.Substring(1).ToLower();
+
+                            if (position == "Utility")
+                            {
+                                position = "Support";
+                            }
+
+                            if (position != "")
+                            {
+                                if (roleMap.ContainsKey(position))
+                                {
+                                    roleMap[position]++;
+                                }
+                                else
+                                {
+                                    roleMap.Add(position, 1);
+                                }
+                            }
+
+                            if (champMap.ContainsKey(champion))
+                            {
+                                champMap[champion]++;
+                            }
+                            else
+                            {
+                                champMap.Add(champion, 1);
+                            }
+
+                            if (targetParticipant.win)
+                            {
+                                winCount++;
+                            }
+                            else
+                            {
+                                lossCount++;
+                            }
+                            totalKills += targetParticipant.kills;
+                            totalDeaths += targetParticipant.deaths;
+                            totalAssists += targetParticipant.assists;
+
+                            titleEntry += $"{outcome} {champion} {position}";
+
+                            string matchEntry = "";
+                            matchEntry += $"{date} ({gameDuration})";
+                            matchEntry += $"\n> **{targetParticipant.kills}/{targetParticipant.deaths}/{targetParticipant.assists}** KP: {Math.Round(targetParticipant.challenges.killParticipation, 2)}";
+                            matchEntry += $"\nDamage dealt: {targetParticipant.totalDamageDealtToChampions:n0}";
+                            matchEntry += $"\nVision Score: {targetParticipant.visionScore}";
+                            matchEntry += $"\nGPM: {Math.Round(targetParticipant.challenges.goldPerMinute, 2)}";
+                            matchEntry += $"\nCS: {targetParticipant.totalMinionsKilled}";
+                            matchEntry += "\n";
+                            if (targetParticipant.enemyMissingPings > 0)
+                            {
+                                matchEntry += $"<:Enemy_Missing_ping:1241517862745800884> {targetParticipant.enemyMissingPings} ";
+                            }
+
+                            if (targetParticipant.onMyWayPings > 0)
+                            {
+                                matchEntry += $"<:On_My_Way_ping:1241517861113958550> {targetParticipant.onMyWayPings} ";
+                            }
+
+                            if (targetParticipant.assistMePings > 0)
+                            {
+                                matchEntry += $"<:Assist_Me_ping:1241517861835374644> {targetParticipant.assistMePings} ";
+                            }
+
+                            if (targetParticipant.getBackPings > 0)
+                            {
+                                matchEntry += $"<:Retreat_ping:1241517860015046796> {targetParticipant.getBackPings} ";
+                            }
+
+                            embed.AddField(titleEntry, matchEntry, inline:true);
+                        }
+                    }
+                }
+            }
+
+            Summoner summoner = await GetSummoner(platform, puuid, key.Value);
+            embed.ThumbnailUrl = $"https://ddragon.leagueoflegends.com/cdn/{Program.currLeagueVersion}/img/profileicon/{summoner.profileIconId}.png";
+            embed.Title = $"Last {count} {queueTitle} Matches for {name}#{tag}";
+
+            string highestChamp = GetMostUsedMapValue(champMap, "");
+            string highestRole = GetMostUsedMapValue(roleMap, "Invalid");
+            double avgKill = Math.Round((double)totalKills / count, 2);
+            double avgDeath = Math.Round((double)totalDeaths / count, 2);
+            double avgAssist = Math.Round((double)totalAssists / count, 2);
+            double winPercent = Math.Round((double)winCount / count * 100.0, 2);
+
+            embed.Description = $"Most played champion: {highestChamp}";
+            if(highestRole != "")
+            {
+                embed.Description += $"\nMost played role: {highestRole}";
+            }
+            embed.Description += $"\nAverage KDA: {avgKill}/{avgDeath}/{avgAssist}";
+            embed.Description += $"\n{winCount}W {lossCount}L ({winPercent}%)";
+
+
+            await ModifyOriginalResponseAsync(m => { m.Embed = embed.Build(); m.Content = ""; });
+            
+        }
+
+            public string FormatTime(DateTimeOffset orig)
         {
             string str = "";
             str = str + orig.LocalDateTime.DayOfWeek + ", ";
@@ -391,6 +598,24 @@ namespace JifBot.Commands
                 await ReloadLeagueVersion();
             }
             return Program.championLookup[id];
+        }
+
+        async private Task<Summoner> GetSummoner(string platform, string puuid, string key)
+        {
+            // We'll need to have this updated if the summoner icon gets used
+            if (!leagueUpToDate)
+            {
+                await ReloadLeagueVersion();
+            }
+            using (HttpClient client = new HttpClient())
+            {
+                using (var response = await client.GetAsync($"https://{platform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}?api_key={key}"))
+                {
+                    string jsonResponse = await response.Content.ReadAsStringAsync();
+                    Summoner summoner = JsonSerializer.Deserialize<Summoner>(jsonResponse);
+                    return summoner;
+                }
+            }
         }
 
         async private Task ReloadLeagueVersion()
@@ -465,6 +690,53 @@ namespace JifBot.Commands
                 return (string)json.SelectToken("puuid");
             }
         }
+
+        private (int queue, string type, string name) GetQueueInfo(string queueTag)
+        {
+            switch(queueTag)
+            {
+                case "blind":
+                    return ((int)LeagueQueue.Blind, "normal", "Summoner's Rift: Blind Pick");
+                case "draft":
+                    return ((int)LeagueQueue.Draft, "normal", "Summoner's Rift: Draft Pick");
+                default:
+                case "ranked":
+                    return ((int)LeagueQueue.Ranked, "ranked", "Summoner's Rift: Ranked Solo");
+                case "flex":
+                    return ((int)LeagueQueue.Flex, "ranked", "Summoner's Rift: Ranked Flex");
+                case "clash":
+                    return ((int)LeagueQueue.Clash, "normal", "Summoner's Rift: Clash");
+                case "aram":
+                    return ((int)LeagueQueue.ARAM, "normal", "The Howling Abyss");
+                case "arena":
+                    return ((int)LeagueQueue.Arena, "ranked", "Rings of Wrath: Arena");
+                case "custom":
+                    return ((int)LeagueQueue.Custom, "normal", "Summoner's Rift: Custom Match");
+                case "quickplay":
+                    return ((int)LeagueQueue.Quickplay, "normal", "Summoner's Rift: Quickplay");
+
+            }
+        }
+
+        private string GetMostUsedMapValue(Dictionary<string, int> dict, string badValue)
+        {
+            string mostUsed = "";
+            int highestCount = 0;
+
+            if (dict.Count > 0)
+            {
+                foreach (KeyValuePair<string, int> kvp in dict)
+                {
+                    if (kvp.Value > highestCount && kvp.Key != badValue)
+                    {
+                        highestCount = kvp.Value;
+                        mostUsed = kvp.Key;
+                    }
+                }
+            }
+
+            return mostUsed;
+        }
     }
 
     class UrbanDictionaryDefinition
@@ -521,5 +793,49 @@ namespace JifBot.Commands
         public int championLevel { get; set; }
         public long championId { get; set; }
         public int championPoints { get; set; }
+    }
+
+    class MatchResponse
+    {
+        public MatchInfo info { get; set; }
+    }
+
+    class MatchInfo
+    {
+        public List<Participant> participants { get; set; }
+        public long gameDuration { get; set; }
+        public long gameStartTimestamp { get; set; }
+    }
+
+    class Participant
+    {
+        public string puuid { get; set; }
+        public string championName { get; set; }
+        public string individualPosition { get; set; }
+        public bool win { get; set; }
+        public int kills { get; set; }
+        public int deaths { get; set; }
+        public int assists { get; set; }
+        public int enemyMissingPings { get; set; }
+        public int assistMePings { get; set; }
+        public int getBackPings { get; set; }
+        public int onMyWayPings { get; set; }
+        public int visionScore { get; set; }
+        public int totalMinionsKilled { get; set; }
+        public int totalDamageDealtToChampions { get; set; }
+        public Challenge challenges { get; set; }
+
+    }
+
+    class Challenge
+    {
+        public double killParticipation { get; set; }
+        public double goldPerMinute { get; set; }
+    }
+
+    class Summoner
+    {
+        public int profileIconId { get; set; }
+        public int summonerLevel { get; set; }
     }
 }
