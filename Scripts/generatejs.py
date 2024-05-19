@@ -1,9 +1,10 @@
 import sqlite3
 import time
+import os
 
 json = "var jifBotCommands = ["
 
-connection = sqlite3.connect("../bin/Debug/netcoreapp3.1/Database/BotBase.db")
+connection = sqlite3.connect(os.environ['JIFBOT_DB'])
 cursor = connection.cursor()
 
 cursor.execute('SELECT Value FROM Variable WHERE Name = "lastCmdUpdateTime"')
