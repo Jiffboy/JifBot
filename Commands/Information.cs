@@ -360,7 +360,7 @@ namespace JifBot.Commands
             await RespondAsync(embed: embed.Build());
         }
 
-        [SlashCommand("match", "Returns info for the last 10 matches played in league of legends.")]
+        [SlashCommand("match", "Returns info for the most recent matches played in league of legends.")]
         public async Task Match(
             [Choice("BR1", "br1")]
             [Choice("EUN1", "eun1")]
