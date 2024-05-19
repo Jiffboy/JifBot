@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -33,7 +34,9 @@ namespace JifBot.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite("Data Source=Database/BotBase.db");
+                string location = Environment.GetEnvironmentVariable("JIFBOT_DB");
+                location = location.Replace("\"", "");
+                optionsBuilder.UseSqlite($"Data Source={location}");
             }
         }
 

@@ -17,7 +17,7 @@ dotnet build
 # allow manual changes to the database and start the bot
 cd Scripts
 read -p "Make database updates and press enter to continue..."
-cp backup/* ../bin/Debug/netcoreapp3.1/Database/
+cp backup/* $JIFBOT_DB
 
 # update the changelog
 python3 updateChangelog.py
