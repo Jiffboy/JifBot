@@ -1,7 +1,8 @@
 import sqlite3
+import os
 from datetime import datetime
 
-connection = sqlite3.connect($JIFBOT_DB)
+connection = sqlite3.connect(os.environ['JIFBOT_DB'])
 cursor = connection.cursor()
 
 today = datetime.today().strftime('%Y-%m-%d')
