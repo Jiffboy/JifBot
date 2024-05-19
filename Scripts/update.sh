@@ -20,7 +20,7 @@ read -p "Make database updates and press enter to continue..."
 cp backup/BotBase.db $JIFBOT_DB
 
 # update the changelog
-python3 updateChangelog.py
+# python3 updateChangelog.py
 
 # start JifBot
 sudo systemctl start jifbot.service
