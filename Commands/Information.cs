@@ -497,7 +497,7 @@ namespace JifBot.Commands
 
                             string matchEntry = "";
                             matchEntry += $"{date} ({gameDuration})";
-                            matchEntry += $"\n> **{targetParticipant.kills}/{targetParticipant.deaths}/{targetParticipant.assists}** KP: {Math.Round(targetParticipant.challenges.killParticipation, 2)*100}%";
+                            matchEntry += $"\n> **{targetParticipant.kills}/{targetParticipant.deaths}/{targetParticipant.assists}** KP: {Math.Round(targetParticipant.challenges.killParticipation*100, 2)}%";
                             matchEntry += $"\nDamage dealt: {targetParticipant.totalDamageDealtToChampions:n0}";
                             matchEntry += $"\nVision Score: {targetParticipant.visionScore}";
                             matchEntry += $"\nGPM: {Math.Round(targetParticipant.challenges.goldPerMinute, 2)}";
