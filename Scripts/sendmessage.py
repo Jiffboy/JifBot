@@ -6,7 +6,7 @@ import sqlite3
 channelId = sys.argv[1]
 message   = sys.argv[2]
 
-connection = sqlite3.connect("../bin/Debug/netcoreapp3.1/Database/BotBase.db")
+connection = sqlite3.connect(os.environ['JIFBOT_DB'])
 cursor = connection.cursor()
 cursor.execute("SELECT Token FROM Configuration WHERE Name = 'Live'")
 token = cursor.fetchone()[0]
