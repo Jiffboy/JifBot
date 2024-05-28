@@ -2,6 +2,7 @@ import sys
 import json
 import discord
 import sqlite3
+import os
 
 channelId = sys.argv[1]
 message   = sys.argv[2]
