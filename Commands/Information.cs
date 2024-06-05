@@ -421,6 +421,7 @@ namespace JifBot.Commands
                     string jsonResponse = await response.Content.ReadAsStringAsync();
                     List<string> matches = JsonSerializer.Deserialize<List<string>>(jsonResponse);
                     count = matches.Count;
+                    int curMatch = 1;
                     if(count == 0)
                     {
                         await ModifyOriginalResponseAsync(m => { m.Content = "No matches for this game mode. Get to work!"; });
@@ -428,6 +429,7 @@ namespace JifBot.Commands
                     }
                     foreach(var match in matches)
                     {
+                        await ModifyOriginalResponseAsync(m => { m.Content = "Processing... Please wait.\n" + GetLoadBar(curMatch, count, 20); });
                         using (var matchResponse = await client.GetAsync($"https://{region}.api.riotgames.com/lol/match/v5/matches/{match}?api_key={key.Value}"))
                         {
                             string matchJsonResponse = await matchResponse.Content.ReadAsStringAsync();
@@ -525,6 +527,7 @@ namespace JifBot.Commands
 
                             embed.AddField(titleEntry, matchEntry, inline:true);
                         }
+                        curMatch++;
                     }
                 }
             }
@@ -736,6 +739,26 @@ namespace JifBot.Commands
             }
 
             return mostUsed;
+        }
+
+        private string GetLoadBar(int current, int end, int barLength)
+        {
+            double percentLoaded = ((double)current / (double)end);
+            int loaded = (int)(percentLoaded * barLength);
+            string bar = "`[";
+            for(int i = 0; i < barLength; i++)
+            {
+                if(i <= loaded)
+                {
+                    bar += "=";
+                }
+                else
+                {
+                    bar += " ";
+                }
+            }
+            bar += "]`";
+            return bar;
         }
     }
 
