@@ -217,16 +217,28 @@ namespace JifBot.Commands
 
             if (definitionList.Count > 0)
             {
+                UrbanDictionaryDefinition currDefinition = definitionList[0];
+                int currVote = 0;
+
+                foreach (UrbanDictionaryDefinition definition in definitionList)
+                {
+                    if (definition.thumbs_up > currVote)
+                    {
+                        currDefinition = definition;
+                        currVote = definition.thumbs_up;
+                    }
+                }
+
                 // Urban Dictionary uses square brackets for links in its markup; they'll never appear as part of the definition text.
-                var cleanDefinition = definitionList[0].definition.Replace("[", "").Replace("]", "");
-                var cleanExample = definitionList[0].example.Replace("[", "").Replace("]", "");
-                var year = definitionList[0].written_on.Substring(0, definitionList[0].written_on.IndexOf("-"));
-                var dayMonth = definitionList[0].written_on.Substring(definitionList[0].written_on.IndexOf("-") + 1, 5);
+                var cleanDefinition = currDefinition.definition.Replace("[", "").Replace("]", "");
+                var cleanExample = currDefinition.example.Replace("[", "").Replace("]", "");
+                var year = currDefinition.written_on.Substring(0, definitionList[0].written_on.IndexOf("-"));
+                var dayMonth = currDefinition.written_on.Substring(definitionList[0].written_on.IndexOf("-") + 1, 5);
                 var cleanDate = dayMonth.Replace("-", "/") + "/" + year;
-                var word = definitionList[0].word;
+                var word = currDefinition.word;
 
                 embed.Title = word;
-                embed.Description = $"Written: {cleanDate}";
+                embed.Description = $"Written: {cleanDate}\n⬆️ {currDefinition.thumbs_up:n0}   ⬇️ {currDefinition.thumbs_down:n0}";
                 embed.Url = definitionList[0].permalink;
 
                 if(cleanDefinition.Length >= 1024)
@@ -769,6 +781,8 @@ namespace JifBot.Commands
         public string word { get; set; }
         public string written_on { get; set; }
         public string permalink { get; set; }
+        public int thumbs_up { get; set; }
+        public int thumbs_down { get; set; }
     }
 
     class UrbanDictionaryResult
