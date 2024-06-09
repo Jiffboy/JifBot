@@ -368,6 +368,8 @@ namespace JifBot.Commands
         List<string> listFromString(string choices)
         {
             List<string> choiceList = new List<string>();
+            choices = choices.Replace("”", "\"");
+            choices = choices.Replace("“", "\"");
             int quotes = choices.Split('\"').Length - 1;
             if (quotes % 2 != 0)
             {
