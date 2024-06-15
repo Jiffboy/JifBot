@@ -107,9 +107,9 @@ namespace JifBot.Commands
 
         [SlashCommand("changelog", "Reports recent updates made to Jif Bot.")]
         public async Task Changelog(
-            [Summary("count", "The number of changes to pull. Defaults to 3, max of 10.")] int count=3)
+            [Summary("count", "The number of changes to pull. Defaults to 3, max of 20.")] int count=3)
         {
-            count = count > 10 ? 10 : count;
+            count = count > 20 ? 20 : count;
             var db = new BotBaseContext();
             var embed = new JifBotEmbedBuilder();
             var totalEntries = db.ChangeLog.AsQueryable().OrderByDescending(e => e.Date);
