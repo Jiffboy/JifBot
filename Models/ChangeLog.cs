@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace JifBot.Models
+﻿namespace JifBot.Models
 {
     public partial class ChangeLog
     {

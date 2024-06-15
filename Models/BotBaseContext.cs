@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace JifBot.Models
 {
@@ -27,6 +25,7 @@ namespace JifBot.Models
         public virtual DbSet<ServerConfig> ServerConfig { get; set; }
         public virtual DbSet<Command> Command { get; set; }
         public virtual DbSet<CommandParameter> CommandParameter { get; set; }
+        public virtual DbSet<CommandParameterChoice> CommandParameterChoice { get; set; }
         public virtual DbSet<ReactRole> ReactRole { get; set; }
         public virtual DbSet<ChangeLog> ChangeLog { get; set; }
 
@@ -154,6 +153,17 @@ namespace JifBot.Models
                 entity.Property(e => e.Description);
 
                 entity.Property(e => e.Required);
+            });
+
+            modelBuilder.Entity<CommandParameterChoice>(entity =>
+            {
+                entity.HasKey(e => new { e.Command, e.Parameter, e.Name });
+
+                entity.Property(e => e.Command);
+
+                entity.Property(e => e.Parameter);
+
+                entity.Property(e => e.Name);
             });
 
             modelBuilder.Entity<ReactRole>(entity =>

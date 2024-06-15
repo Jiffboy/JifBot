@@ -241,11 +241,16 @@ namespace JifBot.Commands
             await RespondAsync(embed: embed.Build());
         }
 
-        [SlashCommand("inhouse", "Used to randomly select teams for inhouses")]
-         public async Task Inhouse(
+        [SlashCommand("group", "Used to randomly select people into groups")]
+         public async Task Group(
+            [Choice("League of Legends / VALORANT", "league")]
+            [Choice("FFXIV Light Party", "lightparty")]
+            [Choice("FFXIV Full Party", "fullparty")]
+            [Choice("Custom", "custom")]
+            [Summary("template", "The template to assign members to standard team compositions. Select custom to create your own")] string groupType,
             [Summary("players", "The players to choose from, separated by spaces.Surround options with spaces with quotation marks.")] string players,
-            [Summary("teams", "The number of teams to create. Defaults to 2")] int teamCount=2,
-            [Summary("teamSize", "The maximum number of players on a team. Defaults to 5")] int teamSize=5)
+            [Summary("customTeams", "Only viable if custom template selected. The number of teams to create. Defaults to 2")] int customTeamCount=2,
+            [Summary("customTeamSize", "Only viable if custom template selected. The maximum number of players on a team. Defaults to 5")] int customTeamSize=5)
         {
             List<string> playerList = listFromString(players);
             if (playerList.Count < 2)
@@ -254,44 +259,74 @@ namespace JifBot.Commands
                 return;
             }
 
-            List<List<string>> teams = new List<List<string>>();
+            List<Group> teams = new List<Group>();
             Random rnd = new Random();
             int currTeam = 0;
 
-            for (int i = 0; i < teamCount; i++)
+            switch(groupType)
             {
-                teams.Add(new List<string>());
+                case "league":
+                    teams.Add(new Group("Red Side", 5));
+                    teams.Add(new Group("Blue Side", 5));
+                    break;
+                case "lightparty":
+                    teams.Add(new Group("Tank", 1));
+                    teams.Add(new Group("Healer", 1));
+                    teams.Add(new Group("DPS", 2));
+                    break;
+                case "fullparty":
+                    teams.Add(new Group("Tanks", 2));
+                    teams.Add(new Group("Healers", 2));
+                    teams.Add(new Group("DPS", 4));
+                    break;
+                default:
+                case "custom":
+                    for (int i = 0; i < customTeamCount; i++)
+                    {
+                        teams.Add(new Group($"Team {i}", customTeamSize));
+                    }
+                    break;
+
             }
 
             while (playerList.Count > 0)
             {
-                // We've exceeded max team size
-                if (teams[currTeam].Count == teamSize)
+                // We've exceeded max team size, check to see if there are any left with room
+                if (teams[currTeam].members.Count == teams[currTeam].maxCount)
                 {
+                    for(int i = 0; i < teams.Count; i++)
+                    {
+                        if (teams[currTeam].members.Count != teams[currTeam].maxCount)
+                        {
+                            currTeam = i;
+                            continue;
+                        }
+                    }
                     break;
                 }
 
                 int num = rnd.Next(playerList.Count);
-                teams[currTeam].Add(playerList[num]);
+                teams[currTeam].members.Add(playerList[num]);
                 playerList.RemoveAt(num);
                 currTeam++;
 
                 // We've gone through all teams, back to the first
-                if(currTeam == teamCount)
+                if(currTeam == teams.Count)
                 {
                     currTeam = 0;
                 }
             }
+
             var embed = new JifBotEmbedBuilder();
             embed.Title = "Team Allocation";
             embed.Description = "May your battle be bloody and righteous.";
 
             currTeam = 1;
 
-            foreach (List<String> team in teams)
+            foreach (Group team in teams)
             {
                 string teamString = "";
-                foreach (string teammate in team)
+                foreach (string teammate in team.members)
                 {
                     teamString += $"- {teammate}\n";
                 }
@@ -381,5 +416,18 @@ namespace JifBot.Commands
 
             return choiceList;
         }
+    }
+    public class Group
+    {
+        public Group(string name, int maxCount)
+        {
+            this.name = name;
+            this.maxCount = maxCount;
+            members = new List<string>();
+        }
+
+        public string name { get; set; }
+        public int maxCount { get; set; }
+        public List<string> members { get; set; }
     }
 }

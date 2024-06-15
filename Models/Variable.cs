@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace JifBot.Models
+﻿namespace JifBot.Models
 {
     public partial class Variable
     {

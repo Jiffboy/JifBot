@@ -84,6 +84,7 @@ namespace JIfBot
             var db = new BotBaseContext();
             db.Command.RemoveRange(db.Command);
             db.CommandParameter.RemoveRange(db.CommandParameter);
+            db.CommandParameterChoice.RemoveRange(db.CommandParameterChoice);
 
             foreach (var command in interactions.SlashCommands)
             {
@@ -91,6 +92,13 @@ namespace JIfBot
                 foreach (var variable in command.Parameters)
                 {
                     db.Add(new CommandParameter { Command = command.Name, Name = variable.Name, Description = variable.Description, Required = variable.IsRequired });
+                    if (variable.Choices.Count > 0)
+                    {
+                        foreach(var choice in variable.Choices)
+                        {
+                            db.Add(new CommandParameterChoice { Command = command.Name, Parameter = variable.Name, Name = choice.Name });
+                        }
+                    }
                 }
             }
             var update = db.Variable.AsQueryable().Where(V => V.Name == "lastCmdUpdateTime").FirstOrDefault();

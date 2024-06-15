@@ -77,9 +77,23 @@ namespace JifBot.Commands
             string msg = $"{command.Description}";
             if(parameters.Any())
             {
-                msg += "\n**Parameters:**\n";
-                foreach(CommandParameter parameter in parameters)
-                    msg += $"{(parameter.Required? "[Required]":"[Optional]")} **{parameter.Name}**: {parameter.Description}\n";
+                msg += "\n\n**Parameters:**\n";
+                foreach (CommandParameter parameter in parameters)
+                {
+                    msg += $"{(parameter.Required ? "[Required]" : "[Optional]")} **{parameter.Name}**: {parameter.Description}\n";
+                    var choices = db.CommandParameterChoice.AsQueryable().Where(p => p.Command == command.Name && p.Parameter == parameter.Name);
+                    if(choices.Any())
+                    {
+                        string choiceString = "";
+                        foreach (var choice in choices)
+                        {
+                            choiceString += $"{choice.Name}, ";
+                        }
+                        // remove last comma
+                        choiceString = choiceString.Remove(choiceString.Length - 2, 2);
+                        msg += $"> Options: {choiceString}\n";
+                    }
+                }
             }
             await RespondAsync(msg);
         }
