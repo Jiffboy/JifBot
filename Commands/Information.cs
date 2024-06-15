@@ -105,9 +105,11 @@ namespace JifBot.Commands
             await RespondAsync($"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s");
         }
 
-        [SlashCommand("changelog", "Reports the last 3 updates made to Jif Bot.")]
-        public async Task Changelog()
+        [SlashCommand("changelog", "Reports recent updates made to Jif Bot.")]
+        public async Task Changelog(
+            [Summary("count", "The number of changes to pull. Defaults to 3, max of 10.")] int count=3)
         {
+            count = count > 10 ? 10 : count;
             var db = new BotBaseContext();
             var embed = new JifBotEmbedBuilder();
             var totalEntries = db.ChangeLog.AsQueryable().OrderByDescending(e => e.Date);
@@ -117,7 +119,7 @@ namespace JifBot.Commands
             {
                 if(!entriesToPrint.ContainsKey(entry.Date))
                 {
-                    if (entriesToPrint.Count >= 3)
+                    if (entriesToPrint.Count >= count)
                     {
                         break;
                     }
@@ -129,7 +131,7 @@ namespace JifBot.Commands
                 }
             }
 
-            embed.Title = "Last 3 Jif Bot updates";
+            embed.Title = $"Last {count} Jif Bot updates";
             embed.Description = "For a list of all updates, visit https://jifbot.com/changelog.html";
             foreach (var entry in entriesToPrint)
             {
