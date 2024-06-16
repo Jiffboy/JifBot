@@ -43,7 +43,7 @@ namespace JifBot.Commands
             var embed = new JifBotEmbedBuilder();
             
             embed.Title = "For more information on individual commands, use: /help";
-            embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://jifbot.com/commands.html";
+            embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://jifbot.com/commands";
 
             string cat = commands.First().Category;
             string list = "";
@@ -132,7 +132,7 @@ namespace JifBot.Commands
             }
 
             embed.Title = $"Last {count} Jif Bot updates";
-            embed.Description = "For a list of all updates, visit https://jifbot.com/changelog.html";
+            embed.Description = "For a list of all updates, visit https://jifbot.com/changelog";
             foreach (var entry in entriesToPrint)
             {
                 var pieces = entry.Key.Split("-");
