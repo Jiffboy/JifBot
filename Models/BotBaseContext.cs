@@ -28,6 +28,7 @@ namespace JifBot.Models
         public virtual DbSet<CommandParameterChoice> CommandParameterChoice { get; set; }
         public virtual DbSet<ReactRole> ReactRole { get; set; }
         public virtual DbSet<ChangeLog> ChangeLog { get; set; }
+        public virtual DbSet<CommandCall> CommandCall { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -186,6 +187,19 @@ namespace JifBot.Models
                 entity.Property(e => e.Date);
 
                 entity.Property(e => e.Change);
+            });
+
+            modelBuilder.Entity<CommandCall>(entity =>
+            {
+                entity.HasKey(e => new { e.Command, e.Timestamp, e.ServerId });
+
+                entity.Property(e => e.Command);
+
+                entity.Property(e => e.Timestamp);
+
+                entity.Property(e => e.ServerId);
+
+                entity.Property(e => e.UserId);
             });
 
             OnModelCreatingPartial(modelBuilder);

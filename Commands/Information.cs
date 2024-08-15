@@ -584,6 +584,64 @@ namespace JifBot.Commands
             
         }
 
+        [SlashCommand("stats", "Gives Jif Bot usage statistics. User data must be opted into via /optin. Data begins 8/15/2024.")]
+        public async Task Stats(
+            [Choice("Global", "global")]
+            [Choice("Server", "server")]
+            [Choice("User", "user")]
+            [Summary("scope", "The scope of data to pull for")] string scope)
+        {
+            var db = new BotBaseContext();
+            var days = new TimeSpan(30, 0, 0, 0);
+            var cutoff = DateTimeOffset.UtcNow.Subtract(days).ToUnixTimeSeconds();
+            List<CommandCall> commands = new List<CommandCall>();
+            switch (scope)
+            {
+                case "user":
+                    commands = db.CommandCall.AsQueryable().AsQueryable().Where(c => c.UserId == Context.User.Id && c.Timestamp > cutoff).ToList();
+                    if (commands.Count == 0)
+                    {
+                        await RespondAsync("User is not opted into data collection. Use /optin to start tracking your data!", ephemeral: true);
+                        return;
+                    }
+                    break;
+
+                case "server":
+                    commands = db.CommandCall.AsQueryable().AsQueryable().Where(c => c.ServerId == Context.Guild.Id && c.Timestamp > cutoff).ToList();
+                    break;
+
+                case "global":
+                    commands = db.CommandCall.AsQueryable().AsQueryable().Where(c => c.Timestamp > cutoff).ToList();
+                    break;
+            }
+
+            if (commands.Count == 0)
+            {
+                await RespondAsync("No data found! Either something went wrong, or Jif Bot is DEAD");
+            }
+
+            Dictionary<string, int> counts = new Dictionary<string, int>();
+            foreach (var command in commands)
+            {
+                if (counts.ContainsKey(command.Command))
+                    counts[command.Command]++;
+                else
+                    counts[command.Command] = 1;
+            }
+            var sortedCounts = from c in counts orderby c.Value descending select c;
+            int count = 0;
+            var msg = $"Total command uses in the past 30 days: {commands.Count}\n";
+            foreach (var pair in sortedCounts)
+            {
+                if (count == 5)
+                    break;
+                msg += $"{pair.Key}: {pair.Value}\n";
+                count++;
+            }
+            await RespondAsync(msg);
+
+        }
+
             public string FormatTime(DateTimeOffset orig)
         {
             string str = "";

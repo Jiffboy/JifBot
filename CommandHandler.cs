@@ -40,6 +40,15 @@ namespace JifBot
                 {
                     await context.Interaction.RespondAsync($"**ERROR:** {result.ErrorReason}");
                 }
+                else
+                {
+                    var command = (SocketSlashCommand)context.Interaction;
+                    var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                    var userId = canLogUser(context.User.Id) ? context.User.Id : 0;
+                    var db = new BotBaseContext();
+                    db.Add(new CommandCall { Command = command.CommandName, Timestamp = timestamp, ServerId = context.Guild.Id, UserId = userId});
+                    db.SaveChanges();
+                }
             }
             catch (Exception ex)
             {
@@ -49,6 +58,17 @@ namespace JifBot
                     await arg.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
                 }
             }
+        }
+
+        private bool canLogUser(ulong userId)
+        {
+            var db = new BotBaseContext();
+            var user = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == userId).FirstOrDefault();
+            if (user != null && user.DataAllowed)
+            { 
+                return true;
+            }
+            return false;
         }
     }
 }
