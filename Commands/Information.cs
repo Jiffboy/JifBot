@@ -650,7 +650,7 @@ namespace JifBot.Commands
             var db = new BotBaseContext();
             if (author != null)
             {
-                var characters = db.Character.AsQueryable().Where(c => c.UserId == Context.User.Id).ToList();
+                var characters = db.Character.AsQueryable().Where(c => c.UserId == author.Id).ToList();
                 if (characters.Count() == 1)
                 {
                     key = characters[0].Key;

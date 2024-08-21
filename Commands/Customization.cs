@@ -389,6 +389,12 @@ namespace JifBot.Commands
                 var user = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == Context.User.Id).FirstOrDefault();
                 if (user == null)
                     db.Add(new User { UserId = Context.User.Id, Name = Context.User.Username, Number = long.Parse(Context.User.Discriminator) });
+                var character = db.Character.AsQueryable().AsQueryable().Where(c => c.Key == key).FirstOrDefault();
+                if (character != null)
+                {
+                    await RespondAsync("Character already exists with this character-key. Please choose another", ephemeral: true);
+                    return;
+                }
 
                 db.Add(new Character
                 {
