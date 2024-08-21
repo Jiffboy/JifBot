@@ -119,6 +119,12 @@ namespace JifBot
             if(lmsg.Exception != null)
             {
                 Console.WriteLine($" >> {lmsg.Exception.Message}");
+                if (lmsg.Exception.InnerException != null)
+                {
+                    Console.WriteLine($"   >> {lmsg.Exception.InnerException.Message}");
+                    if (lmsg.Exception.InnerException.InnerException != null)
+                        Console.WriteLine($"     >> {lmsg.Exception.InnerException.InnerException.Message}");
+                }
             }
             Console.ForegroundColor = cc;
             return Task.CompletedTask;

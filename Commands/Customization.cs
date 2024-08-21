@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using System.Linq;
-using System;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -355,6 +354,125 @@ namespace JifBot.Commands
                         
                     }
                     break;
+            }
+        }
+
+        [SlashCommand("managecharacter", "Manages characters saved to the blorbopedia")]
+        public async Task ManageCharacter(
+            [Choice("Add", "add")]
+            [Choice("Modify", "modify")]
+            [Choice("Delete", "delete")]
+            [Summary("action", "The action to perform for the specified character")] string action,
+            [Summary("character-key", "The key to look up your character. (Please use first name /nickname)")] string key,
+            [Summary("name", "The character's full name to be displayed")] string name = "",
+            [Summary("image", "An image to be used to display the character.")] IAttachment image = null,
+            [Summary("title", "The characters title. i.e. 'The Savior of Eorzea'")] string title = "",
+            [Summary("occupation", "The character's occupation")] string occupation = "",
+            [Summary("age", "The characeter's age")] string age = "",
+            [Summary("race", "The character's race")] string race = "",
+            [Summary("pronouns", "The characeter's pronouns")] string pronouns = "",
+            [Summary("sexuality", "The character's sexuality")] string sexuality = "",
+            [Summary("origin", "Where the character is from")] string origin = "",
+            [Summary("residence", "Where the character currently resides")] string residence = "",
+            [Summary("universe", "The universe the character belongs to. (ffxiv, dnd, etc)")] string universe = "",
+            [Summary("additional-resources", "Links for resources on the character. (carrd, lore doc, etc)")] string resources = "",
+            [Choice("Default", "default")]
+            [Choice("Compact", "compact")]
+            [Choice("Expanded", "expanded")]
+            [Summary("compact-view", "Specifies whether the image displays big or small in /blorbopedia")] string compact = "default")
+        {
+            key = key.ToLower();
+            var db = new BotBaseContext();
+
+            if (action == "add")
+            {
+                var user = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == Context.User.Id).FirstOrDefault();
+                if (user == null)
+                    db.Add(new User { UserId = Context.User.Id, Name = Context.User.Username, Number = long.Parse(Context.User.Discriminator) });
+
+                db.Add(new Character
+                {
+                    Key = key,
+                    UserId = Context.User.Id,
+                    Name = name,
+                    Description = "[No description provided]",
+                    Title = title,
+                    Occupation = occupation,
+                    Age = age,
+                    Race = race,
+                    Pronouns = pronouns,
+                    Sexuality = sexuality,
+                    Origin = origin,
+                    Residence = residence,
+                    Universe = universe,
+                    Resources = resources,
+                    CompactImage = compact != "expanded",
+                    ImageUrl = image != null ? image.Url : ""
+                });
+                db.SaveChanges();
+                var mb = new ModalBuilder()
+                    .WithTitle("Now tell us about them!")
+                    .WithCustomId($"add_character:{key}")
+                    .AddTextInput("Description / Backstory", "description", TextInputStyle.Paragraph);
+                await Context.Interaction.RespondWithModalAsync(mb.Build());
+            }
+            else if (action == "modify")
+            {
+                var character = db.Character.AsQueryable().Where(c => c.Key == key).FirstOrDefault();
+                if (character == null)
+                {
+                    await RespondAsync("Character key does not exist. Please try again", ephemeral: true);
+                    return;
+                }
+                if (character.UserId != Context.User.Id)
+                {
+                    await RespondAsync("That character does not belong to you! Hands off!", ephemeral: true);
+                    return;
+                }
+                if (name != "")
+                    character.Name = name;
+                if (title != "")
+                    character.Title = title;
+                if (occupation != "")
+                    character.Occupation = occupation;
+                if (age != "")
+                    character.Age = age;
+                if (race != "")
+                    character.Race = race;
+                if (pronouns != "")
+                    character.Pronouns = pronouns;
+                if (sexuality != "")
+                    character.Sexuality = sexuality;
+                if (origin != "")
+                    character.Origin = origin;
+                if (residence != "")
+                    character.Residence = residence;
+                if (universe != "")
+                    character.Universe = universe;
+                if (resources != "")
+                    character.Resources = resources;
+                if (compact != "default")
+                    character.CompactImage = compact != "expanded";
+                if (image != null)
+                    character.ImageUrl = image.Url;
+                db.SaveChanges();
+                var mb = new ModalBuilder()
+                    .WithTitle("Changes saved!")
+                    .WithCustomId($"modify_character:{key}")
+                    .AddTextInput("Description / Backstory", "description", TextInputStyle.Paragraph, placeholder: "If you wish to modify the description, copy/paste it. Otherwise, hit cancel to keep as-is. Sorry :(");
+                await Context.Interaction.RespondWithModalAsync(mb.Build());
+            }
+            else if (action == "delete")
+            {
+                var character = db.Character.AsQueryable().Where(c => c.Key == key).FirstOrDefault();
+                if (character == null)
+                    await RespondAsync("That character does not exist!", ephemeral: true);
+                else
+                {
+                    db.Character.Remove(character);
+                    db.SaveChanges();
+                    await RespondAsync("Character removed successfully", ephemeral: true);
+                }    
             }
         }
 

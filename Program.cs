@@ -26,6 +26,7 @@ namespace JIfBot
         public CommandService commands;
         public JifBot.CommandHandler commandHandler;
         private JifBot.EventHandler eventHandler;
+        private JifBot.ModalHandler modalHandler;
 
         public async Task Start(string[] args)
         {
@@ -45,6 +46,7 @@ namespace JIfBot
             commands = services.GetService<CommandService>();
             commandHandler = services.GetService<JifBot.CommandHandler>();
             eventHandler = new JifBot.EventHandler(services);
+            modalHandler = new JifBot.ModalHandler();
 
             client.Log += JifBot.EventHandler.WriteLog;
             interactions.Log += JifBot.EventHandler.WriteLog;
@@ -56,6 +58,8 @@ namespace JIfBot
             client.MessageReceived += eventHandler.HandleMessage;
             client.ReactionAdded += eventHandler.HandleReactionAdded;
             client.ReactionRemoved += eventHandler.HandleReactionRemoved;
+
+            client.ModalSubmitted += modalHandler.HandleModalSubmitted;
 
             await commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
 

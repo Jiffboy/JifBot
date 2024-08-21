@@ -35,19 +35,22 @@ namespace JifBot
             try
             {
                 var context = new SocketInteractionContext(_client, arg);
-                var result = await _interactions.ExecuteCommandAsync(context, _services);
-                if(!result.IsSuccess)
+                if (context.Interaction.Type == InteractionType.ApplicationCommand)
                 {
-                    await context.Interaction.RespondAsync($"**ERROR:** {result.ErrorReason}");
-                }
-                else
-                {
-                    var command = (SocketSlashCommand)context.Interaction;
-                    var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                    var userId = canLogUser(context.User.Id) ? context.User.Id : 0;
-                    var db = new BotBaseContext();
-                    db.Add(new CommandCall { Command = command.CommandName, Timestamp = timestamp, ServerId = context.Guild.Id, UserId = userId});
-                    db.SaveChanges();
+                    var result = await _interactions.ExecuteCommandAsync(context, _services);
+                    if (!result.IsSuccess && result.Error != InteractionCommandError.UnknownCommand)
+                    {
+                        await context.Interaction.RespondAsync($"**ERROR:** {result.ErrorReason}");
+                    }
+                    else
+                    {
+                        var command = (SocketSlashCommand)context.Interaction;
+                        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                        var userId = canLogUser(context.User.Id) ? context.User.Id : 0;
+                        var db = new BotBaseContext();
+                        db.Add(new CommandCall { Command = command.CommandName, Timestamp = timestamp, ServerId = context.Guild.Id, UserId = userId });
+                        db.SaveChanges();
+                    }
                 }
             }
             catch (Exception ex)

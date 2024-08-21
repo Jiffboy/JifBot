@@ -24,7 +24,3 @@ python3 updateChangelog.py
 
 # start JifBot
 sudo systemctl start jifbot.service
-
-# get the latest verions of the website
-#cd ../../Vertigeux.github.io/javascript
-#git pull

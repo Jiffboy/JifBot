@@ -29,6 +29,7 @@ namespace JifBot.Models
         public virtual DbSet<ReactRole> ReactRole { get; set; }
         public virtual DbSet<ChangeLog> ChangeLog { get; set; }
         public virtual DbSet<CommandCall> CommandCall { get; set; }
+        public virtual DbSet<Character> Character { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -200,6 +201,11 @@ namespace JifBot.Models
                 entity.Property(e => e.ServerId);
 
                 entity.Property(e => e.UserId);
+            });
+
+            modelBuilder.Entity<Character>(entity =>
+            {
+                entity.HasKey(e => e.Key);
             });
 
             OnModelCreatingPartial(modelBuilder);
