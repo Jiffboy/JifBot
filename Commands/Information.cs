@@ -709,15 +709,23 @@ namespace JifBot.Commands
                 if (character.Resources != "")
                     embed.AddField("Additional Resources", character.Resources);
                 embed.WithFooter($"Character by {user.Name}");
-                if (character.ImageUrl != "")
+                if (character.Image != null)
                 {
+                    var ms = new MemoryStream(character.Image);
+                    var imageName = $"character.{character.ImageType}";
+
                     if (character.CompactImage)
-                        embed.ThumbnailUrl = character.ImageUrl;
+                        embed.ThumbnailUrl = $"attachment://{imageName}";
                     else
-                        embed.ImageUrl = character.ImageUrl;
+                        embed.ImageUrl = $"attachment://{imageName}";
+                    await RespondWithFileAsync(ms, imageName, embed: embed.Build());
+                    return;
                 }
-                await RespondAsync(embed: embed.Build());
-                return;
+                else
+                {
+                    await RespondAsync(embed: embed.Build());
+                    return;
+                }
             } 
             await RespondAsync("No valid character key or user provided. Please try again.", ephemeral: true);
         }

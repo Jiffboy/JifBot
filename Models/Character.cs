@@ -17,6 +17,7 @@
         public string Universe { get; set; }
         public string Resources { get; set; }
         public bool CompactImage { get; set; }
-        public string ImageUrl { get; set; }
+        public byte[] Image { get; set; }
+        public string ImageType { get; set; }
     }
 }

@@ -6,6 +6,8 @@ using Discord.WebSocket;
 using JifBot.Models;
 using JIfBot;
 using System.Text.RegularExpressions;
+using System.IO;
+using System.Net;
 
 namespace JifBot.Commands
 {
@@ -384,6 +386,12 @@ namespace JifBot.Commands
             key = key.ToLower();
             var db = new BotBaseContext();
 
+            if (image != null && !(image.ContentType.StartsWith("image/")))
+            {
+                await RespondAsync("Please supply an image as a .png, .jpg, or .jpeg", ephemeral: true);
+                return;
+            }
+
             if (action == "add")
             {
                 var user = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == Context.User.Id).FirstOrDefault();
@@ -413,7 +421,8 @@ namespace JifBot.Commands
                     Universe = universe,
                     Resources = resources,
                     CompactImage = compact != "expanded",
-                    ImageUrl = image != null ? image.Url : ""
+                    Image = image != null ? GetBytesFromAttachment(image) : null,
+                    ImageType = image != null ? image.ContentType.Replace("image/", "") : ""
                 });
                 db.SaveChanges();
                 var mb = new ModalBuilder()
@@ -460,7 +469,10 @@ namespace JifBot.Commands
                 if (compact != "default")
                     character.CompactImage = compact != "expanded";
                 if (image != null)
-                    character.ImageUrl = image.Url;
+                {
+                    character.Image = GetBytesFromAttachment(image);
+                    character.ImageType = image.ContentType.Replace("image/", "");
+                }
                 db.SaveChanges();
                 var mb = new ModalBuilder()
                     .WithTitle("Changes saved!")
@@ -480,6 +492,12 @@ namespace JifBot.Commands
                     await RespondAsync("Character removed successfully", ephemeral: true);
                 }    
             }
+        }
+
+        private byte[] GetBytesFromAttachment(IAttachment attachment)
+        {
+            var client = new WebClient();
+            return client.DownloadData(attachment.Url);
         }
 
         private ulong GetConfigValue(string field, ServerConfig config)
