@@ -14,7 +14,6 @@
         public string Sexuality { get; set; }
         public string Origin { get; set; }
         public string Residence { get; set; }
-        public string Universe { get; set; }
         public string Resources { get; set; }
         public bool CompactImage { get; set; }
         public byte[] Image { get; set; }

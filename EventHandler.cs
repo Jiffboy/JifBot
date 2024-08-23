@@ -172,25 +172,28 @@ namespace JifBot
 
         public async Task HandleMessage(SocketMessage pMsg)
         {
-            var message = pMsg as SocketUserMessage;
-            var channel = message.Channel as SocketGuildChannel;
-            
-            // Check if reactions have been disabled for this server/channel
-            BotBaseContext db = new BotBaseContext();
-            var channelreact = db.ReactionBan.AsQueryable().AsQueryable().Where(c => c.ChannelId == message.Channel.Id).FirstOrDefault();
-            var serverreact = db.ReactionBan.AsQueryable().AsQueryable().Where(c => c.ChannelId == channel.Guild.Id).FirstOrDefault();
+            if (pMsg.Type == MessageType.Reply || pMsg.Type == MessageType.Default)
+            {
+                var message = pMsg as SocketUserMessage;
+                var channel = message.Channel as SocketGuildChannel;
 
-            if (channelreact != null || serverreact != null)
-                return;
+                // Check if reactions have been disabled for this server/channel
+                BotBaseContext db = new BotBaseContext();
+                var channelreact = db.ReactionBan.AsQueryable().AsQueryable().Where(c => c.ChannelId == message.Channel.Id).FirstOrDefault();
+                var serverreact = db.ReactionBan.AsQueryable().AsQueryable().Where(c => c.ChannelId == channel.Guild.Id).FirstOrDefault();
 
-            //Don't handle if system message
-            if (message == null)
-                return;
+                if (channelreact != null || serverreact != null)
+                    return;
 
-            if (message.Author.IsBot)
-                return;
+                //Don't handle if system message
+                if (message == null)
+                    return;
 
-            await reactionHandler.ParseReactions(message);
+                if (message.Author.IsBot)
+                    return;
+
+                await reactionHandler.ParseReactions(message);
+            }
         }
     }
 }

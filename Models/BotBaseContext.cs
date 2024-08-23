@@ -30,6 +30,8 @@ namespace JifBot.Models
         public virtual DbSet<ChangeLog> ChangeLog { get; set; }
         public virtual DbSet<CommandCall> CommandCall { get; set; }
         public virtual DbSet<Character> Character { get; set; }
+        public virtual DbSet<CharacterAlias> CharacterAlias { get; set; }
+        public virtual DbSet<CharacterTag> CharacterTag { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -206,6 +208,16 @@ namespace JifBot.Models
             modelBuilder.Entity<Character>(entity =>
             {
                 entity.HasKey(e => e.Key);
+            });
+
+            modelBuilder.Entity<CharacterAlias>(entity =>
+            {
+                entity.HasKey(e => new { e.Key, e.Alias });
+            });
+
+            modelBuilder.Entity<CharacterTag>(entity =>
+            {
+                entity.HasKey(e => new { e.Key, e.Tag });
             });
 
             OnModelCreatingPartial(modelBuilder);
