@@ -4,5 +4,6 @@
     {
         public string Date { get; set; }
         public string Change { get; set; }
+        public string Type { get; set; }
     }
 }

@@ -123,11 +123,11 @@ namespace JifBot.Commands
                     {
                         break;
                     }
-                    entriesToPrint.Add(entry.Date, $"\\> {entry.Change}");
+                    entriesToPrint.Add(entry.Date, $"{GetChangeLogIcon(entry.Type)} {entry.Change}");
                 }
                 else
                 {
-                    entriesToPrint[entry.Date] += $"\n\\> {entry.Change}";
+                    entriesToPrint[entry.Date] += $"\n{GetChangeLogIcon(entry.Type)} {entry.Change}";
                 }
             }
 
@@ -845,6 +845,23 @@ namespace JifBot.Commands
             }
             bar += "]`";
             return bar;
+        }
+
+        private string GetChangeLogIcon(string type)
+        {
+            switch (type)
+            {
+                case "New":
+                    return "✨";
+                case "Improved":
+                    return "📝";
+                case "Bug Fix":
+                    return "🛠";
+                case "Removed":
+                    return "❌";
+                default:
+                    return "";
+            }
         }
     }
 
