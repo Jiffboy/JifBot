@@ -242,8 +242,8 @@ namespace JifBot.Commands
                 [Choice("Delete", "delete")]
                 [Choice("View", "view")]
                 [Summary("action", "What you wish to do with the tags/aliases")] string action,
-                [Summary("aliases", "A list of of other known names for a character. Separate with spaces")] string aliases = "",
-                [Summary("tags", "A list of tags to describe the character. (universe, nationality, class etc.) Separate with spaces")] string tags = "")
+                [Summary("aliases", "A list of of other known names for a character. Separate with commas")] string aliases = "",
+                [Summary("tags", "A list of tags to describe the character. (universe, nationality, class etc.) Separate with commas")] string tags = "")
             {
                 var db = new BotBaseContext();
                 var character = db.Character.AsQueryable().Where(c => c.Key == key).FirstOrDefault();
