@@ -306,59 +306,6 @@ namespace JifBot.Commands
             }
         }
 
-        [SlashCommand("optin", "Opts in or out of the collection of Jif Bot usage data. By default, everyone is opted out.")]
-        public async Task OptIn(
-            [Choice("IN", "in")]
-            [Choice("OUT AND KEEP DATA", "out")]
-            [Choice("OUT AND DELETE DATA", "delete")]
-            [Summary("opt", "Which action to take for future data collection.")] string scope)
-        {
-
-            var db = new BotBaseContext();
-            var user = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == Context.User.Id).FirstOrDefault();
-            switch (scope)
-            {
-                case "in":
-                    if (user == null)
-                        db.Add(new User { UserId = Context.User.Id, Name = Context.User.Username, Number = long.Parse(Context.User.Discriminator), DataAllowed = true });
-                    else
-                        user.DataAllowed = true;
-                    db.SaveChanges();
-                    await RespondAsync("Successfully opted in! Jif Bot will now track usage statistics, which can be viewed with the stats command. This is not retroactive, and will only track future usage.", ephemeral: true);
-                    break;
-                case "delete":
-                    if (user == null)
-                    {
-                        await RespondAsync("User already opted out.", ephemeral: true);
-                    }
-                    else
-                    {
-                        var entries = db.CommandCall.AsQueryable().Where(e => e.UserId == Context.User.Id).ToList();
-                        foreach (var entry in entries)
-                        {
-                            entry.UserId = 0;
-                        }
-                        user.DataAllowed = false;
-                        db.SaveChanges();
-                        await RespondAsync("All existing entries deleted, and opted out for the future", ephemeral: true);
-                    }
-                    break;
-                case "out":
-                    if(user == null)
-                    {
-                        await RespondAsync("User already opted out.", ephemeral: true);
-                    }
-                    else
-                    {
-                        user.DataAllowed = false;
-                        db.SaveChanges();
-                        await RespondAsync("User opted out for the future. Existing entries maintained", ephemeral: true);
-                        
-                    }
-                    break;
-            }
-        }
-
         private ulong GetConfigValue(string field, ServerConfig config)
         {
             switch (field)

@@ -584,7 +584,7 @@ namespace JifBot.Commands
             
         }
 
-        [SlashCommand("stats", "Gives Jif Bot usage statistics. User data must be opted into via /optin. Data begins 8/15/2024.")]
+        [SlashCommand("stats", "Gives Jif Bot usage statistics. General data begins 8/15/2024. User data begins 8/30/2024")]
         public async Task Stats(
             [Choice("Global", "global")]
             [Choice("Server", "server")]
@@ -599,11 +599,6 @@ namespace JifBot.Commands
             {
                 case "user":
                     commands = db.CommandCall.AsQueryable().AsQueryable().Where(c => c.UserId == Context.User.Id && c.Timestamp > cutoff).ToList();
-                    if (commands.Count == 0)
-                    {
-                        await RespondAsync("User is not opted into data collection. Use /optin to start tracking your data!", ephemeral: true);
-                        return;
-                    }
                     break;
 
                 case "server":
