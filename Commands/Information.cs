@@ -340,8 +340,14 @@ namespace JifBot.Commands
             [Choice("VN2", "vn2")]
             [Summary("region", "The abbreviated name of the region the account is on.")] string platform,
             [Summary("name", "The display name of the player.")] string name,
-            [Summary("tag", "The identifying tag of the account. Example: NA1")] string tag)
+            [Summary("tag", "The identifying tag of the account. Example: NA1")] string tag,
+            [Summary("count", "The number of champions to display. Default 10, max 20.")] int count=10)
         {
+            if (count > 20)
+                count = 20;
+            if (count < 0)
+                count = 10;
+
             var db = new BotBaseContext();
             var key = db.Variable.AsQueryable().Where(v => v.Name == "leagueKey").First();
             var region = GetRegionFromPlatform(platform);
@@ -353,7 +359,7 @@ namespace JifBot.Commands
             {
                 using (var response = await client.GetAsync($"https://{platform}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/{puuid}?api_key={key.Value}"))
                 {
-                    embed.Title = $"Top ten mastery scores for {name}#{tag}";
+                    embed.Title = $"Top {count} mastery scores for {name}#{tag}";
                     string jsonResponse = await response.Content.ReadAsStringAsync();
                     List<Mastery> masteryResult = JsonSerializer.Deserialize<List<Mastery>>(jsonResponse);
                     int i = 1;
@@ -366,7 +372,7 @@ namespace JifBot.Commands
                             embed.ThumbnailUrl = $"https://ddragon.leagueoflegends.com/cdn/{Program.currLeagueVersion}/img/champion/{champion}.png";
                         }
 
-                        if (i <= 10)
+                        if (i <= count)
                         {
                             DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
                             dateTime = dateTime.AddSeconds(mastery.lastPlayTime / 1000);
