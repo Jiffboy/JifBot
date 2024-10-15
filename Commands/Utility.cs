@@ -98,20 +98,19 @@ namespace JifBot.Commands
             [Summary("dice", "The number of dice to be rolled. Maximum of 200.")] int dice=1,
             [Summary("sides", "The number of sides on the dice being rolled. Maximum of 200.")] int sides=20,
             [Summary("modifier", "The value to be added onto the end result. This value can be negative. Maximum value of 1000.")] int modifier=0,
-            [Summary("advantage", "When set to true, rolls the values twice, and keeps the higher number.")] bool advantage=false,
-            [Summary("disadvantage", "When set to true, rolls the values twice, and keeps the lower number.")] bool disadvantage=false)
+            [Choice("Disadvantage", "d")]
+            [Choice("Advantage", "a")]
+            [Choice("Keep Highest", "kh")]
+            [Choice("Keep Lowest", "kl")]
+            [Choice("Drop Highest", "dh")]
+            [Choice("Drop Lowest", "dl")]
+            [Summary("options", "Modifies how the final value is chosen.")] string option="",
+            [Summary("dropkeepcount", "Designates the number of rolls to drop or keep if specified. Defaults to 1.")] int dropkeepcount=1)
         {
 
             Random rnd = new Random();
-            string[] rolls = new string[] { "", "" };
-            int[] totals = new int[] { 0, 0 };
-            int printRoll = 0;
-            string msg = "";
-            int numRolls = 1;
-            if(advantage || disadvantage)
-            {
-                numRolls = 2;
-            }
+            List<int> rolls = new List<int>();
+            String rollsPrint = "";
 
             if (dice <= 0 || sides <= 0)
             {
@@ -125,49 +124,83 @@ namespace JifBot.Commands
                 return;
             }
 
-            for (int i = 0; i < numRolls; i++)
+            if ((option == "kh" || option == "kl" || option == "dh" || option == "dl") && dropkeepcount >= dice)
             {
-                for (int j = 0; j < dice; j++)
+                await RespondAsync("Drop/Keep count must be fewer than the number of rolls.", ephemeral: true);
+                return;
+            }
+
+            if (option == "a" || option == "d")
+            {
+                // Can't trust em
+                dice = 1;
+            }
+
+            for (int i = 0; i < dice; i++)
+            {
+                rolls.Add(rnd.Next(1, sides));
+            }
+
+            if (option == "kh" || option == "kl" || option == "dh" || option == "dl")
+            {
+                List<int> sortedList = new List<int>(rolls);
+                sortedList.Sort();
+                switch(option)
                 {
-                    int num = rnd.Next(sides) + 1;
-                    totals[i] += num;
-                    rolls[i] += $"{num}, ";
+                    case "kh":
+                        sortedList.RemoveRange(0, sortedList.Count - dropkeepcount);
+                        break;
+                    case "kl":
+                        sortedList.RemoveRange(dropkeepcount, sortedList.Count - dropkeepcount);
+                        break;
+                    case "dh":
+                        sortedList.RemoveRange(sortedList.Count - dropkeepcount, dropkeepcount);
+                        break;
+                    case "dl":
+                        sortedList.RemoveRange(0, dropkeepcount);
+                        break;
+                    default:
+                        break;
                 }
-                totals[i] += modifier;
-                rolls[i] = rolls[i].Remove(rolls[i].LastIndexOf(", "));
+                List<string> formattedRolls = new List<string>();
+                for (int i = rolls.Count-1; i >= 0; i--)
+                {
+                    if (sortedList.Contains(rolls[i]))
+                    {
+                        formattedRolls.Add($"__**{rolls[i]}**__");
+                        sortedList.Remove(rolls[i]);
+                    }
+                    else
+                    {
+                        formattedRolls.Add($"{rolls[i]}");
+                        rolls.RemoveAt(i);
+                    }
+                }
+                rollsPrint = String.Join("   ", formattedRolls);
             }
-
-            if (numRolls > 1)
+            else if (option == "a" || option == "d")
             {
-                int high = 0;
-                msg = $"1st Roll: {rolls[0]}\n2nd Roll: {rolls[1]}";
+                rolls.Add(rnd.Next(1, sides));
+                int failIndex = 0;
+                if (option == "d")
+                    failIndex = rolls[0] <= rolls[1] ? 1 : 0;
+                else if (option == "a")
+                    failIndex = rolls[0] >= rolls[1] ? 1 : 0;
 
-                if (totals[1] > totals[0])
-                    high = 1;
-
-                //advantage
-                if (advantage && high == 1)
-                    printRoll = 1;
-
-                //disadvantage
-                else if (disadvantage && high == 0)
-                    printRoll = 1;
-
-                if (printRoll == 0)
-                    msg = msg.Replace("1st Roll", "**1st Roll**");
-                else
-                    msg = msg.Replace("2nd Roll", "**2nd Roll**");
+                rollsPrint = failIndex == 0 ? $"{rolls[0]}   __**{rolls[1]}**__" : $"__**{rolls[0]}**__   {rolls[1]}";
+                rolls.RemoveAt(failIndex);
             }
             else
-                msg = "Rolled: " + rolls[0];
+            {
+                rollsPrint = String.Join("   " , rolls);
+            }
 
-            if (dice == 1 && numRolls == 1 && modifier == 0)
-                await RespondAsync($"{totals[0]}");
-            else if (modifier == 0 && dice == 1)
-                await RespondAsync($"{msg}");
-            else
-                await RespondAsync($"{msg}\nTotal: **{totals[printRoll]}**");
+            int total = rolls.Sum() + modifier;
+            string modPrint = modifier > 0 ? $" + {modifier}" : modifier < 0 ? $" - {Math.Abs(modifier)}" : "";
+            string dicePrint = $"{dice}d{sides}{option}{modPrint}";
+            string totalPrint = dice > 1 || modifier != 0 || option != "" ? $"\n## {total}" : "";
 
+            await RespondAsync($"-# {dicePrint}\nRolled: {rollsPrint}{totalPrint}");
         }
 
         [SlashCommand("calculator", "Solves an arithmetic equation.")]
