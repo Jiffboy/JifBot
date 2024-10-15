@@ -98,12 +98,12 @@ namespace JifBot.Commands
             [Summary("dice", "The number of dice to be rolled. Maximum of 200.")] int dice=1,
             [Summary("sides", "The number of sides on the dice being rolled. Maximum of 200.")] int sides=20,
             [Summary("modifier", "The value to be added onto the end result. This value can be negative. Maximum value of 1000.")] int modifier=0,
-            [Choice("Disadvantage", "d")]
             [Choice("Advantage", "a")]
-            [Choice("Keep Highest", "kh")]
-            [Choice("Keep Lowest", "kl")]
+            [Choice("Disadvantage", "d")]
             [Choice("Drop Highest", "dh")]
             [Choice("Drop Lowest", "dl")]
+            [Choice("Keep Highest", "kh")]
+            [Choice("Keep Lowest", "kl")]
             [Summary("options", "Modifies how the final value is chosen.")] string option="",
             [Summary("dropkeepcount", "Designates the number of rolls to drop or keep if specified. Defaults to 1.")] int dropkeepcount=1)
         {
