@@ -95,9 +95,9 @@ namespace JifBot.Commands
 
         [SlashCommand("roll", "Rolls a specified number of dice, with a specified number of sides. Rolls a 1d20 if unspecified.")]
         public async Task Dice(
-            [Summary("dice", "The number of dice to be rolled. Maximum of 200.")] int dice=1,
-            [Summary("sides", "The number of sides on the dice being rolled. Maximum of 200.")] int sides=20,
-            [Summary("modifier", "The value to be added onto the end result. This value can be negative. Maximum value of 1000.")] int modifier=0,
+            [Summary("dice", "The number of dice to be rolled.")] int dice=1,
+            [Summary("sides", "The number of sides on the dice being rolled.")] int sides=20,
+            [Summary("modifier", "The value to be added onto the end result. This value can be negative.")] int modifier=0,
             [Choice("Advantage", "a")]
             [Choice("Disadvantage", "d")]
             [Choice("Drop Highest", "dh")]
@@ -115,12 +115,6 @@ namespace JifBot.Commands
             if (dice <= 0 || sides <= 0)
             {
                 await RespondAsync("Dice and sides must be greater than 0.", ephemeral: true);
-                return;
-            }
-
-            if (dice > 200 || sides > 200 || modifier > 1000 || modifier < -1000)
-            {
-                await RespondWithFileAsync("Media/joke.jpg");
                 return;
             }
 
