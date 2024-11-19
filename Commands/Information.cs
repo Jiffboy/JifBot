@@ -74,7 +74,7 @@ namespace JifBot.Commands
                 return;
             }
             var parameters = db.CommandParameter.AsQueryable().Where(p => p.Command == command.Name);
-            string msg = $"{command.Description}";
+            string msg = $"**/{command.Name}**:\n{command.Description}";
             if(parameters.Any())
             {
                 msg += "\n\n**Parameters:**\n";
@@ -427,7 +427,7 @@ namespace JifBot.Commands
             [Summary("mode", "The type of game to get match history for")] string mode,
             [Summary("count", "The number of matches to retrieve. Defaults to 12. Max of 25")] int count = 12)
         {
-            await RespondAsync("Processing... Please wait.");
+            await DeferAsync();
             var db = new BotBaseContext();
             var key = db.Variable.AsQueryable().Where(v => v.Name == "leagueKey").First();
             var embed = new JifBotEmbedBuilder();
@@ -458,12 +458,11 @@ namespace JifBot.Commands
                     int curMatch = 1;
                     if(count == 0)
                     {
-                        await ModifyOriginalResponseAsync(m => { m.Content = "No matches for this game mode. Get to work!"; });
+                        await FollowupAsync("No matches for this game mode. Get to work!");
                         return;
                     }
                     foreach(var match in matches)
                     {
-                        await ModifyOriginalResponseAsync(m => { m.Content = "Processing... Please wait.\n" + GetLoadBar(curMatch, count, 20); });
                         using (var matchResponse = await client.GetAsync($"https://{region}.api.riotgames.com/lol/match/v5/matches/{match}?api_key={key.Value}"))
                         {
                             string matchJsonResponse = await matchResponse.Content.ReadAsStringAsync();
@@ -586,7 +585,7 @@ namespace JifBot.Commands
             embed.Description += $"\n{winCount}W {lossCount}L ({winPercent}%)";
 
 
-            await ModifyOriginalResponseAsync(m => { m.Embed = embed.Build(); m.Content = ""; });
+            await FollowupAsync(embed: embed.Build());
             
         }
 
@@ -826,26 +825,6 @@ namespace JifBot.Commands
             }
 
             return mostUsed;
-        }
-
-        private string GetLoadBar(int current, int end, int barLength)
-        {
-            double percentLoaded = ((double)current / (double)end);
-            int loaded = (int)(percentLoaded * barLength);
-            string bar = "`[";
-            for(int i = 0; i < barLength; i++)
-            {
-                if(i <= loaded)
-                {
-                    bar += "=";
-                }
-                else
-                {
-                    bar += " ";
-                }
-            }
-            bar += "]`";
-            return bar;
         }
 
         private string GetChangeLogIcon(string type)

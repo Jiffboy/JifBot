@@ -217,7 +217,7 @@ namespace JifBot.Commands
                 }
             }
 
-            [SlashCommand("characterdesciption", "Updates the description for a specified character")]
+            [SlashCommand("characterdescription", "Opens a window to set the description for a specified character")]
             public async Task CharacterDescription(
                 [Summary("character-key", "The character key of the character you wish to update")] string key)
             {
