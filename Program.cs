@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using JifBot.Models;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace JIfBot
 {
@@ -92,7 +93,9 @@ namespace JIfBot
 
             foreach (var command in interactions.SlashCommands)
             {
-                db.Add(new Command { Name = command.Name, Description = command.Description, Category = command.Module.Name });
+                // So we can have two word categories
+                var category = Regex.Replace(command.Module.Name, @"([A-Z][a-z]*)([A-Z][a-z]*)*", @"$1 $2").TrimEnd(' ');
+                db.Add(new Command { Name = command.Name, Description = command.Description, Category =  category});
                 foreach (var variable in command.Parameters)
                 {
                     db.Add(new CommandParameter { Command = command.Name, Name = variable.Name, Description = variable.Description, Required = variable.IsRequired });

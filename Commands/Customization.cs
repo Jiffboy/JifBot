@@ -6,8 +6,6 @@ using Discord.WebSocket;
 using JifBot.Models;
 using JIfBot;
 using System.Text.RegularExpressions;
-using System.IO;
-using System.Net;
 
 namespace JifBot.Commands
 {
