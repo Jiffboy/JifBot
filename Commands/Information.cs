@@ -440,6 +440,7 @@ namespace JifBot.Commands
             int totalKills = 0;
             int totalDeaths = 0;
             int totalAssists = 0;
+            double kd = 0;
             int winCount = 0;
             int lossCount = 0;
 
@@ -488,6 +489,7 @@ namespace JifBot.Commands
                             string titleEntry = "";
                             string outcome = targetParticipant.win ? "✅" : "❌";
                             string champion = Regex.Replace(targetParticipant.championName, @"([A-Z][a-z]*)([A-Z][a-z]*)*", @"$1 $2").TrimEnd(' ');
+                            champion = champion.Replace("Monkey King", "Wukong");
                             string position = targetParticipant.individualPosition == "Invalid" ? "" : char.ToUpper(targetParticipant.individualPosition[0]) + targetParticipant.individualPosition.Substring(1).ToLower();
 
                             if (position == "Utility")
@@ -527,16 +529,19 @@ namespace JifBot.Commands
                             totalKills += targetParticipant.kills;
                             totalDeaths += targetParticipant.deaths;
                             totalAssists += targetParticipant.assists;
+                            kd = Math.Round((double)(targetParticipant.kills + targetParticipant.assists) / (double)targetParticipant.deaths, 2);
+
 
                             titleEntry += $"{outcome} {champion} {position}";
 
                             string matchEntry = "";
                             matchEntry += $"{date} ({gameDuration})";
-                            matchEntry += $"\n> **{targetParticipant.kills}/{targetParticipant.deaths}/{targetParticipant.assists}** KP: {Math.Round(targetParticipant.challenges.killParticipation*100, 2)}%";
-                            matchEntry += $"\nDamage dealt: {targetParticipant.totalDamageDealtToChampions:n0}";
-                            matchEntry += $"\nVision Score: {targetParticipant.visionScore}";
+                            matchEntry += $"\n> **{targetParticipant.kills}/{targetParticipant.deaths}/{targetParticipant.assists}** ({kd})";
+                            matchEntry += $"\nKP: {Math.Round(targetParticipant.challenges.killParticipation*100, 2)}%";
+                            matchEntry += $"\nDmg: {targetParticipant.totalDamageDealtToChampions:n0}";
                             matchEntry += $"\nGPM: {Math.Round(targetParticipant.challenges.goldPerMinute, 2)}";
                             matchEntry += $"\nCS: {targetParticipant.totalMinionsKilled}";
+                            matchEntry += $"\nVision: {targetParticipant.visionScore}";
                             matchEntry += "\n";
                             if (targetParticipant.enemyMissingPings > 0)
                             {
@@ -581,7 +586,8 @@ namespace JifBot.Commands
             {
                 embed.Description += $"\nMost played role: {highestRole}";
             }
-            embed.Description += $"\nAverage KDA: {avgKill}/{avgDeath}/{avgAssist}";
+            kd = Math.Round((double)(totalKills + totalAssists) / (double)totalDeaths, 2);
+            embed.Description += $"\nAverage KDA: {avgKill}/{avgDeath}/{avgAssist} ({kd})";
             embed.Description += $"\n{winCount}W {lossCount}L ({winPercent}%)";
 
 
