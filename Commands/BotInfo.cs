@@ -28,13 +28,13 @@ namespace JifBot.Commands
             {
                 if (command.Category != cat)
                 {
-                    embed.AddField(cat, list.Remove(list.LastIndexOf(", ")));
+                    embed.AddField($"🏷 {cat}", list.Remove(list.LastIndexOf(", ")));
                     cat = command.Category;
                     list = "";
                 }
                 list += command.Name + ", ";
             }
-            embed.AddField(cat, list.Remove(list.LastIndexOf(", ")));
+            embed.AddField($"🏷 {cat}", list.Remove(list.LastIndexOf(", ")));
             await RespondAsync(embed: embed.Build());
         }
 
