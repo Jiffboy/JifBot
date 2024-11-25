@@ -122,10 +122,11 @@ namespace JifBot.Commands
 
                 foreach (UrbanDictionaryDefinition definition in definitionList)
                 {
-                    if (definition.thumbs_up > currVote)
+                    int netThumbs = definition.thumbs_up - definition.thumbs_down;
+                    if (netThumbs > currVote)
                     {
                         currDefinition = definition;
-                        currVote = definition.thumbs_up;
+                        currVote = netThumbs;
                     }
                 }
 
