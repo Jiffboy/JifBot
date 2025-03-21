@@ -188,6 +188,9 @@
     <None Update="Media\react\no.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Media\react\rigged.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Media\react\shrug.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
