@@ -221,6 +221,7 @@ namespace JifBot.Commands
             [Choice("lobster", "lobster.jpg")]
             [Choice("flat", "flat.png")]
             [Choice("shrug", "shrug.png")]
+            [Choice("rigged", "rigged.png")]
             [Summary("reaction", "The reaction image to post.")] string reaction)
         {
             await RespondWithFileAsync($"Media/react/{reaction}");
