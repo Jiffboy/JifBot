@@ -143,7 +143,7 @@ namespace JifBot.Commands
                         Key = key,
                         UserId = Context.User.Id,
                         Name = name,
-                        Description = "[No description provided]",
+                        Description = "",
                         Title = title,
                         Occupation = occupation,
                         Age = age,
