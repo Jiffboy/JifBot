@@ -93,6 +93,21 @@ namespace JifBot.Commands
             await RespondAsync(responses[num]);
         }
 
+        [SlashCommand("random", "Generates a random number between bounds.")]
+        public async Task random(
+            [Summary("upperBound", "Defaults to 999")] int upper=999,
+            [Summary("lowerBound", "Defaults to 0")] int lower=0)
+        {
+            if (upper <= lower)
+            {
+                await RespondAsync("Invalid Range. Make sure Upper bound is greater than Lower bound", ephemeral: true);
+                return;
+            }
+
+            Random rnd = new Random();
+            await RespondAsync($"-# {lower}-{upper}\n{rnd.Next(lower, upper+1)}");
+        }
+
         [SlashCommand("roll", "Rolls a specified number of dice, with a specified number of sides. Rolls a 1d20 if unspecified.")]
         public async Task Dice(
             [Summary("dice", "The number of dice to be rolled.")] int dice=1,
