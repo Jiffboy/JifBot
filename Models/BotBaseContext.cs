@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text.Json;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
 namespace JifBot.Models
@@ -32,6 +34,7 @@ namespace JifBot.Models
         public virtual DbSet<Character> Character { get; set; }
         public virtual DbSet<CharacterAlias> CharacterAlias { get; set; }
         public virtual DbSet<CharacterTag> CharacterTag { get; set; }
+        public virtual DbSet<PointVote> PointVote { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -218,6 +221,24 @@ namespace JifBot.Models
             modelBuilder.Entity<CharacterTag>(entity =>
             {
                 entity.HasKey(e => new { e.Key, e.Tag });
+            });
+
+            modelBuilder.Entity<PointVote>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id);
+                entity.Property(e => e.UserId);
+                entity.Property(e => e.Points);
+                entity.Property(e => e.YayVotes)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, null),
+                    v => JsonSerializer.Deserialize<List<ulong>>(v, null)
+                );
+                entity.Property(e => e.NayVotes)
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, null),
+                    v => JsonSerializer.Deserialize<List<ulong>>(v, null)
+                );
             });
 
             OnModelCreatingPartial(modelBuilder);

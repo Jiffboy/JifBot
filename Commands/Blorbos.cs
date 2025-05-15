@@ -3,9 +3,10 @@ using System.Linq;
 using Discord;
 using Discord.Interactions;
 using JifBot.Models;
+using System;
 using System.IO;
 using System.Net;
-using System;
+using System.Collections.Generic;
 
 namespace JifBot.Commands
 {
@@ -351,6 +352,59 @@ namespace JifBot.Commands
 
                 db.SaveChanges();
                 await RespondAsync("Tags and Aliases updated successfully", ephemeral: true);
+            }
+
+            [SlashCommand("rptrial", "Begins a vote to award/deduct RP Points")]
+            public async Task RPTrial(
+            [Summary("user", "The user on trial")] IGuildUser user,
+            [Summary("points", "The number of points to add / deduct. Negative number to deduct.")] int points)
+            {
+                if (points == 0)
+                {
+                    await RespondAsync("Value must be non-zero.", ephemeral: true);
+                    return;
+                }
+
+                var db = new BotBaseContext();
+                var pollCount = int.Parse(db.Variable.AsQueryable().Where(v => v.Name == "pollCount").FirstOrDefault().Value);
+                var entry = db.Add(new PointVote
+                {
+                    UserId = user.Id,
+                    Points = points,
+                    YayVotes = new List<ulong>(),
+                    NayVotes = new List<ulong>()
+                });
+                var dbUser = db.User.AsQueryable().AsQueryable().Where(u => u.UserId == user.Id).FirstOrDefault();
+                if (dbUser == null)
+                    db.Add(new User { UserId = user.Id, Name = user.Username, Number = long.Parse(user.Discriminator) });
+                db.SaveChanges();
+
+                string action = points > 0 ? $"award {Math.Abs(points)} points to" : $"deduct {Math.Abs(points)} points from";
+
+                JifBotEmbedBuilder embed = new JifBotEmbedBuilder();
+                embed.Title = $"A new trial has begun!";
+                embed.Description = $"The jury motions to {action} {user.Mention}";
+                embed.ThumbnailUrl = user.GetDisplayAvatarUrl();
+                embed.AddField($"Yay (0/{pollCount})", "[None]", inline: true);
+                embed.AddField($"Nay (0/{pollCount})", "[None]", inline: true);
+
+                var builder = new ComponentBuilder()
+                    .WithButton("Yay", $"yay-{entry.Entity.Id}", style: ButtonStyle.Success)
+                    .WithButton("Nay", $"nay-{entry.Entity.Id}", style: ButtonStyle.Danger);
+
+                await RespondAsync(embed: embed.Build(), components: builder.Build());
+            }
+
+            [SlashCommand("rppoints", "Gets the number of RP points for a given user.")]
+            public async Task RPPoints(
+            [Summary("user", "The user on trial")] IGuildUser user)
+            {
+                var db = new BotBaseContext();
+                var target = db.User.AsQueryable().AsQueryable().Where(u => u.UserId == user.Id).FirstOrDefault();
+                if (user == null)
+                    await RespondAsync("User does not exist, somehow!", ephemeral: true);
+                else
+                    await RespondAsync($"{user.DisplayName} has {target.RpPoints} RP points.");
             }
 
             private byte[] GetBytesFromAttachment(IAttachment attachment)
