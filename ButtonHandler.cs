@@ -93,18 +93,18 @@ namespace JifBot
 
             foreach (var yay in poll.YayVotes)
             {
-                var target = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == yay).FirstOrDefault();
+                var target = db.User.AsQueryable().Where(user => user.UserId == yay).FirstOrDefault();
                 yays += target.Name + "\n";
             }
 
             foreach(var nay in poll.NayVotes)
             {
-                var target = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == nay).FirstOrDefault();
+                var target = db.User.AsQueryable().Where(user => user.UserId == nay).FirstOrDefault();
                 nays += target.Name + "\n";
             }
 
-            builder.AddField($"Yay ({poll.YayVotes.Count}/{pollCount})", yays);
-            builder.AddField($"Nay ({poll.NayVotes.Count}/{pollCount})", nays);
+            builder.AddField($"Yay ({poll.YayVotes.Count}/{pollCount})", yays, inline: true);
+            builder.AddField($"Nay ({poll.NayVotes.Count}/{pollCount})", nays, inline: true);
 
             if (pollClosed)
             {

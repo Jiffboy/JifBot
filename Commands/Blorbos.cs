@@ -357,7 +357,8 @@ namespace JifBot.Commands
             [SlashCommand("rptrial", "Begins a vote to award/deduct RP Points")]
             public async Task RPTrial(
             [Summary("user", "The user on trial")] IGuildUser user,
-            [Summary("points", "The number of points to add / deduct. Negative number to deduct.")] int points)
+            [Summary("points", "The number of points to add / deduct. Negative number to deduct.")] int points,
+            [Summary("reason", "The reason for assigning these points.")] string reason)
             {
                 if (points == 0)
                 {
@@ -374,7 +375,7 @@ namespace JifBot.Commands
                     YayVotes = new List<ulong>(),
                     NayVotes = new List<ulong>()
                 });
-                var dbUser = db.User.AsQueryable().AsQueryable().Where(u => u.UserId == user.Id).FirstOrDefault();
+                var dbUser = db.User.AsQueryable().Where(u => u.UserId == user.Id).FirstOrDefault();
                 if (dbUser == null)
                     db.Add(new User { UserId = user.Id, Name = user.Username, Number = long.Parse(user.Discriminator) });
                 db.SaveChanges();
@@ -383,7 +384,7 @@ namespace JifBot.Commands
 
                 JifBotEmbedBuilder embed = new JifBotEmbedBuilder();
                 embed.Title = $"A new trial has begun!";
-                embed.Description = $"The jury motions to {action} {user.Mention}";
+                embed.Description = $"The jury motions to {action} {user.Mention}\n\n**Justification:** {reason}";
                 embed.ThumbnailUrl = user.GetDisplayAvatarUrl();
                 embed.AddField($"Yay (0/{pollCount})", "[None]", inline: true);
                 embed.AddField($"Nay (0/{pollCount})", "[None]", inline: true);
@@ -395,16 +396,39 @@ namespace JifBot.Commands
                 await RespondAsync(embed: embed.Build(), components: builder.Build());
             }
 
-            [SlashCommand("rppoints", "Gets the number of RP points for a given user.")]
+            [SlashCommand("rppoints", "Gets the RP points leaderboard, or for a specific person.")]
             public async Task RPPoints(
-            [Summary("user", "The user on trial")] IGuildUser user)
+            [Summary("count", "The number of users to display. (Max 25)")] int count = 5,
+            [Summary("user", "If specified, gets points for a specific user.")] IGuildUser user = null)
             {
                 var db = new BotBaseContext();
-                var target = db.User.AsQueryable().AsQueryable().Where(u => u.UserId == user.Id).FirstOrDefault();
-                if (user == null)
-                    await RespondAsync("User does not exist, somehow!", ephemeral: true);
+                if (user != null)
+                {
+                    var target = db.User.AsQueryable().Where(u => u.UserId == user.Id).FirstOrDefault();
+                    if (user == null)
+                        await RespondAsync("User does not exist, somehow!", ephemeral: true);
+                    else
+                        await RespondAsync($"{target.Name} has {target.RpPoints} RP points.");
+                }
                 else
-                    await RespondAsync($"{user.DisplayName} has {target.RpPoints} RP points.");
+                {
+                    var users = db.User.AsQueryable().Where(u => u.RpPoints != 0).OrderByDescending(u => u.RpPoints).Take(count).ToList();
+                    int curr = 0;
+                    int maxNameLen = users.Max(u => u.Name.Length);
+                    int maxPointLen = users.Max(u => u.RpPoints.ToString().Length);
+                    string msg = "```";
+                    foreach (User target in users)
+                    {
+                        msg += $"{curr + 1}. {target.Name.PadRight(maxNameLen)}  {target.RpPoints.ToString().PadLeft(maxPointLen)}\n";
+                        curr++;
+                    }
+                    msg += "```";
+
+                    JifBotEmbedBuilder builder = new JifBotEmbedBuilder();
+                    builder.Title = $"Top {count} RPers";
+                    builder.Description = msg;
+                    await RespondAsync(embed: builder.Build());
+                }
             }
 
             private byte[] GetBytesFromAttachment(IAttachment attachment)
