@@ -358,11 +358,18 @@ namespace JifBot.Commands
             public async Task RPTrial(
             [Summary("user", "The user on trial")] IGuildUser user,
             [Summary("points", "The number of points to add / deduct. Negative number to deduct.")] int points,
-            [Summary("reason", "The reason for assigning these points.")] string reason)
+            [Summary("reason", "The reason for assigning these points.")] string reason,
+            [Summary("image", "An image to be used to display the character.")] IAttachment image = null)
             {
                 if (points == 0)
                 {
                     await RespondAsync("Value must be non-zero.", ephemeral: true);
+                    return;
+                }
+
+                if (image != null && !(image.ContentType.StartsWith("image/")))
+                {
+                    await RespondAsync("Please supply a valid image filetype", ephemeral: true);
                     return;
                 }
 
@@ -388,6 +395,11 @@ namespace JifBot.Commands
                 embed.ThumbnailUrl = user.GetDisplayAvatarUrl();
                 embed.AddField($"Yay (0/{pollCount})", "[None]", inline: true);
                 embed.AddField($"Nay (0/{pollCount})", "[None]", inline: true);
+
+                if (image != null)
+                {
+                    embed.WithImageUrl(image.Url);
+                }
 
                 var builder = new ComponentBuilder()
                     .WithButton("Yay", $"yay-{entry.Entity.Id}", style: ButtonStyle.Success)
