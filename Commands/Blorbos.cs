@@ -410,7 +410,7 @@ namespace JifBot.Commands
 
             [SlashCommand("rppoints", "Gets the RP points leaderboard, or for a specific person.")]
             public async Task RPPoints(
-            [Summary("count", "The number of users to display. (Max 25)")] int count = 5,
+            [Summary("count", "The number of users to display. Defaults to 10, max of 25.")] int count = 10,
             [Summary("user", "If specified, gets points for a specific user.")] IGuildUser user = null)
             {
                 var db = new BotBaseContext();

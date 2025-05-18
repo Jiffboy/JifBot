@@ -34,8 +34,6 @@ namespace JifBot.Commands
 
             if (waitTime == 0)
             {
-                var db = new BotBaseContext();
-                var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
                 await RespondAsync($"Please provide an amount of time to wait for.", ephemeral: true);
                 return;
             }
