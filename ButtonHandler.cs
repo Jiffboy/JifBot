@@ -105,6 +105,7 @@ namespace JifBot
 
             builder.AddField($"Yay ({poll.YayVotes.Count}/{pollCount})", yays, inline: true);
             builder.AddField($"Nay ({poll.NayVotes.Count}/{pollCount})", nays, inline: true);
+            builder.ImageUrl = embed.Image?.Url;
 
             if (pollClosed)
             {
