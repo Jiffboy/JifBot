@@ -19,7 +19,6 @@ namespace JifBot.Models
         public virtual DbSet<Configuration> Configuration { get; set; }
         public virtual DbSet<Honk> Honk { get; set; }
         public virtual DbSet<Message> Message { get; set; }
-        public virtual DbSet<Signature> Signature { get; set; }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<Variable> Variable { get; set; }
         public virtual DbSet<Greeting> Greeting { get; set; }
@@ -34,7 +33,7 @@ namespace JifBot.Models
         public virtual DbSet<Character> Character { get; set; }
         public virtual DbSet<CharacterAlias> CharacterAlias { get; set; }
         public virtual DbSet<CharacterTag> CharacterTag { get; set; }
-        public virtual DbSet<PointVote> PointVote { get; set; }
+        public virtual DbSet<CourtRecord> CourtRecord { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -75,17 +74,6 @@ namespace JifBot.Models
                 entity.Property(e => e.Message1)
                     .IsRequired()
                     .HasColumnName("Message");
-            });
-
-            modelBuilder.Entity<Signature>(entity =>
-            {
-                entity.HasKey(e => e.UserId);
-
-                entity.Property(e => e.UserId).ValueGeneratedNever();
-
-                entity.Property(e => e.Signature1)
-                    .IsRequired()
-                    .HasColumnName("Signature");
             });
 
             modelBuilder.Entity<User>(entity =>
@@ -223,12 +211,9 @@ namespace JifBot.Models
                 entity.HasKey(e => new { e.Key, e.Tag });
             });
 
-            modelBuilder.Entity<PointVote>(entity =>
+            modelBuilder.Entity<CourtRecord>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id);
-                entity.Property(e => e.UserId);
-                entity.Property(e => e.Points);
                 entity.Property(e => e.YayVotes)
                 .HasConversion(
                     v => JsonSerializer.Serialize(v, null),

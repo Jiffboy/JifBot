@@ -359,7 +359,7 @@ namespace JifBot.Commands
             [Summary("user", "The user on trial")] IGuildUser user,
             [Summary("points", "The number of points to add / deduct. Negative number to deduct.")] int points,
             [Summary("reason", "The reason for assigning these points.")] string reason,
-            [Summary("image", "An image to be used to display the character.")] IAttachment image = null)
+            [Summary("image", "An image to be used as evidence.")] IAttachment image = null)
             {
                 if (points == 0)
                 {
@@ -374,38 +374,38 @@ namespace JifBot.Commands
                 }
 
                 var db = new BotBaseContext();
-                var pollCount = int.Parse(db.Variable.AsQueryable().Where(v => v.Name == "pollCount").FirstOrDefault().Value);
-                var entry = db.Add(new PointVote
+                
+                var record = db.CourtRecord.Add(new CourtRecord
                 {
-                    UserId = user.Id,
+                    Status = "Pending",
                     Points = points,
+                    Justification = reason,
+                    DefendantId = user.Id,
+                    ProsecutorId = Context.User.Id,
                     YayVotes = new List<ulong>(),
-                    NayVotes = new List<ulong>()
+                    NayVotes = new List<ulong>(),
+                    ServerId = Context.Guild.Id,
+                    ChannelId = Context.Channel.Id,
+                    Timestamp = ((DateTimeOffset)DateTime.Now).ToUnixTimeMilliseconds(),
+                    ImageUrl = image != null ? image.Url : null
                 });
+                db.SaveChanges();
+
                 var dbUser = db.User.AsQueryable().Where(u => u.UserId == user.Id).FirstOrDefault();
                 if (dbUser == null)
                     db.Add(new User { UserId = user.Id, Name = user.Username, Number = long.Parse(user.Discriminator) });
-                db.SaveChanges();
-
-                string action = points > 0 ? $"award {Math.Abs(points)} points to" : $"deduct {Math.Abs(points)} points from";
 
                 JifBotEmbedBuilder embed = new JifBotEmbedBuilder();
-                embed.Title = $"A new trial has begun!";
-                embed.Description = $"The jury motions to {action} {user.Mention}\n\n**Justification:** {reason}";
-                embed.ThumbnailUrl = user.GetDisplayAvatarUrl();
-                embed.AddField($"Yay (0/{pollCount})", "[None]", inline: true);
-                embed.AddField($"Nay (0/{pollCount})", "[None]", inline: true);
-
-                if (image != null)
-                {
-                    embed.WithImageUrl(image.Url);
-                }
+                embed.PopulateAsTrial(record.Entity, user);
 
                 var builder = new ComponentBuilder()
-                    .WithButton("Yay", $"yay-{entry.Entity.Id}", style: ButtonStyle.Success)
-                    .WithButton("Nay", $"nay-{entry.Entity.Id}", style: ButtonStyle.Danger);
+                    .WithButton("Yay", $"yay-{record.Entity.Id}", style: ButtonStyle.Success)
+                    .WithButton("Nay", $"nay-{record.Entity.Id}", style: ButtonStyle.Danger);
 
                 await RespondAsync(embed: embed.Build(), components: builder.Build());
+                var response = await Context.Interaction.GetOriginalResponseAsync();
+                record.Entity.MessageId = response.Id;
+                db.SaveChanges();
             }
 
             [SlashCommand("rppoints", "Gets the RP points leaderboard, or for a specific person.")]
@@ -441,6 +441,49 @@ namespace JifBot.Commands
                     builder.Description = msg;
                     await RespondAsync(embed: builder.Build());
                 }
+            }
+
+            [SlashCommand("rprecords", "Gets the RP trial records for a given user.")]
+            public async Task RPRecords(
+            [Summary("user", "The user to get the records of")] IGuildUser user)
+            {
+                var emojiMap = new Dictionary<string, string>()
+                {
+                    {"Approved",  "✅"},
+                    {"Denied", "❌" },
+                    {"Pending", "🤔" }
+                };
+                var db = new BotBaseContext();
+                var defendantRecords = db.CourtRecord.AsQueryable().Where(r => r.DefendantId == user.Id).OrderByDescending(r => r.Timestamp);
+                var prosecutorRecords = db.CourtRecord.AsQueryable().Where(r => r.ProsecutorId == user.Id).OrderByDescending(r => r.Timestamp);
+                var points = db.User.AsQueryable().Where(u => u.UserId == user.Id).First().RpPoints;
+
+                JifBotEmbedBuilder builder = new JifBotEmbedBuilder();
+                builder.Title = $"RP Case Record for {user.DisplayName}";
+                builder.ThumbnailUrl = user.GetAvatarUrl();
+                builder.AddField("Total Points", points, inline: true);
+                builder.AddField("Defendant Trials", defendantRecords.Count(), inline: true);
+                builder.AddField("Prosecutor Trials", prosecutorRecords.Count(), inline: true);
+
+                var defendantMsg = "";
+                var prosecutorMsg = "";
+
+                foreach (var record in defendantRecords.Take(5).ToList())
+                {
+                    defendantMsg += $"{emojiMap[record.Status]} [Trial](https://discord.com/channels/{record.ServerId}/{record.ChannelId}/{record.MessageId}) [{record.Points}] {record.Justification}\n";
+                }
+
+                foreach (var record in prosecutorRecords.Take(5).ToList())
+                {
+                    prosecutorMsg += $"{emojiMap[record.Status]} [Trial](https://discord.com/channels/{record.ServerId}/{record.ChannelId}/{record.MessageId}) [{record.Points}] {record.Justification}\n";
+                }
+
+                if (defendantMsg.Length > 0)
+                    builder.AddField("Defendant [Last 5]", defendantMsg);
+                if (prosecutorMsg.Length > 0)
+                    builder.AddField("Prosecutor [Last 5]", prosecutorMsg);
+
+                await RespondAsync(embed: builder.Build());
             }
 
             private byte[] GetBytesFromAttachment(IAttachment attachment)
