@@ -8,5 +8,7 @@
         public ulong MessageId { get; set; }
         public ulong ReactMessageId { get; set; }
         public ulong ReactChannelId { get; set; }
+        public string PointName { get; set; }
+        public int TrialCount { get; set; }
     }
 }

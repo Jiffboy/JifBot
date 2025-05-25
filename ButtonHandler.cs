@@ -17,7 +17,11 @@ namespace JifBot
 
             var db = new BotBaseContext();
             var record = db.CourtRecord.AsQueryable().Where(p => p.Id == id).FirstOrDefault();
-            var pollCount = int.Parse(db.Variable.AsQueryable().Where(v => v.Name == "pollCount").FirstOrDefault().Value);
+            var server = (component.Channel as SocketGuildChannel)?.Guild.Id;
+            var config = db.ServerConfig.AsQueryable().Where(c => c.ServerId == server).FirstOrDefault();
+            var pollCount = 3;
+            if (config != null)
+                pollCount = config.TrialCount;
 
             var target = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == record.DefendantId).FirstOrDefault();
             var user = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == component.User.Id).FirstOrDefault();
@@ -54,7 +58,6 @@ namespace JifBot
                 {
                     pollClosed = true;
                     record.Status = "Approved";
-                    target.RpPoints += record.Points;
                 }
             }
             else
@@ -75,7 +78,6 @@ namespace JifBot
                 {
                     pollClosed = true;
                     record.Status = "Denied";
-                    target.RpPoints += record.Points;
                 }
             }
             db.SaveChanges();

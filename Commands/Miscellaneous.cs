@@ -73,36 +73,6 @@ namespace JifBot.Commands
             await RespondAsync(message);
         }
         
-        [SlashCommand("sillytext", "Takes specified text and makes it silly.")]
-        public async Task SillyText(
-            [Choice("mock", "mock")]
-            [Choice("owo", "owo")]
-            [Choice("big", "big")]
-            [Choice("tiny", "tiny")]
-            [Choice("wide", "wide")]
-            [Summary("style", "How to modify the text.")] string style,
-            [Summary("text", "The text to be modified.")] string text)
-        {
-            switch (style)
-            {
-                case "mock":
-                    await RespondAsync(MockText(text));
-                    break;
-                case "owo":
-                    await RespondAsync(OwoText(text));
-                    break;
-                case "big":
-                    await RespondAsync(BigText(text));
-                    break;
-                case "tiny":
-                    await RespondAsync(TinyText(text));
-                    break;
-                case "wide":
-                    await RespondAsync(WideText(text));
-                    break;
-            }
-        }
-        
         [SlashCommand("funfact", "Provides a random fact.")]
         public async Task FunFact()
         {
@@ -249,88 +219,6 @@ namespace JifBot.Commands
         public async Task Reese()
         {
             await RespondWithFileAsync("Media/smoochie.mp4", text: "Ladies hit him up.");
-        }
-
-        private string MockText(string text)
-        {
-            string end = string.Empty;
-            int i = 0;
-            foreach (char c in text)
-            {
-                if (c == ' ' || c == '"' || c == '.' || c == ',')
-                    end += c;
-                else if (i == 0)
-                {
-                    char temp = Char.ToLower(c);
-                    end += temp;
-                    i = 1;
-                }
-                else if (i == 1)
-                {
-                    char temp = Char.ToUpper(c);
-                    end += temp;
-                    i = 0;
-                }
-            }
-            return end;
-        }
-
-        private string BigText(string text)
-        {
-            string[] alpha = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
-            string[] big = { "🇦 ", "🅱 ", "🇨 ", "🇩 ", "🇪 ", "🇫 ", "🇬 ", "🇭 ", "🇮 ", "🇯 ", "🇰 ", "🇱 ", "🇲 ", "🇳 ", "🇴 ", "🇵 ", "🇶 ", "🇷 ", "🇸 ", "🇹 ", "🇺 ", "🇻 ", "🇼 ", "🇽 ", "🇾 ", "🇿 " };
-            text = text.ToLower();
-            text = text.Replace(" ", "  ");
-            for (int i = 0; i < alpha.Length; i++)
-            {
-                text = text.Replace(alpha[i], big[i]);
-            }
-            return text;
-        }
-
-        private string TinyText(string text)
-        {
-            string alpha = "abcdefghijklmnopqrstuvwxyz";
-            string small = "ᵃᵇᶜᵈᵉᶠᵍʰᶦʲᵏᶫᵐᶰᵒᵖᑫʳˢᵗᵘᵛʷˣʸᶻ";
-            text = text.ToLower();
-
-            for (int i = 0; i < alpha.Length; i++)
-            {
-                text = text.Replace(alpha[i], small[i]);
-            }
-            return text;
-        }
-
-        private string WideText(string text)
-        {
-            text = text.Replace(" ", "   ");
-            string alpha = "QWERTYUIOPASDFGHJKLÇZXCVBNMqwertyuiopasdfghjklçzxcvbnm,.-~+´«'0987654321!\"#$%&/()=?»*`^_:;";
-            string fullwidth = "ＱＷＥＲＴＹＵＩＯＰＡＳＤＦＧＨＪＫＬÇＺＸＣＶＢＮＭｑｗｅｒｔｙｕｉｏｐａｓｄｆｇｈｊｋｌçｚｘｃｖｂｎｍ,.－~ ´«＇０９８７６５４３２１！＂＃＄％＆／（）＝？»＊`＾＿：；";
-
-            for (int i = 0; i < alpha.Length; i++)
-            {
-                text = text.Replace(alpha[i], fullwidth[i]);
-            }
-            return text;
-        }
-
-        private string OwoText(string text)
-        {
-            string[] faces = new string[] { "(・ω・)", ";;w;;", "owo", "UwU", ">w<", "^w^" };
-            Random rnd = new Random();
-            text = Regex.Replace(text, @"(?:r|l)", "w");
-            text = Regex.Replace(text, @"(?:R|L)", "W");
-            text = Regex.Replace(text, @"n([aeiou])", @"ny$1");
-            text = Regex.Replace(text, @"N([aeiou])", @"Ny$1");
-            text = Regex.Replace(text, @"N([AEIOU])", @"NY$1");
-            text = Regex.Replace(text, @"ove", @"uv");
-            if( !text.EndsWith("!") )
-            {
-                text += " " + faces[rnd.Next(faces.Length)];
-            }
-            text = Regex.Replace(text, @"\!+", (match) => string.Format("{0}", " " + faces[rnd.Next(faces.Length)] + " "));
-
-            return text;
         }
 
         class TiltyEmoji

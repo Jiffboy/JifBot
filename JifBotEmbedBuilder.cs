@@ -19,8 +19,16 @@ namespace JifBot
         public void PopulateAsTrial(CourtRecord record, IGuildUser user)
         {
             var db = new BotBaseContext();
-            var pollCount = int.Parse(db.Variable.AsQueryable().Where(v => v.Name == "pollCount").FirstOrDefault().Value);
-            string action = record.Points > 0 ? $"award {Math.Abs(record.Points)} points to" : $"deduct {Math.Abs(record.Points)} points from";
+            var config = db.ServerConfig.AsQueryable().Where(c => c.ServerId == user.Guild.Id).FirstOrDefault();
+            var pollCount = 3;
+            var pointName = "";
+            if (config != null)
+            {
+                pollCount = config.TrialCount;
+                pointName = config.PointName + " ";
+            }
+
+            string action = record.Points > 0 ? $"award {Math.Abs(record.Points)} {pointName}points to" : $"deduct {Math.Abs(record.Points)} {pointName}points from";
 
             if (record.Status == "Pending")
             {
