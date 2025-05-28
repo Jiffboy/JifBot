@@ -40,6 +40,12 @@ namespace JifBot
                 return;
             }
 
+            if (record.ProsecutorId == component.User.Id)
+            {
+                await component.RespondAsync("Cannot vote in your own trial! Have some integrity!", ephemeral: true);
+                return;
+            }
+
             if (isYay)
             {
                 if (record.NayVotes.Contains(component.User.Id))
