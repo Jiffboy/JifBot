@@ -10,5 +10,7 @@
         public ulong ReactChannelId { get; set; }
         public string PointName { get; set; }
         public int TrialCount { get; set; }
+        public ulong QotdForumId { get; set; }
+        public ulong QotdThreadId { get; set; }
     }
 }

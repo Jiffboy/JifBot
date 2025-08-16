@@ -34,6 +34,7 @@ namespace JifBot.Models
         public virtual DbSet<CharacterAlias> CharacterAlias { get; set; }
         public virtual DbSet<CharacterTag> CharacterTag { get; set; }
         public virtual DbSet<CourtRecord> CourtRecord { get; set; }
+        public virtual DbSet<Qotd> Qotd { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -224,6 +225,11 @@ namespace JifBot.Models
                     v => JsonSerializer.Serialize(v, null),
                     v => JsonSerializer.Deserialize<List<ulong>>(v, null)
                 );
+            });
+
+            modelBuilder.Entity<Qotd>(entity =>
+            {
+                entity.HasKey(e => e.Id);
             });
 
             OnModelCreatingPartial(modelBuilder);

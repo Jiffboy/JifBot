@@ -2,11 +2,8 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using Discord.Commands;
 using Discord.Interactions;
-using Microsoft.Extensions.DependencyInjection;
 using JifBot.Models;
-using System.Linq;
 using System.Reflection;
 
 namespace JifBot

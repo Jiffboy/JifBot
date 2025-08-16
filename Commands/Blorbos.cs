@@ -3,7 +3,6 @@ using System.Linq;
 using Discord;
 using Discord.Interactions;
 using JifBot.Models;
-using System;
 using System.IO;
 using System.Net;
 

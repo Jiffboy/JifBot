@@ -25,6 +25,7 @@ namespace JIfBot
         private DiscordSocketClient client;
         private InteractionService interactions;
         public CommandService commands;
+        public JifBot.CronService cronService;
         public JifBot.CommandHandler commandHandler;
         private JifBot.EventHandler eventHandler;
         private JifBot.ModalHandler modalHandler;
@@ -46,6 +47,7 @@ namespace JIfBot
             client = services.GetService<DiscordSocketClient>();
             interactions = services.GetService<InteractionService>();
             commands = services.GetService<CommandService>();
+            cronService = new JifBot.CronService(services);
             commandHandler = services.GetService<JifBot.CommandHandler>();
             eventHandler = new JifBot.EventHandler(services);
             modalHandler = new JifBot.ModalHandler();
@@ -71,6 +73,8 @@ namespace JIfBot
             await client.LoginAsync(TokenType.Bot, config.Token);
             await client.StartAsync();
             await commandHandler.InitializeAsync();
+
+            await cronService.Run();
 
             //Block this program untill it is closed
             await Task.Delay(-1);

@@ -73,5 +73,19 @@ namespace JifBot
                 WithImageUrl(record.ImageUrl);
             }
         }
+
+        public void PopulateAsQotd(ulong guildId)
+        {
+            var db = new BotBaseContext();
+
+            var availCount = db.Qotd.AsQueryable().Where(q => q.ServerId == guildId && q.AskTimestamp == 0).Count();
+            var postCount = db.Qotd.AsQueryable().Where(q => q.ServerId == guildId && q.AskTimestamp != 0).Count();
+
+            Title = "Submit your own QOTD!";
+            Description = "Your questions will go into a pool, which will be randomly picked from every morning to be that days QOTD. Help out to make sure the pool doesn't run dry!\n\nTo submit a QOTD, use /submitqotd, or use the button below. (Coming Soon)";
+            AddField("Current Pool", availCount, inline: true);
+            AddField("Questions Posted", postCount, inline: true);
+            ThumbnailUrl = "https://cdn.discordapp.com/emojis/571859749860278293.png";
+        }
     }
 }

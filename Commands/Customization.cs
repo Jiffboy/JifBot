@@ -6,6 +6,7 @@ using Discord.WebSocket;
 using JifBot.Models;
 using JIfBot;
 using System.Text.RegularExpressions;
+using System.Net;
 
 namespace JifBot.Commands
 {
@@ -302,6 +303,81 @@ namespace JifBot.Commands
                 else
                     await msg.AddReactionAsync(dEmote);
             }
+        }
+
+        [SlashCommand("setqotd", "Turns a forum channel into automated qotds from user submissions.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task SetQotd(
+            [Summary("forum", "The forum to post QOTDs in.")] SocketChannel channel)
+        {
+            var type = channel.GetChannelType();
+            if (type != ChannelType.Forum)
+            {
+                await RespondAsync("Channel must be a forum channel.", ephemeral: true);
+                return;
+            }
+
+            var db = new BotBaseContext();
+            var serverConfig = db.ServerConfig.AsQueryable().Where(c => c.ServerId == Context.Guild.Id).FirstOrDefault();
+
+            IForumChannel forum = (IForumChannel)channel;
+            var embed = new JifBotEmbedBuilder();
+            embed.PopulateAsQotd(Context.Guild.Id);
+
+            var post = await forum.CreatePostAsync("Submit a QOTD!", embed: embed.Build());
+
+            if (serverConfig == null)
+            {
+                db.Add(new ServerConfig { ServerId = Context.Guild.Id, QotdForumId = forum.Id, QotdThreadId = post.Id });
+            }
+            else
+            {
+                serverConfig.QotdThreadId = post.Id;
+                serverConfig.QotdForumId = forum.Id;
+                
+            }
+            db.SaveChanges();
+
+            await RespondAsync($"Created post: {post.Mention}");
+        }
+
+        [SlashCommand("submitqotd", "Submits a qotd question for this server.")]
+        public async Task SubmitQotd(
+            [Summary("question", "Your question of the day!")] string question,
+            [Summary("image", "An image to accompany your question (if any)")] IAttachment image = null)
+        {
+            byte[] imageBytes = null;
+            if (image != null)
+            {
+                if (!image.ContentType.StartsWith("image/"))
+                {
+                    await RespondAsync("Please supply a valid image filetype", ephemeral: true);
+                    return;
+                }
+                var client = new WebClient();
+                imageBytes = client.DownloadData(image.Url);
+            }
+
+            var db = new BotBaseContext();
+            var config = db.ServerConfig.AsQueryable().Where(c => c.ServerId == Context.Guild.Id).FirstOrDefault();
+            db.Add(new Qotd { 
+                Question = question,
+                ServerId = Context.Guild.Id,
+                UserId = Context.User.Id,
+                Image = imageBytes,
+                ImageType = image != null ? image.ContentType.Replace("image/", "") : ""
+            });
+            db.SaveChanges();
+
+            if (config != null && config.QotdThreadId != 0)
+            {
+                var thread = Context.Guild.GetThreadChannel(config.QotdThreadId);
+                var post = await thread.GetMessageAsync(thread.Id) as IUserMessage;
+                var embed = new JifBotEmbedBuilder();
+                embed.PopulateAsQotd(Context.Guild.Id);
+                await post.ModifyAsync(msg => msg.Embed = embed.Build());
+            }
+            await RespondAsync("Question recorded. Thank you!", ephemeral: true);
         }
 
         private ulong GetConfigValue(string field, ServerConfig config)
