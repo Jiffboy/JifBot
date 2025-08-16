@@ -25,10 +25,10 @@ namespace JifBot
             while(true)
             {
                 // Wait 30s before running it back
-                await Task.Delay(3000);
+                await Task.Delay(30000);
                 var now = DateTime.Now;
                 // Qotd time!!
-                if (now.Hour == 23 && now.DayOfWeek != lastQotdDay)
+                if (now.Hour == 9 && now.DayOfWeek != lastQotdDay)
                 {
                     Console.WriteLine($"{DateTime.Now} [{"Cron",8}] QOTD: Posting.");
                     var db = new BotBaseContext();
