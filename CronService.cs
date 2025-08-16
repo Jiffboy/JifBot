@@ -46,17 +46,18 @@ namespace JifBot
                             var channel = client.GetGuild(server.ServerId).GetChannel(server.QotdForumId) as SocketForumChannel;
                             var thread = client.GetGuild(server.ServerId).GetThreadChannel(server.QotdThreadId);
                             var post = await thread.GetMessageAsync(thread.Id) as IUserMessage;
+                            var user = client.GetUser(question.UserId);
 
                             if (question.Image != null)
                             {
                                 var ms = new MemoryStream(question.Image);
 
                                 var image = new Discord.FileAttachment(ms, $"image.{question.ImageType}");
-                                await channel.CreatePostWithFileAsync($"{now.Month}/{now.Day}/{now.Year}", image, text: $"# {question.Question}");
+                                await channel.CreatePostWithFileAsync($"{now.Month}/{now.Day}/{now.Year}", image, text: $"# {question.Question}\nSubmitted by: {user.Mention}");
                             }
                             else
                             {
-                                await channel.CreatePostAsync($"{now.Month}/{now.Day}/{now.Year}", text: $"# {question.Question}");
+                                await channel.CreatePostAsync($"{now.Month}/{now.Day}/{now.Year}", text: $"# {question.Question}\nSubmitted by: {user.Mention}");
                             }
 
                             question.AskTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
