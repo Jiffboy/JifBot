@@ -85,7 +85,7 @@ namespace JifBot.Commands
                     }
                     else if (response.StatusCode == HttpStatusCode.NotFound)
                     {
-                        await RespondAsync(word + " is not an existing word, or is, or relates to a proper noun.");
+                        await RespondAsync(word + " is not in the English dictionary.");
                     }
                     else
                     {
