@@ -82,7 +82,7 @@ namespace JifBot
             var postCount = db.Qotd.AsQueryable().Where(q => q.ServerId == guildId && q.AskTimestamp != 0).Count();
 
             Title = "Submit your own QOTD!";
-            Description = "Your questions will go into a pool, which will be randomly picked from every morning to be that days QOTD. Help out to make sure the pool doesn't run dry!\n\nTo submit a QOTD, use /submitqotd, or use the button below. (Coming Soon)";
+            Description = "Questions will go into a pool, and one will be randomly selected every morning to be the QOTD. To submit a question, use /submitqotd, or use the button below. [Coming Soon]\n\nDo your part to make sure the pool doesn't run dry!";
             AddField("Current Pool", availCount, inline: true);
             AddField("Questions Posted", postCount, inline: true);
             ThumbnailUrl = "https://cdn.discordapp.com/emojis/571859749860278293.png";
