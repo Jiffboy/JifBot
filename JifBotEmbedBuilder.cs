@@ -82,7 +82,7 @@ namespace JifBot
             var postCount = db.Qotd.AsQueryable().Where(q => q.ServerId == guildId && q.AskTimestamp != 0).Count();
 
             Title = "Submit your own QOTD!";
-            Description = "Questions will go into a pool, and one will be randomly selected every morning to be the QOTD. To submit a question, use /submitqotd, or use the button below. [Coming Soon]\n\nDo your part to make sure the pool doesn't run dry!";
+            Description = "Questions will go into a pool, and one will be randomly selected every morning to be the QOTD. To submit a question, use /submitqotd below.\n\nDo your part to make sure the pool doesn't run dry!";
 
             var questions = "[empty]";
             if (pool.Count > 0)
