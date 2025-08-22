@@ -30,6 +30,7 @@ namespace JIfBot
         private JifBot.EventHandler eventHandler;
         private JifBot.ModalHandler modalHandler;
         private JifBot.ButtonHandler buttonHandler;
+        private JifBot.Logger logger = new JifBot.Logger();
 
         public async Task Start(string[] args)
         {
@@ -53,8 +54,8 @@ namespace JIfBot
             modalHandler = new JifBot.ModalHandler();
             buttonHandler = new JifBot.ButtonHandler();
 
-            client.Log += JifBot.EventHandler.WriteLog;
-            interactions.Log += JifBot.EventHandler.WriteLog;
+            client.Log += logger.WriteLog;
+            interactions.Log += logger.WriteLog;
             client.Ready += OnReady;
 
             client.UserJoined += eventHandler.AnnounceUserJoined;

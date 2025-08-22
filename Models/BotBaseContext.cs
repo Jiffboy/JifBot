@@ -35,6 +35,7 @@ namespace JifBot.Models
         public virtual DbSet<CharacterTag> CharacterTag { get; set; }
         public virtual DbSet<CourtRecord> CourtRecord { get; set; }
         public virtual DbSet<Qotd> Qotd { get; set; }
+        public virtual DbSet<Timer> Timer { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -228,6 +229,11 @@ namespace JifBot.Models
             });
 
             modelBuilder.Entity<Qotd>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+            });
+
+            modelBuilder.Entity<Timer>(entity =>
             {
                 entity.HasKey(e => e.Id);
             });

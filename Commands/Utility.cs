@@ -3,12 +3,11 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Globalization;
 using System.Net.Http;
-using System.Diagnostics;
 using Discord;
 using Discord.Interactions;
 using JifBot.Models;
-using JIfBot;
 using System.Data;
 using Newtonsoft.Json.Linq;
 using System.Threading;
@@ -17,22 +16,42 @@ namespace JifBot.Commands
 {
     public class Utility : InteractionModuleBase<SocketInteractionContext>
     {
-        [SlashCommand("timer", "Sets a reminder to ping you after a certain amount of time has passed.")]
+        [SlashCommand("timer", "Sets a reminder to ping you after a certain amount of time has passed. Use /managetimers to cancel.")]
         public async Task Timer(
+            [Summary("message", "The message to ping you with after the time runs out")] string message="",
+            [Summary("date-time", "The date and time to ping. Formatted as: mm/dd/yyyy hh:mm in military eastern time")] string datetime="",
             [Summary("minutes","The number of minutes to wait.")] int minutes=0,
             [Summary("hours", "The number of hours to wait.")] int hours=0,
             [Summary("days", "The number of days to wait.")]int days=0,
             [Summary("weeks", "The number of weeks to wait.")] int weeks=0,
-            [Summary("message", "The message to ping you with after the time runs out")] string message="")
+            [Summary("cadence-hours", "The cadence this timer should repeat in hours. Leave blank if no repeat.")] int cadenceHours = 0,
+            [Summary("cadence-days", "The cadence this timer should repeat in days. Leave blank if no repeat.")] int cadenceDays = 0)
 
         {
-            int waitTime = 0;
-            waitTime += minutes;
-            waitTime += hours * 60;
-            waitTime += days * 1440;
-            waitTime += weeks * 10080;
+            long timestamp;
+            int cadence = ((cadenceHours * 60) + (cadenceDays * 1440)) * 60;
+            DateTimeOffset dto = DateTimeOffset.Now.AddMinutes(minutes).AddHours(hours).AddDays(days + weeks*7);
 
-            if (waitTime == 0)
+            if (datetime != "")
+            {
+                DateTime dt;
+                if (DateTime.TryParseExact(datetime, "MM/dd/yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+                {
+                    if (dt < DateTime.Now)
+                    {
+                        await RespondAsync("Please provide a time in the future.", ephemeral: true);
+                        return;
+                    }
+
+                    dto = new DateTimeOffset(dt);
+                }
+                else
+                {
+                    await RespondAsync("Invalid date-time format. Please format as: mm/dd/yyyy hh:mm", ephemeral: true);
+                    return;
+                }
+            }
+            else if ((minutes + hours + days + weeks) == 0)
             {
                 await RespondAsync($"Please provide an amount of time to wait for.", ephemeral: true);
                 return;
@@ -40,14 +59,65 @@ namespace JifBot.Commands
 
             if (message.Replace(" ", "") == "")
                 message = "Times up!";
-            Process proc = new System.Diagnostics.Process();
-            proc.StartInfo.FileName = "/bin/bash";
-            proc.StartInfo.Arguments = "../../../Scripts/sendmessage.sh " + Context.Channel.Id + " \"" + Context.User.Mention + " " + message + "\" " + waitTime;
-            proc.StartInfo.UseShellExecute = false;
-            proc.StartInfo.RedirectStandardOutput = true;
-            proc.Start();
 
-            await RespondAsync("Setting timer for " + formatMinutesToString(waitTime) + " from now.");
+            var db = new BotBaseContext();
+            db.Add(new Models.Timer { 
+                UserId = Context.User.Id,
+                ChannelId = Context.Channel.Id,
+                Message = message,
+                Timestamp = dto.ToUnixTimeSeconds(),
+                Cadence = cadence
+            });
+            db.SaveChanges();
+
+            var msg = $"Setting timer for:\n**<t:{dto.ToUnixTimeSeconds()}:f>**";
+
+            if (cadence > 0)
+            {
+                msg += "\n\nThis timer will repeat every ";
+                msg += cadenceDays > 0 && cadenceHours > 0 ? $"**{cadenceDays} days, {cadenceHours} hours**." : cadenceDays > 0 ? $"**{cadenceDays} days**.": $"**{cadenceHours} hours**.";
+                msg += "\nTo cancel this, use /managetimers.";
+            }
+
+            await RespondAsync(msg);
+        }
+
+        [SlashCommand("managetimers", "Manages existing timers made with the /timer command.")]
+        public async Task manageTimers(
+            [Choice("List", "l")]
+            [Choice("Remove", "r")]
+            [Summary("option", "The action to take.")] string option,
+            [Summary("id", "The id of the timer to manage. To see Id's, select the List option..")] ulong id = 0)
+        {
+            var db = new BotBaseContext();
+            if (option == "l")
+            {
+                var timers = db.Timer.AsQueryable().Where(t => t.UserId == Context.User.Id).ToList();
+
+                if (!timers.Any())
+                {
+                    await RespondAsync("You have no current timers!", ephemeral: true);
+                    return;
+                }
+
+                var msg = "";
+                foreach (var timer in timers)
+                {
+                    msg += $"**#{timer.Id}.**   <t:{timer.Timestamp}:f>\n> `{timer.Message}`\n\n";
+                }
+
+                await RespondAsync(msg);
+            }
+            else if (option == "r")
+            {
+                var timer = db.Timer.AsQueryable().Where(timer => timer.Id == id).FirstOrDefault();
+                if (timer != null && timer.UserId == Context.User.Id)
+                {
+                    db.Timer.Remove(timer);
+                    db.SaveChanges();
+                    await RespondAsync("Successfully deleted timer.");
+                }
+            }
         }
 
         [SlashCommand("choose", "Randomly makes a choice for you.")]
@@ -532,49 +602,6 @@ namespace JifBot.Commands
             IGuildUser user = await guild.GetUserAsync(id, mode: CacheMode.CacheOnly, options: request);
 
             return user;
-        }
-        
-        string formatMinutesToString(int minutes)
-        {
-            string format = "";
-
-            if (minutes / 10080 > 0)
-            {
-                format += Convert.ToString(minutes / 10080) + " week";
-                if (minutes / 10080 > 1)
-                    format += "s";
-                format += ", ";
-                minutes = minutes % 10080;
-            }
-
-            if (minutes / 1440 > 0)
-            {
-                format += Convert.ToString(minutes / 1440) + " day";
-                if (minutes / 1440 > 1)
-                    format += "s";
-                format += ", ";
-                minutes = minutes % 1440;
-            }
-
-            if (minutes / 60 > 0)
-            {
-                format += Convert.ToString(minutes / 60) + " hour";
-                if (minutes / 60 > 1)
-                    format += "s";
-                format += ", ";
-                minutes = minutes % 60;
-            }
-
-            if (minutes > 0)
-            {
-                format += Convert.ToString(minutes) + " minute";
-                if (minutes > 1)
-                    format += "s";
-            }
-            else
-                format = format.Remove(format.Length - 2, 2);
-
-            return format;
         }
 
         List<string> listFromString(string choices)

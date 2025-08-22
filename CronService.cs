@@ -14,6 +14,7 @@ namespace JifBot
         // This is stupid but I don't care
         private DayOfWeek lastQotdDay = DateTime.Today.AddDays(2).DayOfWeek;
         private DiscordSocketClient client;
+        private Logger logger = new Logger();
 
         public CronService(IServiceProvider service)
         {
@@ -30,11 +31,37 @@ namespace JifBot
 
                 try
                 {
-                    // Qotd time!!
+                    // Handle timers
+                    var db = new BotBaseContext();
+                    var currTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                    var timers = db.Timer.AsQueryable().Where(t => t.Timestamp <= currTimestamp).ToList();
+                    foreach (var timer in timers)
+                    {
+                        var channel = await client.GetChannelAsync(timer.ChannelId) as ITextChannel;
+                        var user = await client.GetUserAsync(timer.UserId);
+
+                        var msg = $"{user.Mention} {timer.Message}";
+
+                        if (timer.Cadence > 0)
+                        {
+                            timer.Timestamp = timer.Timestamp + timer.Cadence;
+                            var dto = DateTimeOffset.FromUnixTimeSeconds(timer.Timestamp).ToLocalTime();
+                            msg += $"\n\nThis timer will repeat on **<t:{dto.ToUnixTimeSeconds()}:f>**";
+                            msg += "\nTo cancel this, use /managetimers.";
+                        }
+                        else
+                        {
+                            db.Remove(timer);
+                        }
+                        db.SaveChanges();
+
+                        await channel.SendMessageAsync(msg);
+                    }
+
+                    // Handle Qotds
                     if (now.Hour == 9 && now.DayOfWeek != lastQotdDay)
                     {
                         lastQotdDay = now.DayOfWeek;
-                        var db = new BotBaseContext();
                         var servers = db.ServerConfig.AsQueryable().Where(s => s.QotdThreadId != 0).ToList();
 
                         foreach (var server in servers)
@@ -43,7 +70,7 @@ namespace JifBot
                             if (questions.Count() > 0)
                             {
                                 var guild = client.GetGuild(server.ServerId);
-                                Console.WriteLine($"{DateTime.Now} [{"Info",8}] QOTD: Posting in {guild.Name}");
+                                await logger.WriteInfo($"Posting QOTD in {guild.Name}", "Cron");
 
                                 Random random = new Random();
                                 var index = random.Next(questions.Count());
@@ -77,10 +104,7 @@ namespace JifBot
                 }
                 catch (Exception ex)
                 {
-                    var cc = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"{DateTime.Now} [{"Error",8}] {ex.Message}");
-                    Console.ForegroundColor = cc;
+                    await logger.WriteError(ex.Message, "Cron", ex.InnerException);
                 }
             }
         }

@@ -95,41 +95,6 @@ namespace JifBot
             }
         }
 
-        public static Task WriteLog(LogMessage lmsg)
-        {
-            var cc = Console.ForegroundColor;
-            switch (lmsg.Severity)
-            {
-                case LogSeverity.Critical:
-                case LogSeverity.Error:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    break;
-                case LogSeverity.Warning:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    break;
-                case LogSeverity.Info:
-                    Console.ForegroundColor = ConsoleColor.White;
-                    break;
-                case LogSeverity.Verbose:
-                case LogSeverity.Debug:
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                    break;
-            }
-            Console.WriteLine($"{DateTime.Now} [{lmsg.Severity,8}] {lmsg.Source}: {lmsg.Message}");
-            if(lmsg.Exception != null)
-            {
-                Console.WriteLine($" >> {lmsg.Exception.Message}");
-                if (lmsg.Exception.InnerException != null)
-                {
-                    Console.WriteLine($"   >> {lmsg.Exception.InnerException.Message}");
-                    if (lmsg.Exception.InnerException.InnerException != null)
-                        Console.WriteLine($"     >> {lmsg.Exception.InnerException.InnerException.Message}");
-                }
-            }
-            Console.ForegroundColor = cc;
-            return Task.CompletedTask;
-        }
-
         public async Task HandleReactionAdded(Cacheable<IUserMessage, ulong> cache, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             var db = new BotBaseContext();
