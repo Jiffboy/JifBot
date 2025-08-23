@@ -78,19 +78,34 @@ namespace JifBot
 
                                 var channel = guild.GetChannel(server.QotdForumId) as SocketForumChannel;
                                 var thread = guild.GetThreadChannel(server.QotdThreadId);
+                                if (channel == null || thread == null)
+                                    continue;
+
                                 var post = await thread.GetMessageAsync(thread.Id) as IUserMessage;
+                                if (post == null)
+                                    continue;
+
                                 var user = client.GetUser(question.UserId);
+
+                                var title = $"{now.Month}/{now.Day}/{now.Year}";
+                                var text = $"# {question.Question}\nSubmitted by: {user.Mention}";
+
+                                if (server.QotdRoleId != 0)
+                                {
+                                    var role = client.GetGuild(server.ServerId).GetRole(server.QotdRoleId);
+                                    text += $"\n-# {role.Mention}";
+                                }
 
                                 if (question.Image != null)
                                 {
                                     var ms = new MemoryStream(question.Image);
 
                                     var image = new Discord.FileAttachment(ms, $"image.{question.ImageType}");
-                                    await channel.CreatePostWithFileAsync($"{now.Month}/{now.Day}/{now.Year}", image, text: $"# {question.Question}\nSubmitted by: {user.Mention}");
+                                    await channel.CreatePostWithFileAsync(title, image, text: text);
                                 }
                                 else
                                 {
-                                    await channel.CreatePostAsync($"{now.Month}/{now.Day}/{now.Year}", text: $"# {question.Question}\nSubmitted by: {user.Mention}");
+                                    await channel.CreatePostAsync(title, text: text);
                                 }
 
                                 question.AskTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();

@@ -3,17 +3,43 @@ using Discord.WebSocket;
 using System.Linq;
 using JifBot.Models;
 using Discord;
+using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JifBot
 {
     public class ButtonHandler
     {
+        private DiscordSocketClient client;
+
+        public ButtonHandler(IServiceProvider service)
+        {
+            client = service.GetService<DiscordSocketClient>();
+        }
+
         public async Task HandleButton(SocketMessageComponent component)
         {
             string[] pieces = component.Data.CustomId.Split("-");
-            bool isYay = pieces[0].Equals("yay");
+
+            if (pieces[0].Equals("yay") || pieces[0].Equals("nay"))
+            {
+                await HandleVote(component, pieces[0].Equals("yay"), int.Parse(pieces[1]));
+            } 
+            else if (pieces[0].Equals("qotd"))
+            {
+                if (pieces[1].Equals("submit"))
+                {
+                    await HandleQotdSubmit(component);
+                }
+                else if (pieces[1].Equals("role"))
+                {
+                    await HandleQotdRole(component, pieces[2].Equals("add"));
+                }
+            }
+        }
+        private async Task HandleVote(SocketMessageComponent component, bool isYay, int id)
+        {
             bool pollClosed = false;
-            int id = int.Parse(pieces[1]);
 
             var db = new BotBaseContext();
             var record = db.CourtRecord.AsQueryable().Where(p => p.Id == id).FirstOrDefault();
@@ -24,9 +50,7 @@ namespace JifBot
                 pollCount = config.TrialCount;
 
             var target = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == record.DefendantId).FirstOrDefault();
-            var user = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == component.User.Id).FirstOrDefault();
-            if (user == null)
-                db.Add(new User { UserId = component.User.Id, Name = component.User.Username, Number = long.Parse(component.User.Discriminator) });
+            var user = db.GetUser(component.User);
 
             if (record == null)
             {
@@ -117,6 +141,37 @@ namespace JifBot
             {
                 await message.ModifyAsync(msg => msg.Embed = embed.Build());
                 await component.DeferAsync();
+            }
+        }
+
+        private async Task HandleQotdSubmit(SocketMessageComponent component)
+        {
+            var mb = new ModalBuilder()
+                .WithTitle("Submit a QOTD!")
+                .WithCustomId("qotd-submit")
+                .AddTextInput("Question", "question", TextInputStyle.Paragraph)
+                .AddTextInput("Image Link", "image", TextInputStyle.Short, placeholder: "Has to be a link cause Discord sucks. Sorry :(", required: false);
+            await component.RespondWithModalAsync(mb.Build());
+        }
+
+        // If add is false, we remove
+        private async Task HandleQotdRole(SocketMessageComponent component, bool add)
+        {
+            var db = new BotBaseContext();
+            var guild = client.GetGuild(component.GuildId.Value);
+            var config = db.GetServerConfig(guild);
+            var user = component.User as SocketGuildUser;
+            var role = guild.GetRole(config.QotdRoleId);
+
+            if (add)
+            {
+                await user.AddRoleAsync(role);
+                await component.RespondAsync("Subscribed!", ephemeral: true);
+            }
+            else
+            {
+                await user.RemoveRoleAsync(role);
+                await component.RespondAsync("Unsubscribed!", ephemeral: true);
             }
         }
     }

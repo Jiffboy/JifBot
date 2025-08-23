@@ -125,9 +125,8 @@ namespace JifBot.Commands
 
             if (action == "add")
             {
-                var user = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == Context.User.Id).FirstOrDefault();
-                if (user == null)
-                    db.Add(new User { UserId = Context.User.Id, Name = Context.User.Username, Number = long.Parse(Context.User.Discriminator) });
+                var user = db.GetUser(Context.User);
+
                 var character = db.Character.AsQueryable().AsQueryable().Where(c => c.Key == key).FirstOrDefault();
                 if (character != null)
                 {

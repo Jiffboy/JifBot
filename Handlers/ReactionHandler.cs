@@ -97,16 +97,9 @@ namespace JifBot
                 await msg.ReplyAsync("**HONK**");
                 await msg.Channel.SendFileAsync("Media/honk.jpg");
 
-                var user = db.User.AsQueryable().AsQueryable().Where(user => user.UserId == msg.Author.Id).FirstOrDefault();
+                var user = db.GetUser(msg.Author);
                 var honk = db.Honk.AsQueryable().AsQueryable().Where(honk => honk.UserId == msg.Author.Id).FirstOrDefault();
 
-                if (user == null)
-                    db.Add(new User { UserId = msg.Author.Id, Name = msg.Author.Username, Number = long.Parse(msg.Author.Discriminator) });
-                else
-                {
-                    user.Name = msg.Author.Username;
-                    user.Number = long.Parse(msg.Author.Discriminator);
-                }
                 if (honk == null)
                     db.Add(new Honk { UserId = msg.Author.Id, Count = 1 });
                 else

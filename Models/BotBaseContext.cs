@@ -2,6 +2,8 @@
 using System.Text.Json;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using Discord.WebSocket;
 
 namespace JifBot.Models
 {
@@ -242,5 +244,35 @@ namespace JifBot.Models
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+        public User GetUser(SocketUser user)
+        {
+            var dbUser = User.AsQueryable().Where(usr => usr.UserId == user.Id).FirstOrDefault();
+            if (dbUser == null)
+            {
+                dbUser = new User { UserId = user.Id, Name = user.Username, Number = long.Parse(user.Discriminator) };
+                Add(dbUser);
+            }
+            else
+            {
+                // Update name in case its changed.
+                dbUser.Name = user.Username;
+                dbUser.Number = long.Parse(user.Discriminator);
+            }
+            SaveChanges();
+            return dbUser;
+        }
+
+        public ServerConfig GetServerConfig(SocketGuild server)
+        {
+            var dbConfig = ServerConfig.AsQueryable().Where(serv => serv.ServerId == server.Id).FirstOrDefault();
+            if (dbConfig == null)
+            {
+                dbConfig = new ServerConfig { ServerId = server.Id };
+                Add(dbConfig);
+                SaveChanges();
+            }
+            return dbConfig;
+        }
     }
 }

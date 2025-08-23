@@ -50,9 +50,7 @@ namespace JifBot.Commands
             });
             db.SaveChanges();
 
-            var dbUser = db.User.AsQueryable().Where(u => u.UserId == user.Id).FirstOrDefault();
-            if (dbUser == null)
-                db.Add(new User { UserId = user.Id, Name = user.Username, Number = long.Parse(user.Discriminator) });
+            var dbUser = db.GetUser(Context.User);
 
             JifBotEmbedBuilder embed = new JifBotEmbedBuilder();
             embed.PopulateAsTrial(record.Entity, user);

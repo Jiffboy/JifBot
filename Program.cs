@@ -51,8 +51,8 @@ namespace JIfBot
             cronService = new JifBot.CronService(services);
             commandHandler = services.GetService<JifBot.CommandHandler>();
             eventHandler = new JifBot.EventHandler(services);
-            modalHandler = new JifBot.ModalHandler();
-            buttonHandler = new JifBot.ButtonHandler();
+            modalHandler = new JifBot.ModalHandler(services);
+            buttonHandler = new JifBot.ButtonHandler(services);
 
             client.Log += logger.WriteLog;
             interactions.Log += logger.WriteLog;

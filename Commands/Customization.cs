@@ -30,23 +30,20 @@ namespace JifBot.Commands
         {
             var db = new BotBaseContext();
             var message = db.Message.AsQueryable().Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
-            var user = db.User.AsQueryable().Where(usr => usr.UserId == Context.User.Id).FirstOrDefault();
-            if (user == null)
-                db.Add(new User { UserId = Context.User.Id, Name = Context.User.Username, Number = long.Parse(Context.User.Discriminator) });
-            else
-            {
-                user.Name = Context.User.Username;
-                user.Number = long.Parse(Context.User.Discriminator);
-            }
+
+            var user = db.GetUser(Context.User);
+
+            var msg = "Message added!";
+
             if (message == null)
                 db.Add(new Message { UserId = Context.User.Id, Message1 = newmessage });
             else
             {
-                await RespondAsync($"Replacing old message:\n{message.Message1}");
+                msg += $"\n\nReplacing old message:\n{message.Message1}";
                 message.Message1 = newmessage;
             }
             db.SaveChanges();
-            await RespondAsync("Message Added!");
+            await RespondAsync(msg);
         }
         
         [SlashCommand("togglereactions","Toggles between enabling and disabling Jif Bot reactions.")]
@@ -152,11 +149,11 @@ namespace JifBot.Commands
             }
 
             var db = new BotBaseContext();
-            var config = db.ServerConfig.AsQueryable().Where(s => s.ServerId == Context.Guild.Id).FirstOrDefault();
+            var config = db.GetServerConfig(Context.Guild);
             
             if(delete)
             {
-                if (config != null && config.ReactMessageId != 0 && config.ReactChannelId != 0)
+                if (config.ReactMessageId != 0 && config.ReactChannelId != 0)
                 {
                     var oldchannel = Context.Guild.GetTextChannel(config.ReactChannelId);
                     var msg = await oldchannel.GetMessageAsync(config.ReactMessageId);
@@ -173,22 +170,22 @@ namespace JifBot.Commands
 
             var message = await channel.SendMessageAsync(embed: BuildReactMessage(Context.Guild));
 
-            if (config == null)
-            {
-                db.Add(new ServerConfig { ServerId = Context.Guild.Id, ReactMessageId = message.Id, ReactChannelId = message.Channel.Id });
-            }
-            else 
-            {
-                if (config.ReactChannelId != 0)
-                {
-                    var oldChannel = Context.Guild.GetTextChannel(config.ReactChannelId);
-                    var msg = await oldChannel.GetMessageAsync(config.ReactMessageId);
-                    await msg.DeleteAsync();
-                }
+            await RespondAsync("Message placed!", ephemeral: true);
 
-                config.ReactMessageId = message.Id;
-                config.ReactChannelId = message.Channel.Id;
+            if (config.ReactChannelId != 0)
+            {
+                var oldChannel = Context.Guild.GetTextChannel(config.ReactChannelId);
+                if (oldChannel != null)
+                {
+                    var msg = await oldChannel.GetMessageAsync(config.ReactMessageId);
+                    if (msg != null)
+                        await msg.DeleteAsync();
+                }
             }
+
+            config.ReactMessageId = message.Id;
+            config.ReactChannelId = message.Channel.Id;
+
             db.SaveChanges();
 
             var roles = db.ReactRole.AsQueryable().Where(r => r.ServerId == Context.Guild.Id).DefaultIfEmpty();
@@ -305,40 +302,87 @@ namespace JifBot.Commands
             }
         }
 
-        [SlashCommand("setqotd", "Turns a forum channel into automated qotds from user submissions.")]
+        [SlashCommand("manageqotd", "Creates, modifies or deletes a forum channel for automated qotds from user submissions.")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task SetQotd(
-            [Summary("forum", "The forum to post QOTDs in.")] SocketChannel channel)
+        public async Task ManageQotd(
+            [Choice("Set", "s")]
+            [Choice("Delete", "d")]
+            [Summary("action", "The action to take")] string action,
+            [Summary("forum", "The forum to post QOTDs in.")] SocketChannel channel,
+            [Summary("role", "The role to ping when a QOTD is posted. Leave blank for no ping.")] IRole role = null)
         {
-            var type = channel.GetChannelType();
-            if (type != ChannelType.Forum)
+            var db = new BotBaseContext();
+            var serverConfig = db.GetServerConfig(Context.Guild);
+
+            if (action == "d")
             {
-                await RespondAsync("Channel must be a forum channel.", ephemeral: true);
+                var thread = Context.Guild.GetThreadChannel(serverConfig.QotdThreadId);
+                if (thread != null)
+                {
+                    await thread.DeleteAsync();
+                }
+
+                serverConfig.QotdThreadId = 0;
+                serverConfig.QotdForumId = 0;
+                serverConfig.QotdRoleId = 0;
+
+                await RespondAsync("QOTD Deleted!", ephemeral: true);
                 return;
             }
-
-            var db = new BotBaseContext();
-            var serverConfig = db.ServerConfig.AsQueryable().Where(c => c.ServerId == Context.Guild.Id).FirstOrDefault();
-
-            IForumChannel forum = (IForumChannel)channel;
-            var embed = new JifBotEmbedBuilder();
-            embed.PopulateAsQotd(Context.Guild.Id);
-
-            var post = await forum.CreatePostAsync("Submit a QOTD!", embed: embed.Build());
-
-            if (serverConfig == null)
+            else if (action == "s")
             {
-                db.Add(new ServerConfig { ServerId = Context.Guild.Id, QotdForumId = forum.Id, QotdThreadId = post.Id });
-            }
-            else
-            {
-                serverConfig.QotdThreadId = post.Id;
-                serverConfig.QotdForumId = forum.Id;
-                
-            }
-            db.SaveChanges();
+                var type = channel.GetChannelType();
+                if (type != ChannelType.Forum)
+                {
+                    await RespondAsync("Channel must be a forum channel.", ephemeral: true);
+                    return;
+                }
 
-            await RespondAsync($"Created post: {post.Mention}");
+                IForumChannel forum = (IForumChannel)channel;
+                var thread = Context.Guild.GetThreadChannel(serverConfig.QotdThreadId) as IThreadChannel;
+                var post = thread != null ? await thread.GetMessageAsync(thread.Id) as IUserMessage : null;
+                var embed = new JifBotEmbedBuilder();
+                embed.PopulateAsQotd(Context.Guild.Id);
+
+                var component = new ComponentBuilder()
+                    .WithButton("Submit a QOTD!", "qotd-submit", style: ButtonStyle.Success)
+                    .WithButton("Subscribe", "qotd-role-add", style: ButtonStyle.Primary)
+                    .WithButton("Unsubscribe", "qotd-role-remove", style: ButtonStyle.Secondary);
+
+                var msgVerb = "";
+
+                // Either we're moving the post, or the old one is missing
+                if ((channel.Id != serverConfig.QotdForumId) || post == null)
+                {
+                    msgVerb = "Created";
+                    if (thread != null)
+                    {
+                        await thread.DeleteAsync();
+                    }
+
+                    thread = await forum.CreatePostAsync("Submit a QOTD!", embed: embed.Build(), components: component.Build());
+
+                    serverConfig.QotdThreadId = thread.Id;
+                    serverConfig.QotdForumId = forum.Id;
+                    serverConfig.QotdRoleId = role.Id;
+                }
+                else
+                {
+                    msgVerb = "Modified";
+                    // Only here to retroactively add components and honestly this can be deleted later
+                    await post.ModifyAsync(msg =>
+                    {
+                        msg.Embed = embed.Build();
+                        msg.Components = component.Build();
+                    });
+
+                    serverConfig.QotdRoleId = role.Id;
+                }
+
+                db.SaveChanges();
+
+                await RespondAsync($"{msgVerb} post: {thread.Mention}", ephemeral: true);
+            }
         }
 
         [SlashCommand("submitqotd", "Submits a qotd question for this server.")]

@@ -111,7 +111,7 @@ namespace JifBot
                     var user = server.GetUser(reaction.UserId);
                     
                     if(serverRole != null && user.Id != config.Id)
-                        await user.AddRoleAsync((IRole)serverRole);
+                        await user.AddRoleAsync(serverRole);
                 }
             }
         }

@@ -12,5 +12,6 @@
         public int TrialCount { get; set; }
         public ulong QotdForumId { get; set; }
         public ulong QotdThreadId { get; set; }
+        public ulong QotdRoleId { get; set; }
     }
 }
