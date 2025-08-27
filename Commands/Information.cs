@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using System.Web;
 using JifBot.Models;
 using JIfBot;
+using JifBot.Interfaces;
 
 namespace JifBot.Commands
 {
@@ -477,7 +478,6 @@ namespace JifBot.Commands
 
 
             await FollowupAsync(embed: embed.Build());
-            
         }
 
             public string FormatTime(DateTimeOffset orig)
@@ -487,6 +487,75 @@ namespace JifBot.Commands
             str = str + orig.LocalDateTime.Month + "/" + orig.LocalDateTime.Day + "/" + orig.LocalDateTime.Year;
             str = str + " at " + orig.LocalDateTime.Hour + ":" + orig.LocalDateTime.Minute + " CST";
             return str;
+        }
+
+        [SlashCommand("isjifsleeping", "Shows whether or not Jif has been sleeping lately.")]
+        public async Task IsJifSleeping(
+            [Summary("days", "The number of days to view. Defaults to 9. Max of 25")] int count = 9,
+            [Summary("target", "The targeted number of hours needed a night. Defaults to 8")] int target = 8)
+        {
+            var fitbit = new FitBitInterface();
+            var data = await fitbit.GetSleep(DateTime.Now.AddDays(-(count-1)), DateTime.Now);
+            var totalTime = data.AsQueryable().Sum(e => e.totalTime);
+            var targetTime = data.Count * target * 60;
+
+            var avgStartTicks = (long)data.Select(t => t.start.TimeOfDay.Ticks).Average();
+            var startTime = new TimeSpan(avgStartTicks);
+            var startStr = DateTime.Today.Add(startTime).ToString("hh:mm tt");
+
+            var avgEndTicks = (long)data.Select(t => t.end.TimeOfDay.Ticks).Average();
+            var endTime = new TimeSpan(avgEndTicks);
+            var endStr = DateTime.Today.Add(endTime).ToString("hh:mm tt");
+
+            var embed = new JifBotEmbedBuilder();
+
+            if (totalTime < targetTime)
+            {
+                embed.ThumbnailUrl = "https://cdn.discordapp.com/attachments/782655615557697536/1409912107440406598/cooltext489523824426323.gif?ex=68af1a79&is=68adc8f9&hm=16c1e5a16cb4992d5cd6a17d3761c9dc277a9c25c64b076c9550d406fb589f48&";
+            }
+            else
+            {
+                embed.ThumbnailUrl = "https://cdn.discordapp.com/attachments/782655615557697536/1409912106794618880/cooltext489559432758058.gif?ex=68af1a79&is=68adc8f9&hm=782f8c47c4e6167f958fef80c4040461af78ab7a088c7e5e3aba91a1763aad4c&";
+            }
+
+            var header = totalTime >= targetTime ? "His ass is sleeping!!!" : "His ass is not sleeping!!";
+            var modifier = totalTime >= targetTime ? "excess" : "deficit";
+            embed.Title = "Is Jif sleeping?";
+            embed.Description = $"# {header}";
+            embed.Description += $"\n**Sleep {modifier}**: {FormatMinutes(Math.Abs(totalTime - targetTime))}  [Based on targeted {target} hours per night]";
+            embed.Description += $"\n**Total time**: {FormatMinutes(totalTime)}";
+            embed.Description += $"\n**Average time asleep**: {startStr}";
+            embed.Description += $"\n**Average time awake**: {endStr}";
+
+            var today = DateTime.Today;
+
+            foreach (var entry in data)
+            {
+                while (entry.date.Date != today.Date)
+                {
+                    embed.AddField($"⚠️ {today.ToString("MM/dd")}", "\n\n[Data Missing]\nCheck back later!", inline: true);
+                    today = today.AddDays(-1);
+                }
+
+                var emote = entry.totalTime / 60 >= target ? "✅" : "❌";
+                var title = $"{emote} {entry.date.ToString("MM/dd")} [{FormatMinutes(entry.totalTime)}]";
+                var msg = $"{entry.start.ToString("hh:mm tt")} - {entry.end.ToString("hh:mm tt")}";
+                msg += $"\nTimes awoken: {entry.wakeCount}";
+                msg += $"\nNapped: {FormatMinutes(entry.napTime)}";
+                msg += $"\nDeep: {FormatMinutes(entry.deepTime)}";
+                msg += $"\nLight: {FormatMinutes(entry.lightTime)}";
+                msg += $"\nREM: {FormatMinutes(entry.remTime)}";
+                embed.AddField(title, msg, inline: true);
+
+                today = today.AddDays(-1);
+            }
+
+            await RespondAsync(embed: embed.Build());
+        }
+
+        public string FormatMinutes(int minutes)
+        {
+            return $"{minutes/60}h {minutes%60}m";
         }
 
         public EmbedBuilder ConstructEmbedInfo(IGuildUser user)
