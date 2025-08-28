@@ -4,7 +4,6 @@ using System.Linq;
 using Discord;
 using Discord.Interactions;
 using JifBot.Models;
-using System.Text.RegularExpressions;
 using System.Drawing;
 using System.Data;
 using System.IO;
@@ -197,22 +196,20 @@ namespace JifBot.Commands
             await RespondWithFileAsync($"Media/react/{reaction}");
         }
 
-        [SlashCommand("cheer", "Displays one of several gifs of cute characters cheering you on.")]
-        public async Task Cheer()
+        [SlashCommand("randimage", "Displays a random image from a series of categories")]
+        public async Task RandImage(
+            [Choice("Cat in Hat", "cat/png")]
+            [Choice("Lewd", "lewd/png")]
+            [Choice("Cheer", "cheer/gif")]
+            [Summary("category", "The type of image to post")] string category)
         {
-            Random rnd = new Random();
-            int num = rnd.Next(10);
-            string gif = "Media/cheer/cheer" + num + ".gif";
-            await RespondWithFileAsync(gif);
-        }
+            var names = category.Split('/');
+            string path = $"Media/{names[0]}";
+            var count = Directory.GetFiles(path).Length;
 
-        [SlashCommand("lewd", "Displays a random image to react to someones lewd comment.")]
-        public async Task Lewd()
-        {
             Random rnd = new Random();
-            int num = rnd.Next(8);
-            string png = "Media/lewd/" + num + ".png";
-            await RespondWithFileAsync(png);
+            int num = rnd.Next(count);
+            await RespondWithFileAsync($"{path}/{num}.{names[1]}");
         }
 
         [SlashCommand("reese", "Reese.")]

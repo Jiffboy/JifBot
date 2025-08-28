@@ -497,6 +497,7 @@ namespace JifBot.Commands
             var fitbit = new FitBitInterface();
             var data = await fitbit.GetSleep(DateTime.Now.AddDays(-(count-1)), DateTime.Now);
             var totalTime = data.AsQueryable().Sum(e => e.totalTime);
+            var avgTime = totalTime / data.Count;
             var targetTime = data.Count * target * 60;
 
             var avgStartTicks = (long)data.Select(t => t.start.TimeOfDay.Ticks).Average();
@@ -506,6 +507,8 @@ namespace JifBot.Commands
             var avgEndTicks = (long)data.Select(t => t.end.TimeOfDay.Ticks).Average();
             var endTime = new TimeSpan(avgEndTicks);
             var endStr = DateTime.Today.Add(endTime).ToString("hh:mm tt");
+
+            var avgStr = FormatMinutes(avgTime);
 
             var embed = new JifBotEmbedBuilder();
 
@@ -524,6 +527,7 @@ namespace JifBot.Commands
             embed.Description = $"# {header}";
             embed.Description += $"\n**Sleep {modifier}**: {FormatMinutes(Math.Abs(totalTime - targetTime))}  [Based on targeted {target} hours per night]";
             embed.Description += $"\n**Total time**: {FormatMinutes(totalTime)}";
+            embed.Description += $"\n**Average nightly sleep**: {avgStr}";
             embed.Description += $"\n**Average time asleep**: {startStr}";
             embed.Description += $"\n**Average time awake**: {endStr}";
 
