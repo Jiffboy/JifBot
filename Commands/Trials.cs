@@ -112,12 +112,6 @@ namespace JifBot.Commands
         public async Task Records(
         [Summary("user", "The user to get the records of")] IGuildUser user)
         {
-            var emojiMap = new Dictionary<string, string>()
-            {
-                {"Approved",  "✅"},
-                {"Denied", "❌" },
-                {"Pending", "🤔" }
-            };
             var db = new BotBaseContext();
             var config = db.ServerConfig.AsQueryable().Where(c => c.ServerId == Context.Guild.Id).FirstOrDefault();
             var pointName = "";
@@ -145,12 +139,12 @@ namespace JifBot.Commands
 
             foreach (var record in defendantRecords.Take(5).ToList())
             {
-                defendantMsg += $"{emojiMap[record.Status]} [Trial](https://discord.com/channels/{record.ServerId}/{record.ChannelId}/{record.MessageId}) [{record.Points}] {record.Justification}\n";
+                defendantMsg += $"{GetRecordEmoji(record.Status, record.Points)} [Trial](https://discord.com/channels/{record.ServerId}/{record.ChannelId}/{record.MessageId}) [{record.Points}] {record.Justification}\n";
             }
 
             foreach (var record in prosecutorRecords.Take(5).ToList())
             {
-                prosecutorMsg += $"{emojiMap[record.Status]} [Trial](https://discord.com/channels/{record.ServerId}/{record.ChannelId}/{record.MessageId}) [{record.Points}] {record.Justification}\n";
+                prosecutorMsg += $"{GetRecordEmoji(record.Status, record.Points)} [Trial](https://discord.com/channels/{record.ServerId}/{record.ChannelId}/{record.MessageId}) [{record.Points}] {record.Justification}\n";
             }
 
             if (defendantMsg.Length > 0)
@@ -196,6 +190,22 @@ namespace JifBot.Commands
             return db.CourtRecord.AsQueryable()
                 .Where(r => r.DefendantId == userId && r.ServerId == guildId && r.Status == "Approved")
                 .Sum(r => r.Points);
+        }
+
+        private string GetRecordEmoji(string status, int points)
+        {
+            switch (status)
+            {
+                case "Approved":
+                    if (points > 0)
+                        return "😇";
+                    else
+                        return "👿";
+                case "Denied":
+                    return "❌";
+                default:
+                    return "🤔";
+                }
         }
     }
 }

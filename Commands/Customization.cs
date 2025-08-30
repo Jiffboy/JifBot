@@ -364,7 +364,8 @@ namespace JifBot.Commands
 
                     serverConfig.QotdThreadId = thread.Id;
                     serverConfig.QotdForumId = forum.Id;
-                    serverConfig.QotdRoleId = role.Id;
+                    if (role != null)
+                        serverConfig.QotdRoleId = role.Id;
                 }
                 else
                 {
@@ -376,7 +377,8 @@ namespace JifBot.Commands
                         msg.Components = component.Build();
                     });
 
-                    serverConfig.QotdRoleId = role.Id;
+                    if (role != null)
+                        serverConfig.QotdRoleId = role.Id;
                 }
 
                 db.SaveChanges();

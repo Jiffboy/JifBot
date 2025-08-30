@@ -90,7 +90,7 @@ namespace JifBot
                 questions = "";
                 foreach (var question in pool)
                 {
-                    var line = $"- ||{question.Question}||\n";
+                    var line = $"- ||{question.Question.Replace("\n", " ")}||\n";
                     if (line.Length + questions.Length < 1024)
                     {
                         questions += line;
