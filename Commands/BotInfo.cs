@@ -11,75 +11,68 @@ namespace JifBot.Commands
     public class BotInfo : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("commands", "Shows all available commands.")]
-        public async Task Commands()
+        public async Task Commands(
+            [Summary("show", "Whether or not to show to the entire server, instead of just yourself. Defaults to false.")]bool ephemeral = false)
         {
             var db = new BotBaseContext();
-            var commands = db.Command.AsQueryable().OrderBy(command => command.Category);
-            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+            var categories = db.Command.AsEnumerable().GroupBy(command => command.Category).OrderByDescending(g => g.Count());
 
             var embed = new JifBotEmbedBuilder();
 
             embed.Title = "For more information on individual commands, use: /help";
-            embed.Description = "Contact Jif#3952 with any suggestions for more commands. To see all command defintions together, visit https://jifbot.com/commands";
+            embed.Description = "Contact jiffboy with any suggestions for more commands. For a more detailed overview, visit https://jifbot.com/commands";
 
-            string cat = commands.First().Category;
-            string list = "";
-            foreach (Command command in commands)
+            foreach(var category in categories)
             {
-                if (command.Category != cat)
-                {
-                    embed.AddField($"🏷 {cat}", list.Remove(list.LastIndexOf(", ")));
-                    cat = command.Category;
-                    list = "";
-                }
-                list += command.Name + ", ";
+                var commands = string.Join('\n', category.Select(e => $"- {e.Name}"));
+                embed.AddField($"🏷 {category.Key}", commands, inline: true);
             }
-            embed.AddField($"🏷 {cat}", list.Remove(list.LastIndexOf(", ")));
-            await RespondAsync(embed: embed.Build());
+            
+            await RespondAsync(embed: embed.Build(), ephemeral: !ephemeral);
         }
 
         [SlashCommand("help", "Gets information for a specified Jif Bot command.")]
         public async Task Help(
-            [Summary("command", "The command you would like help with")] string commandName)
+            [Summary("command", "The command you would like help with")] string commandName,
+            [Summary("show", "Whether or not to show to the entire server, instead of just yourself. Defaults to false.")] bool ephemeral = false)
         {
             var db = new BotBaseContext();
+            var embed = new JifBotEmbedBuilder();
             var command = db.Command.AsQueryable().Where(cmd => cmd.Name == commandName).FirstOrDefault();
-            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+
             if (command == null)
             {
                 await RespondAsync($"{commandName} is not a command, make sure the spelling is correct.", ephemeral: true);
                 return;
             }
+
             var parameters = db.CommandParameter.AsQueryable().Where(p => p.Command == command.Name);
-            string msg = $"**/{command.Name}**:\n{command.Description}";
+            embed.Title = $"/{command.Name}";
+            embed.Description = command.Description;
+
+            if (command.Permissions != null)
+            {
+                embed.AddField("Permission Requirements", command.Permissions);
+            }
+
+            var plist = "";
             if (parameters.Any())
             {
-                msg += "\n\n**Parameters:**\n";
+                plist += "";
                 foreach (CommandParameter parameter in parameters)
                 {
-                    msg += $"{(parameter.Required ? "[Required]" : "[Optional]")} **{parameter.Name}**: {parameter.Description}\n";
+                    plist += $"- {(parameter.Required ? "[Required]" : "[Optional]")} **{parameter.Name}**: {parameter.Description}\n";
                     var choices = db.CommandParameterChoice.AsQueryable().Where(p => p.Command == command.Name && p.Parameter == parameter.Name);
                     if (choices.Any())
                     {
-                        string choiceString = "";
-                        foreach (var choice in choices)
-                        {
-                            choiceString += $"{choice.Name}, ";
-                        }
-                        // remove last comma
-                        choiceString = choiceString.Remove(choiceString.Length - 2, 2);
-                        msg += $"> Options: {choiceString}\n";
+                        var olist = string.Join(", ", choices.Select(c => c.Name));
+                        plist += $"  > {olist}\n";
                     }
                 }
+                embed.AddField("Parameters", plist);
             }
-            await RespondAsync(msg);
-        }
 
-        [SlashCommand("uptime", "Reports how long the bot has been running.")]
-        public async Task Uptime()
-        {
-            TimeSpan uptime = DateTime.Now - Program.startTime;
-            await RespondAsync($"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s");
+            await RespondAsync(embed: embed.Build(), ephemeral: !ephemeral);
         }
 
         [SlashCommand("changelog", "Reports recent updates made to Jif Bot.")]
@@ -123,52 +116,72 @@ namespace JifBot.Commands
             [Choice("Global", "global")]
             [Choice("Server", "server")]
             [Choice("User", "user")]
-            [Summary("scope", "The scope of data to pull for")] string scope)
+            [Summary("scope", "The scope of data to pull for")] string scope,
+            [Summary("count", "The number of commands to display. Defaults to 10")] int count = 10)
         {
             var db = new BotBaseContext();
-            var days = new TimeSpan(30, 0, 0, 0);
-            var cutoff = DateTimeOffset.UtcNow.Subtract(days).ToUnixTimeSeconds();
+            var embed = new JifBotEmbedBuilder();
+            embed.Title = "Total command counts";
+
             List<CommandCall> commands = new List<CommandCall>();
             switch (scope)
             {
                 case "user":
-                    commands = db.CommandCall.AsQueryable().AsQueryable().Where(c => c.UserId == Context.User.Id && c.Timestamp > cutoff).ToList();
+                    commands = db.CommandCall.AsQueryable().Where(c => c.UserId == Context.User.Id).ToList();
+                    embed.Title += $" for {Context.User.Username}";
                     break;
 
                 case "server":
-                    commands = db.CommandCall.AsQueryable().AsQueryable().Where(c => c.ServerId == Context.Guild.Id && c.Timestamp > cutoff).ToList();
+                    commands = db.CommandCall.AsQueryable().Where(c => c.ServerId == Context.Guild.Id).ToList();
+                    embed.Title += $" for {Context.Guild.Name}";
                     break;
 
                 case "global":
-                    commands = db.CommandCall.AsQueryable().AsQueryable().Where(c => c.Timestamp > cutoff).ToList();
+                    commands = db.CommandCall.ToList();
+                    embed.Title += " globally";
                     break;
             }
 
             if (commands.Count == 0)
             {
-                await RespondAsync("No data found! Either something went wrong, or Jif Bot is DEAD");
+                await RespondAsync("No data found!", ephemeral: true);
             }
 
-            Dictionary<string, int> counts = new Dictionary<string, int>();
-            foreach (var command in commands)
-            {
-                if (counts.ContainsKey(command.Command))
-                    counts[command.Command]++;
-                else
-                    counts[command.Command] = 1;
-            }
-            var sortedCounts = from c in counts orderby c.Value descending select c;
-            int count = 0;
-            var msg = $"Total command uses in the past 30 days: {commands.Count}\n";
-            foreach (var pair in sortedCounts)
-            {
-                if (count == 5)
-                    break;
-                msg += $"{pair.Key}: {pair.Value}\n";
-                count++;
-            }
-            await RespondAsync(msg);
+            // All Time
+            var all = commands.GroupBy(c => c.Command).OrderByDescending(c => c.Count()).Take(count).ToList();
+            embed.AddField("All Time", $"```{GetStatsField(all)}```", inline: true);
+            embed.Description = $"**All Time:** {commands.Count}";
 
+            // Month
+            var monthCutoff = DateTimeOffset.UtcNow.AddDays(-30).ToUnixTimeSeconds();
+            commands = commands.Where(c => c.Timestamp > monthCutoff).ToList();
+            var month = commands.GroupBy(c => c.Command).OrderByDescending(c => c.Count()).Take(count).ToList();
+            embed.AddField("Last 30 days", $"```{GetStatsField(month)}```", inline: true);
+            embed.Description += $"\n**Last 30 Days:** {commands.Count}";
+
+            // Week
+            var weekCutoff = DateTimeOffset.UtcNow.AddDays(-7).ToUnixTimeSeconds();
+            commands = commands.Where(c => c.Timestamp > weekCutoff).ToList();
+            var week = commands.GroupBy(c => c.Command).OrderByDescending(c => c.Count()).Take(count).ToList();
+            embed.AddField("Last week", $"```{GetStatsField(week)}```", inline: true);
+            embed.Description += $"\n**Last Week:** {commands.Count}";
+
+            await RespondAsync(embed: embed.Build());
+
+        }
+
+        private string GetStatsField(List<IGrouping<string, CommandCall>> groupings)
+        {
+            const int maxlen = 18;
+            List<string> entries = new List<string>();
+            foreach (var group in groupings)
+            {
+                var cutoff = maxlen - group.Count().ToString().Count() - 1;
+                var cutCommand = group.Key.Count() > cutoff ? group.Key.Substring(0, cutoff) : group.Key;
+                var padCommand = cutCommand.PadRight(cutoff + 1);
+                entries.Add(padCommand + group.Count().ToString());
+            }
+            return string.Join("\n", entries);
         }
 
         private string GetChangeLogIcon(string type)

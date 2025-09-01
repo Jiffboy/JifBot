@@ -90,62 +90,6 @@ namespace JifBot.Commands
             await RespondAsync(fact);
         }
 
-        [SlashCommand("joke", "Tells a joke.")]
-        public async Task Joke()
-        {
-            System.Net.Http.HttpClient client = new System.Net.Http.HttpClient();
-            string source = await client.GetStringAsync("http://www.rinkworks.com/jokes/random.cgi");
-            string ptr = "< div class='content'>";
-            source = source.Remove(0, source.IndexOf(ptr) + ptr.Length);
-            ptr = "</h2>";
-            source = source.Remove(0, source.IndexOf(ptr) + ptr.Length);
-            ptr = "</td><td class='ad'>";
-            source = source.Remove(source.IndexOf(ptr));
-            source = source.Replace("<p>", string.Empty);
-            source = source.Replace("</p>", "\n");
-            source = source.Replace("<ul>", "\n");
-            source = source.Replace("<li>", "\n");
-            source = source.Replace("<em>", "*");
-            source = source.Replace("</ul>", "\n");
-            source = source.Replace("</li>", "\n");
-            source = source.Replace(">/em>", "*");
-            await RespondAsync(source);
-        }
-
-        [SlashCommand("inspire", "Gives an inspirational quote.")]
-        public async Task Inspire()
-        {
-            if (quoteList.Count == 0)
-            {
-                using (HttpClient client = new HttpClient())
-                {
-                    using (var response = await client.GetAsync("https://type.fit/api/quotes"))
-                    {
-                        string jsonResponse = await response.Content.ReadAsStringAsync();
-                        jsonResponse = jsonResponse.Replace("[", "{\"list\":[");
-                        jsonResponse = jsonResponse.Replace("]", "]}");
-                        try
-                        {
-                            QuoteResult result = JsonConvert.DeserializeObject<QuoteResult>(jsonResponse);
-                            quoteList = result.List;
-                            var target = result.List;
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex);
-                        }
-                    }
-                }
-            }
-            int count = quoteList.Count;
-            Random rnd = new Random();
-            int num = rnd.Next(count);
-            Quote quote = quoteList[num];
-            if (quote.author == null)
-                quote.author = "Author Unknown";
-            await RespondAsync("\"" + quote.text + "\"\n-" + quote.author);
-        }
-
         [SlashCommand("tiltycat", "Creates a cat at any angle you specify.")]
         public async Task TiltyCat(
             [Summary("degrees", "The number of degrees to rotate the cat clockwise.")] int degree)
@@ -159,12 +103,6 @@ namespace JifBot.Commands
                 bmp.Dispose();
                 await RespondWithFileAsync(ms, "tiltycat.png");
             }
-        }
-
-        [SlashCommand("league", "Asking for help is the first step towards recovery.")]
-        public async Task LeagueOfLegends()
-        {
-            await RespondAsync("https://www.youtube.com/watch?v=EjHKIJ90FtY");
         }
 
         [SlashCommand("imean", "Reports the number of times Jif has said \"I mean\".")]

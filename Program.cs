@@ -19,7 +19,6 @@ namespace JIfBot
             new Program().Start(args).GetAwaiter().GetResult();
 
         public static string configName = "Live";
-        public static DateTime startTime = DateTime.Now;
         public static string currLeagueVersion = "";
         public static Dictionary<string, string> championLookup = new Dictionary<string, string>();
         private DiscordSocketClient client;
@@ -104,7 +103,20 @@ namespace JIfBot
             {
                 // So we can have two word categories
                 var category = Regex.Replace(command.Module.Name, @"([A-Z][a-z]*)([A-Z][a-z]*)*", @"$1 $2").TrimEnd(' ');
-                db.Add(new Command { Name = command.Name, Description = command.Description, Category =  category});
+                var entry = new Command { Name = command.Name, Description = command.Description, Category = category };
+                db.Add(entry);
+                if (command.Preconditions.Count > 0)
+                {
+                    foreach (var precondition in command.Preconditions)
+                    {
+                        var test = 0;
+                        if (precondition.GetType() == typeof(Discord.Interactions.RequireUserPermissionAttribute))
+                        {
+                            var permission = (precondition as Discord.Interactions.RequireUserPermissionAttribute).GuildPermission.Value;
+                            entry.Permissions = permission.ToString();
+                        }
+                    }
+                }
                 foreach (var variable in command.Parameters)
                 {
                     db.Add(new CommandParameter { Command = command.Name, Name = variable.Name, Description = variable.Description, Required = variable.IsRequired });
@@ -112,6 +124,7 @@ namespace JIfBot
                     {
                         foreach(var choice in variable.Choices)
                         {
+                        
                             db.Add(new CommandParameterChoice { Command = command.Name, Parameter = variable.Name, Name = choice.Name });
                         }
                     }

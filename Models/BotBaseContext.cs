@@ -20,7 +20,6 @@ namespace JifBot.Models
 
         public virtual DbSet<Configuration> Configuration { get; set; }
         public virtual DbSet<Honk> Honk { get; set; }
-        public virtual DbSet<Message> Message { get; set; }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<Variable> Variable { get; set; }
         public virtual DbSet<Greeting> Greeting { get; set; }
@@ -67,17 +66,6 @@ namespace JifBot.Models
                 entity.HasKey(e => e.UserId);
 
                 entity.Property(e => e.UserId).ValueGeneratedNever();
-            });
-
-            modelBuilder.Entity<Message>(entity =>
-            {
-                entity.HasKey(e => e.UserId);
-
-                entity.Property(e => e.UserId).ValueGeneratedNever();
-
-                entity.Property(e => e.Message1)
-                    .IsRequired()
-                    .HasColumnName("Message");
             });
 
             modelBuilder.Entity<User>(entity =>

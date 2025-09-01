@@ -289,47 +289,6 @@ namespace JifBot.Commands
             await RespondAsync(result.ToString());
         }
 
-        [SlashCommand("poll", "Creates a strawpoll and returns the link.")]
-        public async Task Poll(
-            [Summary("question", "The question being asked.")] string question,
-            [Summary("answers", "The answers to choose from, separated by spaces.Surround options with spaces with quotation marks.")] string answers)
-        {
-            List<string> answerList = listFromString(answers);
-
-            if (answerList.Count < 2)
-            {
-                await RespondAsync("Invalid choices. Ensure all quotes are closed, and there are at least two options.", ephemeral: true);
-                return;
-            }
-
-            var db = new BotBaseContext();
-            string key = db.Variable.AsQueryable().Where(v => v.Name == "strawpollKey").First().Value;
-            string stringToSend = "{ \"poll\": {\"title\": \"" + question + "\",\"answers\": [";
-            foreach (string answer in answerList)
-            {
-                stringToSend += "\"" + answer + "\"";
-                
-                if(answer == answerList.Last())
-                {
-                    stringToSend += "]}}";
-                }
-                else
-                {
-                    stringToSend += ",";
-                }
-            }
-
-            var stringContent = new StringContent(stringToSend);
-
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("API-KEY", key);
-            HttpResponseMessage response = await client.PostAsync("https://strawpoll.com/api/poll", stringContent);
-            HttpContent content = response.Content;
-            string stuff = await content.ReadAsStringAsync();
-            var json = JObject.Parse(stuff);
-            await RespondAsync("https://strawpoll.com/" + (string)json.SelectToken("content_id"));
-        }
-
         [SlashCommand("avatar", "Gets the avatar for a user.")]
         public async Task Avatar(
             [Summary("user", "The Discord user to retrieve the avatar for.")] IGuildUser user,

@@ -11,41 +11,7 @@ using System.Net;
 namespace JifBot.Commands
 {
     public class Customization : InteractionModuleBase<SocketInteractionContext>
-    {
-        [SlashCommand("message", "Displays the message set with /setmessage.")]
-        public async Task Message()
-        {
-            var db = new BotBaseContext();
-            var message = db.Message.AsQueryable().Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
-            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
-            if (message == null)
-                await RespondAsync($"User does not have a message yet! use {config.Prefix}setmessage to set a message.", ephemeral: true);
-            else
-                await RespondAsync(message.Message1);
-        }
-
-        [SlashCommand("setmessage","Sets a message that can be displayed using /message.")]
-        public async Task SetMessage(
-            [Summary("message", "The message you would like to set. Must be text.")] string newmessage)
-        {
-            var db = new BotBaseContext();
-            var message = db.Message.AsQueryable().Where(msg => msg.UserId == Context.User.Id).FirstOrDefault();
-
-            var user = db.GetUser(Context.User);
-
-            var msg = "Message added!";
-
-            if (message == null)
-                db.Add(new Message { UserId = Context.User.Id, Message1 = newmessage });
-            else
-            {
-                msg += $"\n\nReplacing old message:\n{message.Message1}";
-                message.Message1 = newmessage;
-            }
-            db.SaveChanges();
-            await RespondAsync(msg);
-        }
-        
+    {       
         [SlashCommand("togglereactions","Toggles between enabling and disabling Jif Bot reactions.")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task ToggleReactions(
