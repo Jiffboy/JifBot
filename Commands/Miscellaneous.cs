@@ -1,23 +1,21 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Linq;
-using Discord;
+﻿using Discord;
 using Discord.Interactions;
 using JifBot.Models;
-using System.Drawing;
+using Newtonsoft.Json.Linq;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using System;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace JifBot.Commands
 {
     public class Miscellaneous : InteractionModuleBase<SocketInteractionContext>
     {
-        List<Quote> quoteList = new List<Quote>();
-
         [SlashCommand("honkcount", "Reports the number of times a user has said \"honk\".")]
         public async Task honkCount(
             [Summary("user", "The Discord user to count the honks for.")] IGuildUser user)
@@ -90,18 +88,49 @@ namespace JifBot.Commands
             await RespondAsync(fact);
         }
 
-        [SlashCommand("tiltycat", "Creates a cat at any angle you specify.")]
-        public async Task TiltyCat(
-            [Summary("degrees", "The number of degrees to rotate the cat clockwise.")] int degree)
+        [SlashCommand("tilty", "Transforms an image.")]
+        public async Task Tilty(
+            [Choice("Rotate", "rotate")]
+            [Choice("Flip Vertical", "vertical")]
+            [Choice("Flip Horizontal", "horizontal")]
+            [Summary("mode", "How to transform the image.")] string mode,
+            [Summary("image", "The image to transform. If unspecified, transforms a cat.")] IAttachment attachment = null,
+            [Summary("degrees", "The number of degrees to rotate clockwise (if rotating)")] int degree = 0)
         {
-            Bitmap bmp = TiltyEmoji.tiltCat(degree);
+            await DeferAsync();
+            var image = SixLabors.ImageSharp.Image.Load<Rgba32>("Media/tiltycat.png");
+            if (attachment != null)
+            {
+                if (!attachment.ContentType.StartsWith("image/"))
+                {
+                    await RespondAsync("Please supply a valid image filetype", ephemeral: true);
+                    return;
+                }
+                var client = new HttpClient();
+                Stream stream = await client.GetStreamAsync(attachment.Url);
+                image = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
+            }
+
+            switch (mode)
+            {
+                case "rotate":
+                    if (degree != 0)
+                        image.Mutate(x => x.Rotate(degree));
+                    break;
+
+                case "vertical":
+                    image.Mutate(x => x.Flip(FlipMode.Vertical));
+                    break;
+
+                case "horizontal":
+                    image.Mutate(x => x.Flip(FlipMode.Horizontal));
+                    break;
+            }
 
             using (MemoryStream ms = new MemoryStream())
             {
-                bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                ms.Seek(0, SeekOrigin.Begin);
-                bmp.Dispose();
-                await RespondWithFileAsync(ms, "tiltycat.png");
+                image.Save(ms, new PngEncoder { TransparentColorMode = PngTransparentColorMode.Clear });
+                await FollowupWithFileAsync(ms, "tilty.png");
             }
         }
 
@@ -154,58 +183,6 @@ namespace JifBot.Commands
         public async Task Reese()
         {
             await RespondWithFileAsync("Media/smoochie.mp4", text: "Ladies hit him up.");
-        }
-
-        class TiltyEmoji
-        {
-            private const string TILTY_CAT = "Media/tiltycat.png";
-            private const int OUTPUT_WIDTH = 128;
-            private const int OUTPUT_HEIGHT = 128;
-
-            public static Bitmap tiltCat(int degreeCount)
-            {
-                return openAndRotate(TILTY_CAT, degreeCount);
-            }
-
-            private static Bitmap openAndRotate(string filePath, int degreeCount)
-            {
-                try
-                {
-                    Bitmap bmp = (Bitmap)Bitmap.FromFile(filePath);
-                    return RotateImage(bmp, degreeCount);
-                }
-                catch (FileNotFoundException ex)
-                {
-                    Console.Out.WriteLine($"Couldn't find image at file path {filePath}");
-                    throw ex;
-                }
-            }
-
-            private static Bitmap RotateImage(Bitmap bmp, int angle)
-            {
-                float height = bmp.Height;
-                float width = bmp.Width;
-                int hypotenuse = System.Convert.ToInt32(System.Math.Floor(Math.Sqrt(height * height + width * width)));
-                Bitmap rotatedImage = new Bitmap(hypotenuse, hypotenuse);
-                using (Graphics g = Graphics.FromImage(rotatedImage))
-                {
-                    g.TranslateTransform((float)rotatedImage.Width / 2, (float)rotatedImage.Height / 2); //set the rotation point as the center into the matrix
-                    g.RotateTransform(angle); //rotate
-                    g.TranslateTransform(-(float)rotatedImage.Width / 2, -(float)rotatedImage.Height / 2); //restore rotation point into the matrix
-                    g.DrawImage(bmp, (hypotenuse - OUTPUT_WIDTH) / 2, (hypotenuse - OUTPUT_HEIGHT) / 2, OUTPUT_WIDTH, OUTPUT_HEIGHT);
-                }
-                return rotatedImage;
-            }
-        }
-        class Quote
-        {
-            public string text { get; set; }
-            public string author { get; set; }
-        }
-
-        class QuoteResult
-        {
-            public List<Quote> List { get; set; }
         }
     }
 }
