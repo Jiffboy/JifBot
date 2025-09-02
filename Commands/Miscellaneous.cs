@@ -103,7 +103,7 @@ namespace JifBot.Commands
             {
                 if (!attachment.ContentType.StartsWith("image/"))
                 {
-                    await RespondAsync("Please supply a valid image filetype", ephemeral: true);
+                    await FollowupAsync("Please supply a valid image filetype", ephemeral: true);
                     return;
                 }
                 var client = new HttpClient();
