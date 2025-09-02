@@ -208,13 +208,13 @@ namespace JifBot.Models
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.YayVotes)
                 .HasConversion(
-                    v => JsonSerializer.Serialize(v, null),
-                    v => JsonSerializer.Deserialize<List<ulong>>(v, null)
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<ulong>>(v, (JsonSerializerOptions?)null)
                 );
                 entity.Property(e => e.NayVotes)
                 .HasConversion(
-                    v => JsonSerializer.Serialize(v, null),
-                    v => JsonSerializer.Deserialize<List<ulong>>(v, null)
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<ulong>>(v, (JsonSerializerOptions?)null)
                 );
             });
 
