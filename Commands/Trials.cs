@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Collections.Generic;
+using JifBot.Embeds;
 
 
 namespace JifBot.Commands
@@ -52,8 +53,8 @@ namespace JifBot.Commands
 
             var dbUser = db.GetUser(Context.User);
 
-            JifBotEmbedBuilder embed = new JifBotEmbedBuilder();
-            embed.PopulateAsTrial(record.Entity, user);
+            var embed = new TrialEmbedBuilder();
+            embed.Populate(record.Entity, user);
 
             var builder = new ComponentBuilder()
                 .WithButton("Yay", $"yay-{record.Entity.Id}", style: ButtonStyle.Success)

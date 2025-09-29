@@ -4,6 +4,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using JifBot.Models;
+using JifBot.Embeds;
 using JIfBot;
 using System.Text.RegularExpressions;
 using System.Net;
@@ -307,8 +308,8 @@ namespace JifBot.Commands
                 IForumChannel forum = (IForumChannel)channel;
                 var thread = Context.Guild.GetThreadChannel(serverConfig.QotdThreadId) as IThreadChannel;
                 var post = thread != null ? await thread.GetMessageAsync(thread.Id) as IUserMessage : null;
-                var embed = new JifBotEmbedBuilder();
-                embed.PopulateAsQotd(Context.Guild.Id);
+                var embed = new QotdEmbedBuilder();
+                embed.Populate(Context.Guild.Id);
 
                 var component = new ComponentBuilder()
                     .WithButton("Submit a QOTD!", "qotd-submit", style: ButtonStyle.Success)
@@ -385,8 +386,8 @@ namespace JifBot.Commands
             {
                 var thread = Context.Guild.GetThreadChannel(config.QotdThreadId);
                 var post = await thread.GetMessageAsync(thread.Id) as IUserMessage;
-                var embed = new JifBotEmbedBuilder();
-                embed.PopulateAsQotd(Context.Guild.Id);
+                var embed = new QotdEmbedBuilder();
+                embed.Populate(Context.Guild.Id);
                 await post.ModifyAsync(msg => msg.Embed = embed.Build());
             }
             await RespondAsync("Question recorded. Thank you!", ephemeral: true);

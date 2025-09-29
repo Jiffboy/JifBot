@@ -1,22 +1,13 @@
 ﻿using Discord;
-using System;
 using JifBot.Models;
+using System;
 using System.Linq;
 
-namespace JifBot
+namespace JifBot.Embeds
 {
-    public class JifBotEmbedBuilder : EmbedBuilder
+    public class TrialEmbedBuilder : JifBotEmbedBuilder
     {
-        public JifBotEmbedBuilder()
-        {
-            var db = new BotBaseContext();
-            var color = db.Variable.AsQueryable().Where(V => V.Name == "embedColor").FirstOrDefault();
-            WithColor(new Color(Convert.ToUInt32(color.Value, 16)));
-            WithFooter("Made with love");
-            WithCurrentTimestamp();
-        }
-
-        public void PopulateAsTrial(CourtRecord record, IGuildUser user)
+        public void Populate(CourtRecord record, IGuildUser user)
         {
             var db = new BotBaseContext();
             var config = db.ServerConfig.AsQueryable().Where(c => c.ServerId == user.Guild.Id).FirstOrDefault();
@@ -37,9 +28,10 @@ namespace JifBot
             else
             {
                 var msg = "";
-                if (record.Status == "Approved") {
+                if (record.Status == "Approved")
+                {
                     msg = "APPROVED";
-                } 
+                }
                 else if (record.Status == "Denied")
                 {
                     msg = "DENIED";
@@ -72,36 +64,6 @@ namespace JifBot
             {
                 WithImageUrl(record.ImageUrl);
             }
-        }
-
-        public void PopulateAsQotd(ulong guildId)
-        {
-            var db = new BotBaseContext();
-
-            var pool = db.Qotd.AsQueryable().Where(q => q.ServerId == guildId && q.AskTimestamp == 0).ToList();
-            var postCount = db.Qotd.AsQueryable().Where(q => q.ServerId == guildId && q.AskTimestamp != 0).Count();
-
-            Title = "Submit your own QOTD!";
-            Description = "Questions will go into a pool, and one will be randomly selected every morning to be the QOTD. To submit a question, use /submitqotd below.\n\nDo your part to make sure the pool doesn't run dry!";
-
-            var questions = "[empty]";
-            if (pool.Count > 0)
-            {
-                questions = "";
-                foreach (var question in pool)
-                {
-                    var line = $"- ||{question.Question.Replace("\n", " ")}||\n";
-                    if (line.Length + questions.Length < 1024)
-                    {
-                        questions += line;
-                    }
-                }
-            }
-            
-            AddField("Questions Posted", postCount, inline: true);
-            AddField("Pool Size", pool.Count(), inline: true);
-            AddField("Current Pool", questions);
-            ThumbnailUrl = "https://cdn.discordapp.com/emojis/571859749860278293.png";
         }
     }
 }

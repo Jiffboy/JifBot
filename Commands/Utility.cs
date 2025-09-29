@@ -4,12 +4,11 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Globalization;
-using System.Net.Http;
 using Discord;
 using Discord.Interactions;
 using JifBot.Models;
+using JifBot.Embeds;
 using System.Data;
-using Newtonsoft.Json.Linq;
 using System.Threading;
 
 namespace JifBot.Commands

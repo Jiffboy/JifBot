@@ -129,7 +129,7 @@ namespace JifBot.Commands
 
             using (MemoryStream ms = new MemoryStream())
             {
-                image.Save(ms, new PngEncoder { TransparentColorMode = PngTransparentColorMode.Clear });
+                image.Save(ms, new PngEncoder());
                 await FollowupWithFileAsync(ms, "tilty.png");
             }
         }

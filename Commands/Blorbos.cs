@@ -5,6 +5,7 @@ using Discord.Interactions;
 using JifBot.Models;
 using System.IO;
 using System.Net;
+using JifBot.Embeds;
 
 namespace JifBot.Commands
 {

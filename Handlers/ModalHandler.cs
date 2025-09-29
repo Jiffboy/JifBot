@@ -4,6 +4,7 @@ using System.Net.Http;
 using Discord.WebSocket;
 using Discord;
 using JifBot.Models;
+using JifBot.Embeds;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -77,8 +78,8 @@ namespace JifBot
                 {
                     var thread = server.GetThreadChannel(config.QotdThreadId);
                     var post = await thread.GetMessageAsync(thread.Id) as IUserMessage;
-                    var embed = new JifBotEmbedBuilder();
-                    embed.PopulateAsQotd(server.Id);
+                    var embed = new QotdEmbedBuilder();
+                    embed.Populate(server.Id);
                     await post.ModifyAsync(msg => msg.Embed = embed.Build());
                 }
             }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Discord.Interactions;
 using JifBot.Models;
-using JIfBot;
+using JifBot.Embeds;
 
 namespace JifBot.Commands 
 {

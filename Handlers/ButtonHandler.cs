@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using System.Linq;
 using JifBot.Models;
+using JifBot.Embeds;
 using Discord;
 using System;
 using Microsoft.Extensions.DependencyInjection;
@@ -113,9 +114,9 @@ namespace JifBot
             db.SaveChanges();
 
             var message = component.Message;
-            var embed = new JifBotEmbedBuilder();
+            var embed = new TrialEmbedBuilder();
             var defendant = (component.Channel as SocketGuildChannel)?.Guild.GetUser(record.DefendantId);
-            embed.PopulateAsTrial(record, defendant);
+            embed.Populate(record, defendant);
 
 
             if (pollClosed)

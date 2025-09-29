@@ -2,6 +2,7 @@
 using System.Linq;
 using System;
 using JifBot.Models;
+using JifBot.Embeds;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
@@ -110,8 +111,8 @@ namespace JifBot
 
                                 question.AskTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                                 db.SaveChanges();
-                                var embed = new JifBotEmbedBuilder();
-                                embed.PopulateAsQotd(server.ServerId);
+                                var embed = new QotdEmbedBuilder();
+                                embed.Populate(server.ServerId);
                                 await post.ModifyAsync(msg => msg.Embed = embed.Build());
                             }
                         }

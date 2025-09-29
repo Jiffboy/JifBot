@@ -19,8 +19,6 @@ namespace JIfBot
             new Program().Start(args).GetAwaiter().GetResult();
 
         public static string configName = "Live";
-        public static string currLeagueVersion = "";
-        public static Dictionary<string, string> championLookup = new Dictionary<string, string>();
         private DiscordSocketClient client;
         private InteractionService interactions;
         public CommandService commands;
