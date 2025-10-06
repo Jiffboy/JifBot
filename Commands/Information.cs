@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Interactions;
+using JifBot.Embeds;
 using JifBot.Interfaces;
 using JifBot.Models;
-using JifBot.Embeds;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -190,6 +190,90 @@ namespace JifBot.Commands
             await RespondAsync(embed: embed.Build());
         }
 
+        [SlashCommand("summoner", "Gives a general overview of a league of legends summoner.")]
+        public async Task Summoner(
+            [Choice("BR1", "br1")]
+            [Choice("EUN1", "eun1")]
+            [Choice("EUW1", "euw1")]
+            [Choice("JP1", "jp1")]
+            [Choice("KR", "kr")]
+            [Choice("LA1", "la1")]
+            [Choice("LA2", "la2")]
+            [Choice("NA1", "na1")]
+            [Choice("OC1", "oc1")]
+            [Choice("TR1", "tr1")]
+            [Choice("RU", "ru")]
+            [Choice("PH2", "ph2")]
+            [Choice("SG2", "sg2")]
+            [Choice("TH2", "th2")]
+            [Choice("TW2", "tw2")]
+            [Choice("VN2", "vn2")]
+            [Summary("region", "The abbreviated name of the region the account is on.")] string platform,
+            [Summary("name", "The display name of the player.")] string name,
+            [Summary("tag", "The identifying tag of the account. Example: NA1")] string tag)
+        {
+            await DeferAsync();
+
+            var riotInterface = new RiotInterface();
+            var embed = new RiotEmbedBuilder();
+
+            var account = await riotInterface.GetAccount(name, tag);
+            var summoner = await riotInterface.GetSummoner(platform, account.puuid);
+            var region = riotInterface.GetRegionFromPlatform(platform);
+            var matchIds = await riotInterface.GetMatchIds(LeagueQueue.None, 20, account.puuid, region);
+            var masteries = await riotInterface.GetMasteries(platform, account.puuid);
+            var standings = await riotInterface.GetStandings(platform, account.puuid);
+
+            embed.ThumbnailUrl = summoner.profileIconUrl;
+            embed.Title = $"League profile for {account.gameName}#{account.tagLine}";
+            embed.Description = $"Summoner Level: {summoner.summonerLevel}";
+
+            foreach(var standing in standings)
+            {
+                embed.AddStanding(standing);
+            }
+
+            var masteryMsg = $"Total Mastery: {masteries.Sum(m => m.championPoints):n0}";
+            masteryMsg += $"\nChampions: {masteries.Count}";
+            embed.AddField("======= Champion Mastery =======", masteryMsg);
+
+            int count = 1;
+            foreach (var mastery in masteries)
+            {
+                if (count > 3)
+                    break;
+                embed.AddMastery(mastery, compact: true);
+                count++;
+            }
+
+            var matches = new List<RiotInterface.Match>();
+            foreach(var matchId in matchIds)
+            {
+                var match = await riotInterface.GetMatch(region, matchId);
+                matches.Add(match);
+            }
+
+            var recentMatches = "";
+            foreach(var group in matches.GroupBy(m => m.queue.name))
+            {
+                var wins = group.Count(m => m.participants.Where(p => p.puuid == account.puuid).First().win);
+                recentMatches += $"{group.First().queue.shorthand}: {wins}W - {group.Count() - wins}L\n";
+            }
+
+            embed.AddField("===== Recent Match History ======", recentMatches);
+
+            count = 1;
+            foreach (var match in matches)
+            {
+                if (count > 3)
+                    break;
+                embed.AddMatch(match, account.puuid, true, true);
+                count++;
+            }
+
+            await FollowupAsync(embed: embed.Build());
+        }
+
         [SlashCommand("mastery", "Gives the total mastery points for the top 10 most played champions for a League of Legends player.")]
         public async Task Mastery(
             [Choice("BR1", "br1")]
@@ -336,10 +420,10 @@ namespace JifBot.Commands
             }
 
             var summoner = await riotInterface.GetSummoner(platform, account.puuid);
-            var (gameMode, queueTitle) = riotInterface.GetQueueInfo(mode);
+            var queue = riotInterface.GetQueueInfo(mode);
 
             embed.ThumbnailUrl = summoner.profileIconUrl;
-            embed.Title = $"Last {count} {queueTitle} Matches for {name}#{tag}";
+            embed.Title = $"Last {count} {queue.name} Matches for {name}#{tag}";
 
             string highestChamp = GetMostUsedMapValue(champMap, "");
             string highestRole = GetMostUsedMapValue(roleMap, "");

@@ -1,5 +1,7 @@
 ﻿using JifBot.Models;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -17,7 +19,8 @@ namespace JifBot.Interfaces
             ARAM = 450,
             Quickplay = 490,
             Clash = 700,
-            Arena = 1700
+            Arena = 1700,
+            None = Int32.MaxValue
         }
     public class RiotInterface
     {
@@ -33,8 +36,6 @@ namespace JifBot.Interfaces
 
         async public Task<List<Mastery>> GetMasteries(string platform, string puuid)
         {
-            var region = GetRegionFromPlatform(platform);
-
             await VerifyData();
 
             using (HttpClient client = new HttpClient())
@@ -54,11 +55,17 @@ namespace JifBot.Interfaces
             // We don't need the data verified here, but only need to call once instead of per GetMatch() call
             await VerifyData();
 
-            var (gameMode, queueTitle) = GetQueueInfo(queue);
-
             using (HttpClient client = new HttpClient())
             {
-                var response = await client.GetAsync($"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?type={gameMode}&queue={(int)queue}&count={count}&api_key={apiKey}");
+                HttpResponseMessage response = new HttpResponseMessage();
+                if (queue != LeagueQueue.None)
+                {
+                    var queueInfo = GetQueueInfo(queue);
+                    response = await client.GetAsync($"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?type={queueInfo.type}&queue={(int)queue}&count={count}&api_key={apiKey}");
+                }
+                else
+                    response = await client.GetAsync($"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?count={count}&api_key={apiKey}");
+
                 string jsonResponse = await response.Content.ReadAsStringAsync();
                 List<string> matches = JsonSerializer.Deserialize<List<string>>(jsonResponse);
 
@@ -75,6 +82,18 @@ namespace JifBot.Interfaces
                 Match match = JsonSerializer.Deserialize<MatchResponse>(matchJsonResponse).info;
 
                 return match;
+            }
+        }
+
+        async public Task<List<Standing>> GetStandings(string platform, string puuid)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                var response = await client.GetAsync($"https://{platform}.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}?api_key={apiKey}");
+                string json = await response.Content.ReadAsStringAsync();
+                List<Standing> standings = JsonSerializer.Deserialize<List<Standing>>(json);
+
+                return standings;
             }
         }
 
@@ -110,6 +129,8 @@ namespace JifBot.Interfaces
 
         async public Task<Summoner> GetSummoner(string platform, string puuid)
         {
+            await VerifyData();
+
             using (HttpClient client = new HttpClient())
             {
                 using (var response = await client.GetAsync($"https://{platform}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/{puuid}?api_key={apiKey}"))
@@ -131,29 +152,30 @@ namespace JifBot.Interfaces
             }
         }
 
-        public (string type, string name) GetQueueInfo(LeagueQueue queue)
+        public QueueInfo GetQueueInfo(LeagueQueue queue)
         {
             switch (queue)
             {
                 case LeagueQueue.Blind:
-                    return ("normal", "Summoner's Rift: Blind Pick");
+                    return new QueueInfo("normal", "Summoner's Rift: Blind Pick", "Blind");
                 case LeagueQueue.Draft:
-                    return ( "normal", "Summoner's Rift: Draft Pick");
-                default:
+                    return new QueueInfo("normal", "Summoner's Rift: Draft Pick", "Draft");
                 case LeagueQueue.Ranked:
-                    return ( "ranked", "Summoner's Rift: Ranked Solo");
+                    return new QueueInfo("ranked", "Summoner's Rift: Ranked Solo", "Ranked");
                 case LeagueQueue.Flex:
-                    return ("ranked", "Summoner's Rift: Ranked Flex");
+                    return new QueueInfo("ranked", "Summoner's Rift: Ranked Flex", "Flex");
                 case LeagueQueue.Clash:
-                    return ("normal", "Summoner's Rift: Clash");
+                    return new QueueInfo("normal", "Summoner's Rift: Clash", "Clash");
                 case LeagueQueue.ARAM:
-                    return ("normal", "The Howling Abyss");
+                    return new QueueInfo("normal", "The Howling Abyss", "ARAM");
                 case LeagueQueue.Arena:
-                    return ("ranked", "Rings of Wrath: Arena");
+                    return new QueueInfo("ranked", "Rings of Wrath: Arena", "Arena");
                 case LeagueQueue.Custom:
-                    return ("normal", "Summoner's Rift: Custom Match");
+                    return new QueueInfo("normal", "Summoner's Rift: Custom Match", "Custom");
                 case LeagueQueue.Quickplay:
-                    return ("normal", "Summoner's Rift: Quickplay");
+                    return new QueueInfo("normal", "Summoner's Rift: Quickplay", "Custom");
+                default:
+                    return new QueueInfo("normal", "Special Gamemode", "Special");
 
             }
         }
@@ -227,6 +249,15 @@ namespace JifBot.Interfaces
             public List<Participant> participants { get; set; }
             public long gameDuration { get; set; }
             public long gameStartTimestamp { get; set; }
+            public int queueId
+            {
+                set
+                {
+                    var riotInterface = new RiotInterface();
+                    queue = riotInterface.GetQueueInfo((LeagueQueue)value);
+                }
+            }
+            public QueueInfo queue { get; set; }
         }
 
         public class Participant
@@ -240,7 +271,8 @@ namespace JifBot.Interfaces
                 }
             }
             public Champion champion { get; set; }
-            public string teamPosition {
+            public string teamPosition
+            {
                 set
                 {
                     string pos = value.ToString();
@@ -290,6 +322,30 @@ namespace JifBot.Interfaces
             public string gameName { get; set; }
             public string tagLine { get; set; }
             public string puuid { get; set; }
+        }
+
+        public class QueueInfo
+        {
+            public QueueInfo(string t, string n, string s)
+            {
+                type = t;
+                name = n;
+                shorthand = s;
+            }
+
+            public string type { get; set; }
+            public string name { get; set; }
+            public string shorthand { get; set; }
+        }
+
+        public class Standing
+        {
+            public string queueType { get; set; }
+            public string tier { get; set; }
+            public string rank { get; set; }
+            public int leaguePoints { get; set; }
+            public int wins { get; set; }
+            public int losses { get; set; }
         }
     }
 }
