@@ -99,20 +99,54 @@ namespace JifBot
         public async Task HandleReactionAdded(Cacheable<IUserMessage, ulong> cache, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             var db = new BotBaseContext();
-            var serverConfig = db.ServerConfig.AsQueryable().Where(s => s.ReactMessageId == cache.Id).FirstOrDefault();
+            var server = ((SocketGuildChannel)reaction.Channel).Guild;
+            var serverConfig = db.GetServerConfig(server);
+            var user = server.GetUser(reaction.UserId);
             var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
 
-            if (config != null)
+            // This is Jif Bot
+            if (config == null || user.Id == config.Id)
+            {
+                return;
+            }
+
+            // Self assigned roles
+            if (serverConfig.ReactMessageId == cache.Id)
             {
                 var role = db.ReactRole.AsQueryable().Where(s => s.ServerId == serverConfig.ServerId && s.Emote == reaction.Emote.ToString()).FirstOrDefault();
                 if (role != null)
                 {
-                    var server = bot.GetGuild(serverConfig.ServerId);
                     var serverRole = server.GetRole(role.RoleId);
-                    var user = server.GetUser(reaction.UserId);
-                    
-                    if(serverRole != null && user.Id != config.Id)
+
+                    if(serverRole != null)
                         await user.AddRoleAsync(serverRole);
+                }
+            }
+
+            // Star Board
+            if (reaction.Emote.ToString() == "⭐" && (user.GuildPermissions.Administrator || !serverConfig.StarAdminRequired))
+            {
+                if (serverConfig.StarMessageId != 0 && serverConfig.StarChannelId != 0)
+                {
+                    var author = (await reaction.Channel.GetMessageAsync(reaction.MessageId)).Author;
+                    var jifBotUser = db.GetUser(author as SocketUser);
+                    var starCount = db.StarCount.Where(s => s.UserId == jifBotUser.UserId).FirstOrDefault();
+
+                    if (starCount == null)
+                    {
+                        starCount = new StarCount { UserId = jifBotUser.UserId, ServerId = server.Id, Count = 0};
+                        db.Add(starCount);
+                    }
+
+                    starCount.Count++;
+                    db.SaveChanges();
+                    var msg = await server.GetTextChannel(serverConfig.StarChannelId).GetMessageAsync(serverConfig.StarMessageId) as IUserMessage;
+                    if (msg != null)
+                    {
+                        var embed = new StarBoardEmbedBuilder();
+                        embed.Populate(server);
+                        await msg.ModifyAsync(msg => msg.Embed = embed.Build());
+                    }
                 }
             }
         }
@@ -120,18 +154,57 @@ namespace JifBot
         public async Task HandleReactionRemoved(Cacheable<IUserMessage, ulong> cache, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             var db = new BotBaseContext();
-            var config = db.ServerConfig.AsQueryable().Where(s => s.ReactMessageId == cache.Id).FirstOrDefault();
-            if (config != null)
+            var server = ((SocketGuildChannel)reaction.Channel).Guild;
+            var serverConfig = db.GetServerConfig(server);
+            var user = server.GetUser(reaction.UserId);
+            var config = db.Configuration.AsQueryable().Where(cfg => cfg.Name == Program.configName).First();
+
+            // This is Jif Bot
+            if (config == null || user.Id == config.Id)
             {
-                var role = db.ReactRole.AsQueryable().Where(s => s.ServerId == config.ServerId && s.Emote == reaction.Emote.ToString()).FirstOrDefault();
+                return;
+            }
+
+            // Self assigned roles
+            if (serverConfig.ReactMessageId == cache.Id)
+            {
+                var role = db.ReactRole.AsQueryable().Where(s => s.ServerId == serverConfig.ServerId && s.Emote == reaction.Emote.ToString()).FirstOrDefault();
                 if (role != null)
                 {
-                    var server = bot.GetGuild(config.ServerId);
                     var serverRole = server.GetRole(role.RoleId);
-                    var user = server.GetUser(reaction.UserId);
 
                     if (serverRole != null)
-                        await user.RemoveRoleAsync((IRole)serverRole);
+                        await user.RemoveRoleAsync(serverRole);
+                }
+            }
+
+            // Star Board
+            if (reaction.Emote.ToString() == "⭐" && (user.GuildPermissions.Administrator || !serverConfig.StarAdminRequired))
+            {
+                if (serverConfig.StarMessageId != 0 && serverConfig.StarChannelId != 0)
+                {
+                    var author = (await reaction.Channel.GetMessageAsync(reaction.MessageId)).Author;
+                    var starCount = db.StarCount.Where(s => s.UserId == author.Id).FirstOrDefault();
+                    if (starCount == null)
+                    {
+                        return;
+                    }
+
+                    starCount.Count--;
+                    if (starCount.Count == 0)
+                    {
+                        db.Remove(starCount);
+                    }
+
+                    db.SaveChanges();
+
+                    var msg = await server.GetTextChannel(serverConfig.StarChannelId).GetMessageAsync(serverConfig.StarMessageId) as IUserMessage;
+                    if (msg != null)
+                    {
+                        var embed = new StarBoardEmbedBuilder();
+                        embed.Populate(server);
+                        await msg.ModifyAsync(msg => msg.Embed = embed.Build());
+                    }
                 }
             }
         }

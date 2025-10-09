@@ -393,6 +393,95 @@ namespace JifBot.Commands
             await RespondAsync("Question recorded. Thank you!", ephemeral: true);
         }
 
+        [SlashCommand("starboard", "Manages a starboard to track how many star reacts someone has.")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task Starboard(
+            [Choice("Set Board", "set")]
+            [Choice("Delete Board", "delete")]
+            [Choice("Clear Board", "clear")]
+            [Summary("action", "The action to take")] string action,
+            [Summary("channel", "The channel to place the Starboard in")] ITextChannel channel = null,
+            [Summary("admin-only", "Determines if stars or only counted for admins, or everybody.")] bool admin = true)
+        {
+            if (channel == null)
+                channel = Context.Channel as ITextChannel;
+            var db = new BotBaseContext();
+            var config = db.GetServerConfig(Context.Guild);
+
+            var boardChannel = Context.Guild.GetChannel(config.StarChannelId) as ITextChannel;
+            IUserMessage boardMessage = null;
+
+            if (boardChannel != null)
+            {
+                boardMessage = await boardChannel.GetMessageAsync(config.StarMessageId) as IUserMessage;
+            }
+
+            var builder = new StarBoardEmbedBuilder();
+
+            switch (action)
+            {
+                case "set":
+                    builder.Populate(Context.Guild);
+                    var msg = await channel.SendMessageAsync(embed: builder.Build());
+
+                    config.StarChannelId = msg.Channel.Id;
+                    config.StarMessageId = msg.Id;
+                    config.StarAdminRequired = admin;
+                    db.SaveChanges();
+
+                    if (boardMessage != null)
+                    {
+                        await boardMessage.DeleteAsync();
+                    }
+
+                    await RespondAsync("Board set successfully", ephemeral: true);
+
+                    return;
+
+                case "delete":
+                    if(config.StarMessageId == 0)
+                    {
+                        await RespondAsync("No board set!", ephemeral: true);
+                        return;
+                    };
+
+                    config.StarMessageId = 0;
+                    config.StarChannelId = 0;
+                    db.SaveChanges();
+
+                    if (boardMessage == null)
+                    {
+                        await RespondAsync("Could not find board, not deleting. However, stars will no long be tracked.", ephemeral: true);
+                    }
+                    else
+                    {
+                        await boardMessage.DeleteAsync();
+                        await RespondAsync("Board deleted successfully", ephemeral: true);
+                    }
+
+                    return;
+
+                case "clear":
+                    var stars = db.StarCount.Where(s => s.ServerId == Context.Guild.Id).ToList();
+
+                    foreach (var star in stars)
+                    {
+                        db.Remove(star);
+                    }
+                    db.SaveChanges();
+
+                    
+                    builder.Populate(Context.Guild);
+
+                    if (boardMessage != null)
+                    {
+                        await boardMessage.ModifyAsync(msg => msg.Embed = builder.Build());
+                    }
+                    await RespondAsync("Board successfully cleared", ephemeral: true);
+                    return;
+            }
+        }
+
         private ulong GetConfigValue(string field, ServerConfig config)
         {
             switch (field)

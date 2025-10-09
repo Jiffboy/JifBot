@@ -37,6 +37,7 @@ namespace JifBot.Models
         public virtual DbSet<CourtRecord> CourtRecord { get; set; }
         public virtual DbSet<Qotd> Qotd { get; set; }
         public virtual DbSet<Timer> Timer { get; set; }
+        public virtual DbSet<StarCount> StarCount { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -226,6 +227,11 @@ namespace JifBot.Models
             modelBuilder.Entity<Timer>(entity =>
             {
                 entity.HasKey(e => e.Id);
+            });
+
+            modelBuilder.Entity<StarCount>(entity =>
+            {
+                entity.HasKey(e => new { e.UserId, e.ServerId });
             });
 
             OnModelCreatingPartial(modelBuilder);
