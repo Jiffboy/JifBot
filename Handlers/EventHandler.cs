@@ -129,23 +129,26 @@ namespace JifBot
                 if (serverConfig.StarMessageId != 0 && serverConfig.StarChannelId != 0)
                 {
                     var author = (await reaction.Channel.GetMessageAsync(reaction.MessageId)).Author;
-                    var jifBotUser = db.GetUser(author as SocketUser);
-                    var starCount = db.StarCount.Where(s => s.UserId == jifBotUser.UserId).FirstOrDefault();
-
-                    if (starCount == null)
+                    if (author.Id != reaction.UserId)
                     {
-                        starCount = new StarCount { UserId = jifBotUser.UserId, ServerId = server.Id, Count = 0};
-                        db.Add(starCount);
-                    }
+                        var jifBotUser = db.GetUser(author as SocketUser);
+                        var starCount = db.StarCount.Where(s => s.UserId == jifBotUser.UserId).FirstOrDefault();
 
-                    starCount.Count++;
-                    db.SaveChanges();
-                    var msg = await server.GetTextChannel(serverConfig.StarChannelId).GetMessageAsync(serverConfig.StarMessageId) as IUserMessage;
-                    if (msg != null)
-                    {
-                        var embed = new StarBoardEmbedBuilder();
-                        embed.Populate(server);
-                        await msg.ModifyAsync(msg => msg.Embed = embed.Build());
+                        if (starCount == null)
+                        {
+                            starCount = new StarCount { UserId = jifBotUser.UserId, ServerId = server.Id, Count = 0 };
+                            db.Add(starCount);
+                        }
+
+                        starCount.Count++;
+                        db.SaveChanges();
+                        var msg = await server.GetTextChannel(serverConfig.StarChannelId).GetMessageAsync(serverConfig.StarMessageId) as IUserMessage;
+                        if (msg != null)
+                        {
+                            var embed = new StarBoardEmbedBuilder();
+                            embed.Populate(server);
+                            await msg.ModifyAsync(msg => msg.Embed = embed.Build());
+                        }
                     }
                 }
             }
@@ -184,26 +187,29 @@ namespace JifBot
                 if (serverConfig.StarMessageId != 0 && serverConfig.StarChannelId != 0)
                 {
                     var author = (await reaction.Channel.GetMessageAsync(reaction.MessageId)).Author;
-                    var starCount = db.StarCount.Where(s => s.UserId == author.Id).FirstOrDefault();
-                    if (starCount == null)
+                    if (author.Id != reaction.UserId)
                     {
-                        return;
-                    }
+                        var starCount = db.StarCount.Where(s => s.UserId == author.Id).FirstOrDefault();
+                        if (starCount == null)
+                        {
+                            return;
+                        }
 
-                    starCount.Count--;
-                    if (starCount.Count == 0)
-                    {
-                        db.Remove(starCount);
-                    }
+                        starCount.Count--;
+                        if (starCount.Count == 0)
+                        {
+                            db.Remove(starCount);
+                        }
 
-                    db.SaveChanges();
+                        db.SaveChanges();
 
-                    var msg = await server.GetTextChannel(serverConfig.StarChannelId).GetMessageAsync(serverConfig.StarMessageId) as IUserMessage;
-                    if (msg != null)
-                    {
-                        var embed = new StarBoardEmbedBuilder();
-                        embed.Populate(server);
-                        await msg.ModifyAsync(msg => msg.Embed = embed.Build());
+                        var msg = await server.GetTextChannel(serverConfig.StarChannelId).GetMessageAsync(serverConfig.StarMessageId) as IUserMessage;
+                        if (msg != null)
+                        {
+                            var embed = new StarBoardEmbedBuilder();
+                            embed.Populate(server);
+                            await msg.ModifyAsync(msg => msg.Embed = embed.Build());
+                        }
                     }
                 }
             }
