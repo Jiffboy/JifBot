@@ -364,6 +364,7 @@ namespace JifBot.Commands
 
             JifBotEmbedBuilder embed = new JifBotEmbedBuilder();
             embed.Title = character.Name != "" ? character.Name : character.Key;
+            embed.Url = $"https://jifbot.com/blorbopedia/{character.Key}";
             embed.Description = "";
             if (character.Title != "")
                 embed.Description += $"*{character.Title}*\n\n";
