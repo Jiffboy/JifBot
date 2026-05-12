@@ -6,6 +6,7 @@ using JifBot.Models;
 using System.IO;
 using System.Net;
 using JifBot.Embeds;
+using System;
 
 namespace JifBot.Commands
 {
@@ -31,14 +32,23 @@ namespace JifBot.Commands
                 }
                 else if (characters.Count() > 1)
                 {
-                    var msg = $"{author.Username}'s characters:";
+                    var embed = new JifBotEmbedBuilder();
+                    embed.Title = $"{author.Username}'s characters";
+
+                    embed.ThumbnailUrl = author.GetDisplayAvatarUrl();
                     foreach (var character in characters)
                     {
-                        msg += $"\n{character.Key}";
-                        if (character.Name != "")
-                            msg += $" - [{character.Name}]";
+                        var desc = $"Id: `{character.Key}`";
+                        desc += $"\n[Blorbopedia](https://jifbot.com/b/{character.Key.Replace(" ", "%20")})";
+                        if (character.Resources != "" && Uri.IsWellFormedUriString(character.Resources, UriKind.Absolute))
+                        {
+                            desc += $"\n[Resources]({character.Resources})";
+                        }
+                        desc += $"\n";
+                        embed.AddField(character.Name, desc, inline: true);
+
                     }
-                    await RespondAsync(msg);
+                    await RespondAsync(embed: embed.Build());
                     return;
                 }
                 else if (key == null)
@@ -364,7 +374,7 @@ namespace JifBot.Commands
 
             JifBotEmbedBuilder embed = new JifBotEmbedBuilder();
             embed.Title = character.Name != "" ? character.Name : character.Key;
-            embed.Url = $"https://jifbot.com/blorbopedia/{character.Key}";
+            embed.Url = $"https://jifbot.com/b/{character.Key.Replace(" ", "%20")}";
             embed.Description = "";
             if (character.Title != "")
                 embed.Description += $"*{character.Title}*\n\n";
@@ -384,8 +394,8 @@ namespace JifBot.Commands
                 embed.AddField("Origin", character.Origin, inline: true);
             if (character.Residence != "")
                 embed.AddField("Residence", character.Residence, inline: true);
-            if (character.Resources != "")
-                embed.AddField("Additional Resources", character.Resources);
+            if (character.Resources != "" && Uri.IsWellFormedUriString(character.Resources, UriKind.Absolute))
+                embed.AddField("Additional Resources", $"<{character.Resources}>");
             if (tags.Count > 0)
             {
                 var tagline = "";
