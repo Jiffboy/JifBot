@@ -4,7 +4,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using JifBot.Models;
-using JifBot.Embeds;
+using JifBot.Builders;
 using JIfBot;
 using System.Text.RegularExpressions;
 using System.Net;

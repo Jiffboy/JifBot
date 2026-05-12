@@ -3,7 +3,7 @@ using Discord.WebSocket;
 using Discord;
 using System;
 using JifBot.Models;
-using JifBot.Embeds;
+using JifBot.Builders;
 using System.Linq;
 using Discord.Commands;
 using Microsoft.Extensions.DependencyInjection;

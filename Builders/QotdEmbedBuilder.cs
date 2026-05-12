@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 
-namespace JifBot.Embeds
+namespace JifBot.Builders
 {
     public class QotdEmbedBuilder : JifBotEmbedBuilder
     {

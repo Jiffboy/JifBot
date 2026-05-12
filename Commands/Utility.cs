@@ -7,7 +7,7 @@ using System.Globalization;
 using Discord;
 using Discord.Interactions;
 using JifBot.Models;
-using JifBot.Embeds;
+using JifBot.Builders;
 using System.Data;
 using System.Threading;
 
