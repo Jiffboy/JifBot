@@ -40,7 +40,7 @@ namespace JifBot.Commands
                     foreach (var character in characters)
                     {
                         var desc = $"Id: `{character.Key}`";
-                        desc += $"\n[Blorbopedia](https://jifbot.com/b/{character.Key.Replace(" ", "%20")})";
+                        desc += $"\n[Blorbopedia]({character.ToUrl()})";
                         if (character.Resources != "" && Uri.IsWellFormedUriString(character.Resources, UriKind.Absolute))
                         {
                             desc += $"\n[Resources]({character.Resources})";
@@ -237,7 +237,7 @@ namespace JifBot.Commands
 
             JifBotEmbedBuilder embed = new JifBotEmbedBuilder();
             embed.Title = character.Name != "" ? character.Name : character.Key;
-            embed.Url = $"https://jifbot.com/b/{character.Key.Replace(" ", "%20")}";
+            embed.Url = character.ToUrl();
             embed.Description = "";
             if (character.Title != "")
                 embed.Description += $"*{character.Title}*\n\n";

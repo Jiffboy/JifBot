@@ -35,11 +35,19 @@ namespace JifBot.Utils
         }
 
         public CommonImage(byte[] imageBytes,  string imageType)
-        { 
-            imgBytes = imageBytes;
-            imgType = imageType;
-            imgName = $"image.{imgType}";
-            thumbnailUrl = $"attachment://{imgName}";
+        {
+            if (imageBytes == null || imageType == null)
+            {
+                isValid = false;
+                isNull = true;
+            }
+            else
+            {
+                imgBytes = imageBytes;
+                imgType = imageType;
+                imgName = $"image.{imgType}";
+                thumbnailUrl = $"attachment://{imgName}";
+            }
         }
 
         public MemoryStream GetMS()

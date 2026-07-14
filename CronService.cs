@@ -1,12 +1,13 @@
-﻿using System.Threading.Tasks;
-using System.Linq;
-using System;
-using JifBot.Models;
-using JifBot.Builders;
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
+using JifBot.Builders;
+using JifBot.Models;
+using JifBot.Utils;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace JifBot
 {
@@ -58,6 +59,18 @@ namespace JifBot
 
                         await channel.SendMessageAsync(msg);
                     }
+
+                    // Handle discord events
+                    var events = db.Event.Where(e => e.Status == "Posted" && e.Deadline > 0).ToList();
+                    foreach (var ev in events)
+                    {
+                        if (currTimestamp > ev.Deadline)
+                        {
+                            var eventResolver = new EventResolver(client);
+                            await eventResolver.ResolveEvent(ev);
+                        }
+                    }
+                    
 
                     // Handle Qotds
                     if (now.Hour == 9 && now.DayOfWeek != lastQotdDay)

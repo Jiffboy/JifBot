@@ -11,7 +11,11 @@
         public long Deadline { get; set; }
         public long EventTime { get; set; }
         public int EventDuration { get; set; }
+        public string EventLocation { get; set; }
         public ulong UserId { get; set; }
+        public ulong EmbedServerId { get; set; }
+        public ulong EmbedChannelId { get; set; }
+        public ulong EmbedMessageId { get; set; }
         public ulong ForumChannelId { get; set; }
         public string Status { get; set; }
         public byte[] Image { get; set; }

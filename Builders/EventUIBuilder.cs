@@ -89,7 +89,8 @@ namespace JifBot.Builders
                 .WithTitle("Event Details")
                 .WithCustomId($"event-eventedit-{ev.Id}")
                 .AddTextInput("Event Start Time", "start", TextInputStyle.Short, required: true, value: start, placeholder: timePlaceholder)
-                .AddTextInput("Event Duration (Hours)", "duration", TextInputStyle.Short, required: true, value: $"{ev.EventDuration}");
+                .AddTextInput("Event Duration (Hours)", "duration", TextInputStyle.Short, required: true, value: $"{ev.EventDuration}")
+                .AddTextInput("Event Location", "location", TextInputStyle.Short, required: false, value: $"{ev.EventLocation}", placeholder: "The moon");
             return mb.Build();
         }
 
@@ -103,9 +104,30 @@ namespace JifBot.Builders
             return mb.Build();
         }
 
+        public Modal BuildSignupModal(Event ev, List<EventRole> roles, List<Character> characters)
+        {
+            var mb = new ModalBuilder()
+                .WithTitle("Sign Up!")
+                .WithCustomId($"event-signup-{ev.Id}");
+
+            if(characters.Count > 0)
+            {
+                mb.AddSelectMenu("Character", "character", characters.ConvertAll(c => new SelectMenuOptionBuilder(c.Name, c.Key)));
+                mb.AddTextDisplay("Can't find your character? Please create them in the [Blorbopedia](https://jifbot.com/blorbopedia/edit) and try again!");
+            }
+
+            if (roles.Count > 0)
+            {
+                mb.AddSelectMenu("Role", "role", roles.ConvertAll(r => new SelectMenuOptionBuilder(r.Name, r.Name)));
+            }
+
+            return mb.Build();
+        }
+
         public Embed BuildEmbed(Event ev, SocketUser user)
         {
             var embed = new JifBotEmbedBuilder();
+            var db = new BotBaseContext();
             var img = new CommonImage(ev.Image, ev.ImageType);
 
             string eventTypeStr;
@@ -117,7 +139,7 @@ namespace JifBot.Builders
                     eventTypeStr = "Longform";
                     break;
                 case "event":
-                    eventTypeStr = "In-Game";
+                    eventTypeStr = ev.EventLocation;
                     break;
                 case "none":
                 default:
@@ -140,6 +162,26 @@ namespace JifBot.Builders
             embed.Title = $"{ev.Title} [{entrantTypeStr}]";
             embed.Description = ev.Description;
             embed.Author = new EmbedAuthorBuilder().WithName(user.GlobalName).WithIconUrl(user.GetDisplayAvatarUrl());
+
+            var participants = db.EventParticipant.Where(e => e.EventId == ev.Id).ToList();
+            var participantStr = GetParticipantString(ev, participants);
+
+
+            var roleStr = "";
+            var roles = db.EventRole.Where(r => r.EventId == ev.Id).ToList();
+            if (roles.Count > 0)
+            {
+                foreach (var role in roles)
+                {
+                    var taken = participants.Where(p => p.RoleName == role.Name).ToList();
+                    roleStr += $"{role.Name} ({taken.Count}";
+                    if (role.Limit > 0)
+                    {
+                        roleStr += $"/{role.Limit}";
+                    }
+                    roleStr += ")\n";
+                }
+            }
 
             var eventStr = "";
             if (ev.EventType == "event")
@@ -169,11 +211,29 @@ namespace JifBot.Builders
                 embed.AddField("Signups", signupStr, inline: true);
             }
 
+            if (roleStr != "")
+            {
+                embed.AddField("Roles", roleStr);
+            }
+
+            var participantCnt = ev.Limit > 0 ? $"({participants.Count}/{ev.Limit})" : $"({participants.Count})";
+            embed.AddField($"Participants {participantCnt}", participantStr);
+
             if (!img.isNull)
             {
                 embed.ThumbnailUrl = img.thumbnailUrl;
             }
+
+
             return embed.Build();
+        }
+
+        public MessageComponent BuildEmbedComponent(Event ev)
+        {
+            var builder = new ComponentBuilder()
+                .WithButton("Sign Up", $"event-signup-{ev.Id}", style: ButtonStyle.Success)
+                .WithButton("Leave", $"event-leave-{ev.Id}", style: ButtonStyle.Danger);
+            return builder.Build();
         }
 
         private void AddOverviewComponent(Event ev, ContainerBuilder container)
@@ -195,10 +255,7 @@ namespace JifBot.Builders
             }
 
             container
-                .WithTextDisplay($"### Signup Deadline:")
-                .WithTextDisplay($"{deadline}")
-                .WithTextDisplay("### Signup Limit:")
-                .WithTextDisplay($"{limit}")
+                .WithTextDisplay($"### Signup Deadline:\n{deadline}\n### Signup Limit:\n{limit}")
                 .WithSeparator()
                 .WithActionRow(new ActionRowBuilder()
                     .WithButton("Edit", $"event-edit-{ev.Id}", style: ButtonStyle.Primary));
@@ -220,15 +277,13 @@ namespace JifBot.Builders
                     .WithCustomId($"event-type-{ev.Id}")
                     .AddOption("Discord Event", "event", emote: new Emoji("🗓️"), isDefault: ev.EventType == "event")
                     .AddOption("Longform Thread", "thread", emote: new Emoji("🧵"), isDefault: ev.EventType == "thread")
-                    .AddOption("Do Not Post", "none", emote: new Emoji("❌"), isDefault: ev.EventType == "none")));
+                    .AddOption("Ping Only", "none", emote: new Emoji("🔔"), isDefault: ev.EventType == "none")));
 
             if (ev.EventType == "event")
             {
+                var location = ev.EventLocation != "" ? ev.EventLocation : "[Unspecified]";
                 container
-                    .WithTextDisplay("### Event Start:")
-                    .WithTextDisplay($"{start}")
-                    .WithTextDisplay("### Event Duration:")
-                    .WithTextDisplay($"{ev.EventDuration} hours")
+                    .WithTextDisplay($"### Event Start:\n{start}\n### Event Duration:\n{ev.EventDuration} hours\n### Event Location:\n{location}")
                     .WithSeparator()
                     .WithActionRow(new ActionRowBuilder()
                         .WithButton("Edit", $"event-eventedit-{ev.Id}", style: ButtonStyle.Primary));
@@ -275,6 +330,34 @@ namespace JifBot.Builders
             list.Add(new ButtonBuilder(">>", $"event-next-{ev.Id}", style: ButtonStyle.Primary).WithDisabled(ev.Status == $"Setup-{stepCount}"));
             list.Add(new ButtonBuilder("Cancel", $"event-cancel-{ev.Id}", style: ButtonStyle.Danger));
             return list;
+        }
+
+        public string GetParticipantString(Event ev, List<EventParticipant> participants)
+        {
+            var db = new BotBaseContext();
+            var participantStr = "[None]";
+            if (participants.Count > 0)
+            {
+                participantStr = "";
+                foreach (var participant in participants)
+                {
+                    if (participant.CharacterKey != "")
+                    {
+                        var partChar = db.Character.Where(c => c.Key == participant.CharacterKey).FirstOrDefault();
+                        participantStr += $"[{partChar.Name}]({partChar.ToUrl()})";
+                    }
+                    else
+                    {
+                        participantStr += $"<@!{participant.UserId}>";
+                    }
+                    if (participant.RoleName != "")
+                    {
+                        participantStr += $" ({participant.RoleName})";
+                    }
+                    participantStr += "\n";
+                }
+            }
+            return participantStr;
         }
 
         private string GetDateTimeString(long timestamp)

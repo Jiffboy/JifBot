@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using JifBot.Builders;
 using JifBot.Models;
@@ -95,18 +96,100 @@ namespace JifBot
                     }
                     
                     var img = new CommonImage(ev.Image, ev.ImageType);
-                    if(!img.isNull)
+                    var embed = eventUIBuilder.BuildEmbed(ev, component.User);
+                    var buttons = eventUIBuilder.BuildEmbedComponent(ev);
+                    RestUserMessage msg;
+                    if (!img.isNull)
                     {
-                        await component.Message.Channel.SendFileAsync(img.GetMS(), img.imgName, embed: eventUIBuilder.BuildEmbed(ev, component.User));
+                        msg = await component.Message.Channel.SendFileAsync(img.GetMS(), img.imgName, embed: embed, components: buttons);
                     }
                     else
                     {
-                        await component.Message.Channel.SendMessageAsync(embed: eventUIBuilder.BuildEmbed(ev, component.User));
+                        msg = await component.Message.Channel.SendMessageAsync(embed: embed, components: buttons);
                     }
 
                     await component.UpdateAsync(m => m.Components = new ComponentBuilderV2().WithTextDisplay("Event Posted.").Build());
                     ev.Status = "Posted";
+                    ev.EmbedServerId = component.GuildId ?? 0;
+                    ev.EmbedChannelId = msg.Channel.Id;
+                    ev.EmbedMessageId = msg.Id;
                     db.SaveChanges();
+                }
+                else if (pieces[1].Equals("signup"))
+                {
+                    var user = component.User;
+                    var participants = db.EventParticipant.Where(e => e.EventId == ev.Id).ToList();
+                    var signedup =  participants.Where(e => e.UserId == user.Id).Count() > 0;
+                    var roles = db.EventRole.Where(e => e.EventId == ev.Id).ToList();
+                    var availRoles = roles.Where(e => e.Limit == 0 || participants.Where(p => p.RoleName == e.Name).Count() < e.Limit).ToList();
+
+                    var availCharacters = new List<Character>();
+                    if (ev.EntrantType != "user")
+                    {
+                        var characters = db.Character.Where(c => c.UserId == user.Id).ToList();
+                        availCharacters = characters.Where(c => participants.Where(p => p.CharacterKey == c.Key).Count() == 0).ToList();
+                    }
+                    
+                    if (signedup && ev.EntrantType != "multi")
+                    {
+                        await component.RespondAsync("User already signed up for this event.", ephemeral: true);
+                        return;
+                    }
+
+                    if (ev.EntrantType != "user" && availCharacters.Count == 0)
+                    {
+                        await component.RespondAsync("No available characters to sign up with! Please visit the [Blorbopedia](https://jifbot.com/blorbopedia/edit) to create your character.", ephemeral: true, flags: MessageFlags.SuppressEmbeds);
+                        return;
+                    }
+
+                    var eventBuilder = new EventUIBuilder();
+                    if (availRoles.Count() > 1 || (availCharacters.Count() >= 1 && ev.EntrantType != "user"))
+                    {
+                        var modal = eventBuilder.BuildSignupModal(ev, availRoles, availCharacters);
+                        await component.RespondWithModalAsync(modal);
+                        return;
+                    }
+
+                    var character = availCharacters.Count() != 0 && !ev.EntrantType.Equals("user") ? availCharacters.First().Key : "";
+                    var role = availRoles.Count() != 0 ? availRoles.First().Name : "";
+
+                    db.Add(new EventParticipant {
+                        EventId = ev.Id,
+                        UserId = user.Id,
+                        CharacterKey = character,
+                        RoleName = role,
+                    });
+                    db.SaveChanges();
+
+                    if (participants.Count + 1 >= ev.Limit && ev.Limit != 0)
+                    {
+                        var eventResolver = new EventResolver(client);
+                        await eventResolver.ResolveEvent(ev);
+                    }
+                    else
+                    {
+                        await component.Message.ModifyAsync(msg => msg.Embed = eventBuilder.BuildEmbed(ev, client.GetUser(ev.UserId)));
+                    }
+                    await component.DeferAsync();
+                    return;
+                }
+                else if (pieces[1].Equals("leave"))
+                {
+                    var user = component.User;
+                    var participants = db.EventParticipant.Where(e => e.EventId == ev.Id).ToList();
+                    var entry = participants.Where(e => e.UserId == user.Id).FirstOrDefault();
+                    if (entry != null)
+                    {
+                        db.EventParticipant.Remove(entry);
+                        db.SaveChanges();
+                        var eventBuilder = new EventUIBuilder();
+                        await component.Message.ModifyAsync(msg => msg.Embed = eventBuilder.BuildEmbed(ev, client.GetUser(ev.UserId)));
+                        await component.DeferAsync();
+                        return;
+                    }
+                    await component.RespondAsync("Not signed up!", ephemeral: true);
+                    await component.DeferAsync();
+                    return;
                 }
                 else
                 {

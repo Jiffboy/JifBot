@@ -5,11 +5,9 @@ using JifBot.Models;
 using JifBot.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection.Emit;
 using System.Threading.Tasks;
 
 namespace JifBot
@@ -48,6 +46,10 @@ namespace JifBot
                 else if (brokenId[1] == "addrole")
                 {
                     await HandleEventAddRole(modal, int.Parse(brokenId[2]));
+                }
+                else if (brokenId[1] == "signup")
+                {
+                    await HandleEventSignup(modal, int.Parse(brokenId[2]));
                 }
             }
         }
@@ -126,7 +128,7 @@ namespace JifBot
 
             if (deadline != "")
             {
-                deadlineTs = GetTimestamp(deadline);
+                deadlineTs = GlobalUtils.GetTimestamp(deadline);
                 if (deadlineTs == 0)
                 {
                     await modal.RespondAsync("Invalid date-time format. Please format as: mm/dd/yyyy hh:mm", ephemeral: true);
@@ -200,9 +202,9 @@ namespace JifBot
         {
             var start = modal.Data.Components.First(x => x.CustomId == "start").Value;
             var duration = modal.Data.Components.First(x => x.CustomId == "duration").Value;
+            var location = modal.Data.Components.FirstOrDefault(x => x.CustomId == "location").Value;
 
-
-            var startTs = GetTimestamp(start);
+            var startTs = GlobalUtils.GetTimestamp(start);
             if (startTs == 0)
             {
                 await modal.RespondAsync("Invalid date-time format. Please format as: mm/dd/yyyy hh:mm", ephemeral: true);
@@ -221,6 +223,10 @@ namespace JifBot
             var ev = db.Event.Where(e => e.Id == id).First();
             ev.EventDuration = durNum;
             ev.EventTime = startTs;
+            if (location != null) 
+            {
+                ev.EventLocation = location;
+            }
 
             db.SaveChanges();
 
@@ -265,22 +271,47 @@ namespace JifBot
             await modal.UpdateAsync(m => m.Components = eventBuilder.BuildComponent(ev));
         }
 
-        private long GetTimestamp(string datetime)
+        private async Task HandleEventSignup(SocketModal modal, int id)
         {
-            DateTime dt;
-            if (DateTime.TryParseExact(datetime, "MM/dd/yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
-            {
-                if (dt < DateTime.Now)
-                {
-                    return 0;
-                }
+            var character = modal.Data.Components.FirstOrDefault(x => x.CustomId == "character");
+            var role = modal.Data.Components.FirstOrDefault(x => x.CustomId == "role");
 
-                var dto = new DateTimeOffset(dt);
-                return dto.ToUnixTimeSeconds();
+            var partChar = "";
+            var partRole = "";
+
+            if (character != null)
+            {
+                partChar = character.Values.First();
+            }
+
+            if ( role != null)
+            {
+                partRole = role.Values.First();
+            }
+
+            var db = new BotBaseContext();
+            var ev = db.Event.Where(e => e.Id == id).FirstOrDefault();
+
+            db.Add(new EventParticipant
+            {
+                EventId = ev.Id,
+                UserId = modal.User.Id,
+                CharacterKey = partChar,
+                RoleName = partRole,
+            });
+            db.SaveChanges();
+            var participants = db.EventParticipant.Where(p => p.EventId == ev.Id).ToList();
+            if (participants.Count >= ev.Limit && ev.Limit != 0)
+            {
+                var eventResolver = new EventResolver(client);
+                await eventResolver.ResolveEvent(ev);
+                await modal.DeferAsync();
             }
             else
             {
-                return 0;
+                var eventBuilder = new EventUIBuilder();
+                var user = client.GetUser(ev.UserId);
+                await modal.UpdateAsync(m => m.Embed = eventBuilder.BuildEmbed(ev, user));
             }
         }
     }
