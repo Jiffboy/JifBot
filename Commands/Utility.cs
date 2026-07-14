@@ -7,9 +7,10 @@ using System.Globalization;
 using Discord;
 using Discord.Interactions;
 using JifBot.Models;
-using JifBot.Embeds;
+using JifBot.Builders;
 using System.Data;
 using System.Threading;
+using JifBot.Utils;
 
 namespace JifBot.Commands
 {
@@ -33,22 +34,13 @@ namespace JifBot.Commands
 
             if (datetime != "")
             {
-                DateTime dt;
-                if (DateTime.TryParseExact(datetime, "MM/dd/yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+                timestamp = GlobalUtils.GetTimestamp(datetime);
+                if (timestamp == 0)
                 {
-                    if (dt < DateTime.Now)
-                    {
-                        await RespondAsync("Please provide a time in the future.", ephemeral: true);
-                        return;
-                    }
-
-                    dto = new DateTimeOffset(dt);
-                }
-                else
-                {
-                    await RespondAsync("Invalid date-time format. Please format as: mm/dd/yyyy hh:mm", ephemeral: true);
+                    await RespondAsync("Invalid date-time. Please provide a future date formatted as: mm/dd/yyyy hh:mm.", ephemeral: true);
                     return;
                 }
+                dto = DateTimeOffset.FromUnixTimeSeconds(timestamp);
             }
             else if ((minutes + hours + days + weeks) == 0)
             {

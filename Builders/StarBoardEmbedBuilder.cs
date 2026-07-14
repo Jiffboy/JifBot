@@ -2,7 +2,7 @@
 using JifBot.Models;
 using System.Linq;
 
-namespace JifBot.Embeds
+namespace JifBot.Builders
 {
     internal class StarBoardEmbedBuilder : JifBotEmbedBuilder
     {

@@ -1,6 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
-using JifBot.Embeds;
+using JifBot.Builders;
 using JifBot.Interfaces;
 using JifBot.Models;
 using Newtonsoft.Json.Linq;

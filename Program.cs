@@ -27,6 +27,7 @@ namespace JIfBot
         private JifBot.EventHandler eventHandler;
         private JifBot.ModalHandler modalHandler;
         private JifBot.ButtonHandler buttonHandler;
+        private JifBot.SelectMenuHandler selectMenuHandler;
         private JifBot.Logger logger = new JifBot.Logger();
 
         public async Task Start(string[] args)
@@ -50,6 +51,7 @@ namespace JIfBot
             eventHandler = new JifBot.EventHandler(services);
             modalHandler = new JifBot.ModalHandler(services);
             buttonHandler = new JifBot.ButtonHandler(services);
+            selectMenuHandler = new JifBot.SelectMenuHandler();
 
             client.Log += logger.WriteLog;
             interactions.Log += logger.WriteLog;
@@ -63,8 +65,8 @@ namespace JIfBot
             client.ReactionRemoved += eventHandler.HandleReactionRemoved;
 
             client.ModalSubmitted += modalHandler.HandleModalSubmitted;
-
             client.ButtonExecuted += buttonHandler.HandleButton;
+            client.SelectMenuExecuted += selectMenuHandler.HandleSelectMenu;
 
             await commands.AddModulesAsync(Assembly.GetEntryAssembly(), services);
 

@@ -3,7 +3,7 @@ using JifBot.Models;
 using System;
 using System.Linq;
 
-namespace JifBot.Embeds
+namespace JifBot.Builders
 {
     public class TrialEmbedBuilder : JifBotEmbedBuilder
     {

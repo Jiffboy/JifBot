@@ -1,12 +1,13 @@
-﻿using System.Threading.Tasks;
-using System.Linq;
-using Discord;
+﻿using Discord;
 using Discord.Interactions;
+using JifBot.Builders;
 using JifBot.Models;
+using JifBot.Utils;
 using System.IO;
+using System.Linq;
 using System.Net;
-using JifBot.Embeds;
 using System;
+using System.Threading.Tasks;
 
 namespace JifBot.Commands
 {
@@ -39,7 +40,7 @@ namespace JifBot.Commands
                     foreach (var character in characters)
                     {
                         var desc = $"Id: `{character.Key}`";
-                        desc += $"\n[Blorbopedia](https://jifbot.com/b/{character.Key.Replace(" ", "%20")})";
+                        desc += $"\n[Blorbopedia]({character.ToUrl()})";
                         if (character.Resources != "" && Uri.IsWellFormedUriString(character.Resources, UriKind.Absolute))
                         {
                             desc += $"\n[Resources]({character.Resources})";
@@ -101,145 +102,6 @@ namespace JifBot.Commands
             }
 
             await RespondAsync("No valid characters or users found. Please try again.", ephemeral: true);
-        }
-
-        [SlashCommand("managecharacter", "Manages characters saved to the blorbopedia")]
-        public async Task ManageCharacter(
-        [Choice("Add", "add")]
-        [Choice("Modify", "modify")]
-        [Choice("Delete", "delete")]
-        [Summary("action", "The action to perform for the specified character")] string action,
-        [Summary("character-key", "The key to look up your character. (Please use first name /nickname)")] string key,
-        [Summary("name", "The character's full name to be displayed")] string name = "",
-        [Summary("image", "An image to be used to display the character.")] IAttachment image = null,
-        [Summary("title", "The characters title. i.e. 'The Savior of Eorzea'")] string title = "",
-        [Summary("occupation", "The character's occupation")] string occupation = "",
-        [Summary("age", "The characeter's age")] string age = "",
-        [Summary("race", "The character's race")] string race = "",
-        [Summary("pronouns", "The characeter's pronouns")] string pronouns = "",
-        [Summary("sexuality", "The character's sexuality")] string sexuality = "",
-        [Summary("origin", "Where the character is from")] string origin = "",
-        [Summary("residence", "Where the character currently resides")] string residence = "",
-        [Summary("additional-resources", "Links for resources on the character. (carrd, lore doc, etc)")] string resources = "",
-        [Choice("Compact", "compact")]
-        [Choice("Expanded", "expanded")]
-        [Summary("compact-view", "Specifies whether the image displays big or small in /blorbopedia")] string compact = "unset")
-        {
-            key = key.ToLower();
-            var db = new BotBaseContext();
-
-            if (image != null && !(image.ContentType.StartsWith("image/")))
-            {
-                await RespondAsync("Please supply a valid image filetype", ephemeral: true);
-                return;
-            }
-
-            if (action == "add")
-            {
-                var user = db.GetUser(Context.User);
-
-                var character = db.Character.AsQueryable().AsQueryable().Where(c => c.Key == key).FirstOrDefault();
-                if (character != null)
-                {
-                    await RespondAsync("Character already exists with this character-key. Please choose another", ephemeral: true);
-                    return;
-                }
-
-                db.Add(new Character
-                {
-                    Key = key,
-                    UserId = Context.User.Id,
-                    Name = name,
-                    Description = "",
-                    Title = title,
-                    Occupation = occupation,
-                    Age = age,
-                    Race = race,
-                    Pronouns = pronouns,
-                    Sexuality = sexuality,
-                    Origin = origin,
-                    Residence = residence,
-                    Resources = resources,
-                    CompactImage = compact == "compact",
-                    Image = image != null ? GetBytesFromAttachment(image) : null,
-                    ImageType = image != null ? image.ContentType.Replace("image/", "") : ""
-                });
-                db.SaveChanges();
-                await RespondAsync($"{key} added! They can now be found in /blorbopedia!\n\nTo provide more information about the character, please use /characterdescription", ephemeral: true);
-            }
-            else if (action == "modify")
-            {
-                var character = db.Character.AsQueryable().Where(c => c.Key == key).FirstOrDefault();
-                if (character == null)
-                {
-                    await RespondAsync("Character key does not exist. Please try again", ephemeral: true);
-                    return;
-                }
-                if (character.UserId != Context.User.Id)
-                {
-                    await RespondAsync("That character does not belong to you! Hands off!", ephemeral: true);
-                    return;
-                }
-                if (name != "")
-                    character.Name = name;
-                if (title != "")
-                    character.Title = title;
-                if (occupation != "")
-                    character.Occupation = occupation;
-                if (age != "")
-                    character.Age = age;
-                if (race != "")
-                    character.Race = race;
-                if (pronouns != "")
-                    character.Pronouns = pronouns;
-                if (sexuality != "")
-                    character.Sexuality = sexuality;
-                if (origin != "")
-                    character.Origin = origin;
-                if (residence != "")
-                    character.Residence = residence;
-                if (resources != "")
-                    character.Resources = resources;
-                if (compact != "unset")
-                    character.CompactImage = compact == "compact";
-                if (image != null)
-                {
-                    character.Image = GetBytesFromAttachment(image);
-                    character.ImageType = image.ContentType.Replace("image/", "");
-                }
-                db.SaveChanges();
-                await RespondAsync($"{key} successfully updated", ephemeral: true);
-            }
-            else if (action == "delete")
-            {
-                var character = db.Character.AsQueryable().Where(c => c.Key == key).FirstOrDefault();
-                if (character == null)
-                    await RespondAsync("That character does not exist!", ephemeral: true);
-                else
-                {
-                    db.Character.Remove(character);
-                    db.SaveChanges();
-                    await RespondAsync("Character removed successfully", ephemeral: true);
-                }
-            }
-        }
-
-        [SlashCommand("characterdescription", "Opens a window to set the description for a specified character")]
-        public async Task CharacterDescription(
-            [Summary("character-key", "The character key of the character you wish to update")] string key)
-        {
-            var db = new BotBaseContext();
-            var character = db.Character.AsQueryable().Where(c => c.Key == key).FirstOrDefault();
-            if (character == null)
-            {
-                await RespondAsync("Invalid character key!", ephemeral: true);
-                return;
-            }
-            var mb = new ModalBuilder()
-                    .WithTitle("Tell us about them!")
-                    .WithCustomId($"character_description:{key}")
-                    .AddTextInput("Description / Backstory", "description", TextInputStyle.Paragraph, placeholder: "If you wish to modify the description, copy/paste it. Otherwise, hit cancel to keep as-is. Sorry :(");
-            await Context.Interaction.RespondWithModalAsync(mb.Build());
         }
 
         [SlashCommand("tagcharacter", "Applies tags or aliases to a character to be used in searches.")]
@@ -360,10 +222,11 @@ namespace JifBot.Commands
             await RespondAsync("Tags and Aliases updated successfully", ephemeral: true);
         }
 
-        private byte[] GetBytesFromAttachment(IAttachment attachment)
+        [SlashCommand("makeevent", "Makes an event.")]
+        public async Task MakeEvent()
         {
-            var client = new WebClient();
-            return client.DownloadData(attachment.Url);
+            var eventUIBuilder = new EventUIBuilder();
+            await RespondWithModalAsync(eventUIBuilder.BuildModal());  
         }
 
         private async Task SendCharacterBio(Character character)
@@ -374,7 +237,7 @@ namespace JifBot.Commands
 
             JifBotEmbedBuilder embed = new JifBotEmbedBuilder();
             embed.Title = character.Name != "" ? character.Name : character.Key;
-            embed.Url = $"https://jifbot.com/b/{character.Key.Replace(" ", "%20")}";
+            embed.Url = character.ToUrl();
             embed.Description = "";
             if (character.Title != "")
                 embed.Description += $"*{character.Title}*\n\n";
@@ -407,16 +270,15 @@ namespace JifBot.Commands
             }
                 
             embed.WithFooter($"Character by {user.Name}");
-            if (character.Image != null)
-            {
-                var ms = new MemoryStream(character.Image);
-                var imageName = $"character.{character.ImageType}";
 
+            var img = new CommonImage(character.Image, character.ImageType);
+            if (!img.isNull)
+            {
                 if (character.CompactImage)
-                    embed.ThumbnailUrl = $"attachment://{imageName}";
+                    embed.ThumbnailUrl = img.thumbnailUrl;
                 else
-                    embed.ImageUrl = $"attachment://{imageName}";
-                await RespondWithFileAsync(ms, imageName, embed: embed.Build());
+                    embed.ImageUrl = img.thumbnailUrl;
+                await RespondWithFileAsync(img.GetMS(), img.imgName, embed: embed.Build());
                 return;
             }
             else

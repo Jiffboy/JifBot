@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using static JifBot.Interfaces.RiotInterface;
 
-namespace JifBot.Embeds
+namespace JifBot.Builders
 {
     public class RiotEmbedBuilder : JifBotEmbedBuilder
     {

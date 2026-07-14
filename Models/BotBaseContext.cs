@@ -38,6 +38,9 @@ namespace JifBot.Models
         public virtual DbSet<Qotd> Qotd { get; set; }
         public virtual DbSet<Timer> Timer { get; set; }
         public virtual DbSet<StarCount> StarCount { get; set; }
+        public virtual DbSet<Event> Event { get; set; }
+        public virtual DbSet<EventRole> EventRole { get; set; }
+        public virtual DbSet<EventParticipant> EventParticipant { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -232,6 +235,21 @@ namespace JifBot.Models
             modelBuilder.Entity<StarCount>(entity =>
             {
                 entity.HasKey(e => new { e.UserId, e.ServerId });
+            });
+
+            modelBuilder.Entity<Event>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+            });
+
+            modelBuilder.Entity<EventRole>(entity =>
+            {
+                entity.HasKey(e => new { e.EventId, e.Name });
+            });
+
+            modelBuilder.Entity<EventParticipant>(entity =>
+            {
+                entity.HasKey(e => e.Id);
             });
 
             OnModelCreatingPartial(modelBuilder);

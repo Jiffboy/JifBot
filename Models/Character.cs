@@ -1,4 +1,6 @@
-﻿namespace JifBot.Models
+﻿using static System.Net.WebRequestMethods;
+
+namespace JifBot.Models
 {
     public partial class Character
     {
@@ -18,5 +20,9 @@
         public bool CompactImage { get; set; }
         public byte[] Image { get; set; }
         public string ImageType { get; set; }
+        public string ToUrl()
+        {
+            return $"https://jifbot.com/b/{Key.Replace(" ", "%20")}";
+        }
     }
 }
