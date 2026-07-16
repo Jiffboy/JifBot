@@ -2,7 +2,7 @@
 {
     public partial class CharacterTag
     {
-        public string Key { get; set; }
+        public ulong Id { get; set; }
         public string Tag { get; set; }
     }
 }

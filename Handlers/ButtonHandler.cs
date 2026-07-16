@@ -127,7 +127,7 @@ namespace JifBot
                     if (ev.EntrantType != "user")
                     {
                         var characters = db.Character.Where(c => c.UserId == user.Id).ToList();
-                        availCharacters = characters.Where(c => participants.Where(p => p.CharacterKey == c.Key).Count() == 0).ToList();
+                        availCharacters = characters.Where(c => participants.Where(p => p.CharacterId == c.Id).Count() == 0).ToList();
                     }
                     
                     if (signedup && ev.EntrantType != "multi")
@@ -150,13 +150,13 @@ namespace JifBot
                         return;
                     }
 
-                    var character = availCharacters.Count() != 0 && !ev.EntrantType.Equals("user") ? availCharacters.First().Key : "";
+                    var character = availCharacters.Count() != 0 && !ev.EntrantType.Equals("user") ? availCharacters.First().Id : 0;
                     var role = availRoles.Count() != 0 ? availRoles.First().Name : "";
 
                     db.Add(new EventParticipant {
                         EventId = ev.Id,
                         UserId = user.Id,
-                        CharacterKey = character,
+                        CharacterId = character,
                         RoleName = role,
                     });
                     db.SaveChanges();

@@ -15,21 +15,17 @@ namespace JifBot.Commands
     {
         [SlashCommand("blorbopedia", "Looks up a saved characters by name, or by author")]
         public async Task Blorbopedia(
-        [Summary("character-key", "The key for the exact character you are looking for")] string key = null,
+        [Summary("character-id", "The id for the exact character you are looking for")] ulong id = 0,
         [Summary("search", "Value to search tags, aliases, and character names for")] string search = null,
         [Summary("author", "The author you would like to retreive the characters for")] IUser author = null)
         {
-            if (key != null)
-            {
-                key = key.ToLower();
-            }
             var db = new BotBaseContext();
             if (author != null)
             {
                 var characters = db.Character.AsQueryable().Where(c => c.UserId == author.Id).ToList();
                 if (characters.Count() == 1)
                 {
-                    key = characters[0].Key;
+                    id = characters[0].Id;
                 }
                 else if (characters.Count() > 1)
                 {
@@ -39,7 +35,7 @@ namespace JifBot.Commands
                     embed.ThumbnailUrl = author.GetDisplayAvatarUrl();
                     foreach (var character in characters)
                     {
-                        var desc = $"Id: `{character.Key}`";
+                        var desc = $"Id: `{character.Id}`";
                         desc += $"\n[Blorbopedia]({character.ToUrl()})";
                         if (character.Resources != "" && Uri.IsWellFormedUriString(character.Resources, UriKind.Absolute))
                         {
@@ -52,15 +48,15 @@ namespace JifBot.Commands
                     await RespondAsync(embed: embed.Build());
                     return;
                 }
-                else if (key == null)
+                else if (id == 0)
                 {
                     await RespondAsync("User has no characters!", ephemeral: true);
                     return;
                 }
             }
-            if (key != null)
+            if (id != 0)
             {
-                var character = db.Character.AsQueryable().Where(c => c.Key == key).FirstOrDefault();
+                var character = db.Character.AsQueryable().Where(c => c.Id == id).FirstOrDefault();
                 if (character == null)
                 {
                     await RespondAsync("Invalid character key provided, please try again", ephemeral: true);
@@ -74,10 +70,10 @@ namespace JifBot.Commands
             {
                 search = search.ToLower();
                 var charactersByName = db.Character.AsQueryable().Where(c => c.Name.ToLower().Contains(search)).ToList();
-                var tagMatches = db.CharacterTag.AsQueryable().Where(c => c.Tag.ToLower() == search).Select(c => c.Key).ToList();
-                var charactersByTag = db.Character.AsQueryable().Where(c => tagMatches.Contains(c.Key)).ToList();
-                var aliasMatches = db.CharacterAlias.AsQueryable().Where(c => c.Alias.ToLower() == search).Select(c => c.Key).ToList();
-                var charactersByAlias = db.Character.AsQueryable().Where(c => aliasMatches.Contains(c.Key)).ToList();
+                var tagMatches = db.CharacterTag.AsQueryable().Where(c => c.Tag.ToLower() == search).Select(c => c.Id).ToList();
+                var charactersByTag = db.Character.AsQueryable().Where(c => tagMatches.Contains(c.Id)).ToList();
+                var aliasMatches = db.CharacterAlias.AsQueryable().Where(c => c.Alias.ToLower() == search).Select(c => c.Id).ToList();
+                var charactersByAlias = db.Character.AsQueryable().Where(c => aliasMatches.Contains(c.Id)).ToList();
                 var allCharacters = charactersByName.Concat(charactersByTag).Concat(charactersByAlias).Distinct().ToList();
                 if (allCharacters.Count > 0)
                 {
@@ -90,11 +86,9 @@ namespace JifBot.Commands
                     var msg = "Characters matching this criteria:";
                     foreach( var character in allCharacters)
                     {
-                        msg += $"\n{character.Key}";
-                        if (character.Name != "")
-                            msg += $" - [{character.Name}]";
+                        msg += $"\n`{character.Id.ToString().PadLeft(4)}` [{character.Name}]({character.ToUrl()})";
                     }
-                    await RespondAsync(msg);
+                    await RespondAsync(msg, flags: MessageFlags.SuppressEmbeds);
                 }
                 else
                     await RespondAsync("No characters match this criteria", ephemeral: true);
@@ -106,7 +100,7 @@ namespace JifBot.Commands
 
         [SlashCommand("tagcharacter", "Applies tags or aliases to a character to be used in searches.")]
         public async Task TagCharacter(
-            [Summary("character-key", "The character key of the character you wish to update")] string key,
+            [Summary("character-key", "The character key of the character you wish to update")] ulong id,
             [Choice("Add", "add")]
             [Choice("Delete", "delete")]
             [Choice("View", "view")]
@@ -115,10 +109,16 @@ namespace JifBot.Commands
             [Summary("tags", "A list of tags to describe the character. (universe, nationality, class etc.) Separate with commas")] string tags = "")
         {
             var db = new BotBaseContext();
-            var character = db.Character.AsQueryable().Where(c => c.Key == key).FirstOrDefault();
+            var character = db.Character.AsQueryable().Where(c => c.Id == id).FirstOrDefault();
             if (character == null)
             {
                 await RespondAsync("Character does not exist, or character key is incorrect", ephemeral: true);
+                return;
+            }
+
+            if (character.UserId != Context.User.Id)
+            {
+                await RespondAsync("Character belongs to someone else!", ephemeral: true);
                 return;
             }
 
@@ -134,9 +134,9 @@ namespace JifBot.Commands
                 {
                     foreach (var alias in aliases.Split(',').Select(c => c.Trim()).Distinct())
                     {
-                        if (db.CharacterAlias.AsQueryable().Where(c => c.Alias == alias & c.Key == key).FirstOrDefault() == null)
+                        if (db.CharacterAlias.AsQueryable().Where(c => c.Alias == alias & c.Id == id).FirstOrDefault() == null)
                         {
-                            db.Add(new CharacterAlias { Key = key, Alias = alias });
+                            db.Add(new CharacterAlias { Id = id, Alias = alias });
                         }
                     }
                 }
@@ -144,9 +144,9 @@ namespace JifBot.Commands
                 {
                     foreach (var tag in tags.Split(',').Select(c => c.Trim()).Distinct())
                     {
-                        if (db.CharacterTag.AsQueryable().Where(c => c.Tag == tag & c.Key == key).FirstOrDefault() == null)
+                        if (db.CharacterTag.AsQueryable().Where(c => c.Tag == tag & c.Id == id).FirstOrDefault() == null)
                         {
-                            db.Add(new CharacterTag { Key = key, Tag = tag });
+                            db.Add(new CharacterTag { Id = id, Tag = tag });
                         }
                     }
                         
@@ -164,7 +164,7 @@ namespace JifBot.Commands
                 {
                     foreach (var alias in aliases.Split(',').Select(c => c.Trim()).Distinct())
                     {
-                        var currTag = db.CharacterAlias.AsQueryable().Where(c => c.Alias == alias & c.Key == key).FirstOrDefault();
+                        var currTag = db.CharacterAlias.AsQueryable().Where(c => c.Alias == alias & c.Id == id).FirstOrDefault();
                         if (currTag != null)
                         {
                             db.CharacterAlias.Remove(currTag);
@@ -175,7 +175,7 @@ namespace JifBot.Commands
                 {
                     foreach (var tag in tags.Split(',').Select(c => c.Trim()).Distinct())
                     {
-                        var currTag = db.CharacterTag.AsQueryable().Where(c => c.Tag == tag & c.Key == key).FirstOrDefault();
+                        var currTag = db.CharacterTag.AsQueryable().Where(c => c.Tag == tag & c.Id == id).FirstOrDefault();
                         if(currTag != null)
                         {
                             db.CharacterTag.Remove(currTag);
@@ -186,8 +186,8 @@ namespace JifBot.Commands
             }
             else if (action == "view")
             {
-                var tagList = db.CharacterTag.AsQueryable().Where(c => c.Key == character.Key).ToList();
-                var aliasList = db.CharacterAlias.AsQueryable().Where(c => c.Key == character.Key).ToList();
+                var tagList = db.CharacterTag.AsQueryable().Where(c => c.Id == character.Id).ToList();
+                var aliasList = db.CharacterAlias.AsQueryable().Where(c => c.Id == character.Id).ToList();
 
                 if (tagList.Count == 0 && aliasList.Count == 0)
                 {
@@ -233,10 +233,10 @@ namespace JifBot.Commands
         {
             var db = new BotBaseContext();
             var user = db.User.AsQueryable().Where(u => u.UserId == character.UserId).FirstOrDefault();
-            var tags = db.CharacterTag.AsQueryable().Where(c => c.Key == character.Key).ToList();
+            var tags = db.CharacterTag.AsQueryable().Where(c => c.Id == character.Id).ToList();
 
             JifBotEmbedBuilder embed = new JifBotEmbedBuilder();
-            embed.Title = character.Name != "" ? character.Name : character.Key;
+            embed.Title = character.Name;
             embed.Url = character.ToUrl();
             embed.Description = "";
             if (character.Title != "")

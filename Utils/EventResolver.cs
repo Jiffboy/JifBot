@@ -54,6 +54,10 @@ namespace JifBot.Utils
 
                 case "thread":
                     var forum = server.GetForumChannel(ev.ForumChannelId);
+                    if (ev.EntrantType != "user")
+                    {
+                        desc += $"\n{pingStr}";
+                    }
                     if (ev.Image != null)
                     {
                         var attachment = new Discord.FileAttachment(img.GetMS(), img.imgName);

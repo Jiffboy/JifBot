@@ -1,10 +1,8 @@
-﻿using static System.Net.WebRequestMethods;
-
-namespace JifBot.Models
+﻿namespace JifBot.Models
 {
     public partial class Character
     {
-        public string Key { get; set; }
+        public ulong Id { get; set; }
         public ulong UserId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
@@ -22,7 +20,7 @@ namespace JifBot.Models
         public string ImageType { get; set; }
         public string ToUrl()
         {
-            return $"https://jifbot.com/b/{Key.Replace(" ", "%20")}";
+            return $"https://jifbot.com/b/{Id}";
         }
     }
 }
