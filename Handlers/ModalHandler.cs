@@ -24,11 +24,7 @@ namespace JifBot
 
         public async Task HandleModalSubmitted(SocketModal modal)
         {
-            if (modal.Data.CustomId.StartsWith("character_description"))
-            {
-                await HandleCharacterDescription(modal);
-            }
-            else if (modal.Data.CustomId.Equals("qotd-submit"))
+            if (modal.Data.CustomId.Equals("qotd-submit"))
             {
                 await HandleQotdSubmit(modal);
             }
@@ -52,17 +48,6 @@ namespace JifBot
                     await HandleEventSignup(modal, int.Parse(brokenId[2]));
                 }
             }
-        }
-
-        private async Task HandleCharacterDescription(SocketModal modal)
-        {
-            // I know this is scuffed as hell leave me alone
-            var key = modal.Data.CustomId.Split(":")[1];
-            var db = new BotBaseContext();
-            var character = db.Character.AsQueryable().Where(c => c.Key == key).FirstOrDefault();
-            character.Description = modal.Data.Components.First(x => x.CustomId == "description").Value;
-            db.SaveChanges();
-            await modal.RespondAsync($"{key} successfully updated", ephemeral: true);
         }
 
         private async Task HandleQotdSubmit(SocketModal modal)
@@ -276,12 +261,12 @@ namespace JifBot
             var character = modal.Data.Components.FirstOrDefault(x => x.CustomId == "character");
             var role = modal.Data.Components.FirstOrDefault(x => x.CustomId == "role");
 
-            var partChar = "";
+            var partChar = 0UL;
             var partRole = "";
 
             if (character != null)
             {
-                partChar = character.Values.First();
+                partChar = ulong.Parse(character.Values.First());
             }
 
             if ( role != null)
@@ -296,7 +281,7 @@ namespace JifBot
             {
                 EventId = ev.Id,
                 UserId = modal.User.Id,
-                CharacterKey = partChar,
+                CharacterId = partChar,
                 RoleName = partRole,
             });
             db.SaveChanges();

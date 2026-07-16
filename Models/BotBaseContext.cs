@@ -194,17 +194,17 @@ namespace JifBot.Models
 
             modelBuilder.Entity<Character>(entity =>
             {
-                entity.HasKey(e => e.Key);
+                entity.HasKey(e => e.Id);
             });
 
             modelBuilder.Entity<CharacterAlias>(entity =>
             {
-                entity.HasKey(e => new { e.Key, e.Alias });
+                entity.HasKey(e => new { e.Id, e.Alias });
             });
 
             modelBuilder.Entity<CharacterTag>(entity =>
             {
-                entity.HasKey(e => new { e.Key, e.Tag });
+                entity.HasKey(e => new { e.Id, e.Tag });
             });
 
             modelBuilder.Entity<CourtRecord>(entity =>

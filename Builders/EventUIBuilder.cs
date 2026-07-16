@@ -112,7 +112,7 @@ namespace JifBot.Builders
 
             if(characters.Count > 0)
             {
-                mb.AddSelectMenu("Character", "character", characters.ConvertAll(c => new SelectMenuOptionBuilder(c.Name, c.Key)));
+                mb.AddSelectMenu("Character", "character", characters.ConvertAll(c => new SelectMenuOptionBuilder(c.Name, c.Id.ToString())));
                 mb.AddTextDisplay("Can't find your character? Please create them in the [Blorbopedia](https://jifbot.com/blorbopedia/edit) and try again!");
             }
 
@@ -341,9 +341,9 @@ namespace JifBot.Builders
                 participantStr = "";
                 foreach (var participant in participants)
                 {
-                    if (participant.CharacterKey != "")
+                    if (participant.CharacterId != 0)
                     {
-                        var partChar = db.Character.Where(c => c.Key == participant.CharacterKey).FirstOrDefault();
+                        var partChar = db.Character.Where(c => c.Id == participant.CharacterId).FirstOrDefault();
                         participantStr += $"[{partChar.Name}]({partChar.ToUrl()})";
                     }
                     else
