@@ -42,7 +42,7 @@ namespace JifBot.Utils
                     Discord.Image? discImg = !img.isNull ? new Discord.Image(img.GetMS()) : null;
                     var evt = await server.CreateEventAsync(
                         name: ev.Title,
-                        description: desc,
+                        description: ev.Description,
                         type: GuildScheduledEventType.External,
                         startTime: start,
                         endTime: start.AddHours(ev.EventDuration),
