@@ -53,6 +53,7 @@ namespace JifBot
                 }
             }
             Console.ForegroundColor = cc;
+            Console.Out.Flush();
             return Task.CompletedTask;
         }
     }
