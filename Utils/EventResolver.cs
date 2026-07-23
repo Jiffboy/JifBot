@@ -31,7 +31,7 @@ namespace JifBot.Utils
             var eventBuilder = new EventUIBuilder();
 
             var ids = participants.DistinctBy(e => e.UserId).Where(e => e.UserId != ev.UserId).Select(e => e.UserId).Prepend(ev.UserId).ToList();
-            var pingStr = string.Join(", ", ids.ConvertAll(e => $"<@!{e}>"));
+            var pingStr = string.Join(" ", ids.ConvertAll(e => $"<@!{e}>"));
             var img = new CommonImage(ev.Image, ev.ImageType);
             var desc = $"{ev.Description}\n\n**Participants:**\n{eventBuilder.GetParticipantString(ev, participants)}";
 
