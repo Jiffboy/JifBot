@@ -49,7 +49,7 @@ namespace JifBot.Utils
                         location: ev.EventLocation,
                         coverImage: discImg
                     );
-                    await message.ReplyAsync($"Event posted!\n{pingStr}");
+                    await message.ReplyAsync($"Event posted!\n{pingStr}\nhttps://discord.com/events/{evt.GuildId}/{evt.Id}");
                     break;
 
                 case "thread":
