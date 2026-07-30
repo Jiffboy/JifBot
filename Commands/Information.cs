@@ -456,7 +456,8 @@ namespace JifBot.Commands
         [SlashCommand("isjifsleeping", "Shows whether or not Jif has been sleeping lately.")]
         public async Task IsJifSleeping(
             [Summary("days", "The number of days to view. Defaults to 9. Max of 25")] int count = 9,
-            [Summary("target", "The targeted number of hours needed a night. Defaults to 8")] int target = 8)
+            [Summary("target", "The targeted number of hours needed a night. Defaults to 7")] int target = 7,
+            [Summary("detailed", "Expands to show sleep cycle information. Disabled by default.")] bool expand = false)
         {
             var fitbit = new FitBitInterface();
             var data = await fitbit.GetSleep(DateTime.Now.AddDays(-(count - 1)), DateTime.Now);
@@ -507,12 +508,15 @@ namespace JifBot.Commands
 
                 var emote = entry.totalTime / 60 >= target ? "✅" : "❌";
                 var title = $"{emote} {entry.date.ToString("MM/dd")} [{FormatMinutes(entry.totalTime)}]";
-                var msg = $"{entry.start.ToString("hh:mm tt")} - {entry.end.ToString("hh:mm tt")}";
+                var msg = $"{entry.start.ToString("hh:mm")} - {entry.end.ToString("hh:mm")}";
                 msg += $"\nTimes awoken: {entry.wakeCount}";
                 msg += $"\nNapped: {FormatMinutes(entry.napTime)}";
-                msg += $"\nDeep: {FormatMinutes(entry.deepTime)}";
-                msg += $"\nLight: {FormatMinutes(entry.lightTime)}";
-                msg += $"\nREM: {FormatMinutes(entry.remTime)}";
+                if (expand)
+                {
+                    msg += $"\nDeep: {FormatMinutes(entry.deepTime)}";
+                    msg += $"\nLight: {FormatMinutes(entry.lightTime)}";
+                    msg += $"\nREM: {FormatMinutes(entry.remTime)}";
+                }
                 embed.AddField(title, msg, inline: true);
 
                 today = today.AddDays(-1);
