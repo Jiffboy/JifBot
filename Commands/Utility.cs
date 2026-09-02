@@ -462,6 +462,54 @@ namespace JifBot.Commands
             }
         }
 
+        [SlashCommand("xivcalendar", "Translates a provided date to the Eorzean calendar")]
+        public async Task XIVCalendar(
+            [Summary("date", "The date to convert. Formated MM/dd. Defaults to present date if not provided")] string date="")
+        {
+            var days = new string[] {
+                "Iceday",
+                "Watersday",
+                "Windsday",
+                "Lightningday",
+                "Firesday",
+                "Earthsday",
+                "Lightsday",
+                "Darksday"
+            };
+            var months = new string[]
+            {
+                "First Astral Moon",
+                "First Umbral Moon",
+                "Second Astral Moon",
+                "Second Umbral Moon",
+                "Third Astral Moon",
+                "Third Umbral Moon",
+                "Fourth Astral Moon",
+                "Fourth Umbral Moon",
+                "Fifth Astral Moon",
+                "Fifth Umbral Moon",
+                "Sixth Astral Moon",
+                "Sixth Umbral Moon"
+            };
+
+            if(date == "")
+            {
+                date = DateTime.Now.ToString("MM/dd");
+            }
+
+            DateTime dt;
+            if (DateTime.TryParseExact(date, "M/d", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+            {
+                var day = days[(dt.Day % 8) - 1];
+                var month = months[dt.Month - 1];
+                await RespondAsync($"{day}, {month}");
+            }
+            else
+            {
+                await RespondAsync("Invalid date. Please provide the date in MM/dd format", ephemeral: true);
+            }
+        }
+
         private string MockText(string text)
         {
             string end = string.Empty;

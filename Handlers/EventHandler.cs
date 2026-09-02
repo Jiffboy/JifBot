@@ -1,13 +1,14 @@
-﻿using System.Threading.Tasks;
-using Discord.WebSocket;
-using Discord;
-using System;
-using JifBot.Models;
-using JifBot.Builders;
-using System.Linq;
+﻿using Discord;
 using Discord.Commands;
-using Microsoft.Extensions.DependencyInjection;
+using Discord.WebSocket;
+using JifBot.Builders;
+using JifBot.Models;
 using JIfBot;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using static System.Collections.Specialized.BitVector32;
 
 namespace JifBot
 {
@@ -124,31 +125,28 @@ namespace JifBot
             }
 
             // Star Board
-            if (reaction.Emote.ToString() == "⭐" && (user.GuildPermissions.Administrator || !serverConfig.StarAdminRequired))
+            if (reaction.Emote.ToString() == "⭐")
             {
-                if (serverConfig.StarMessageId != 0 && serverConfig.StarChannelId != 0)
+                var author = (await reaction.Channel.GetMessageAsync(reaction.MessageId)).Author;
+                if (StarValid(serverConfig, author, user))
                 {
-                    var author = (await reaction.Channel.GetMessageAsync(reaction.MessageId)).Author;
-                    if (author.Id != reaction.UserId)
+                    var jifBotUser = db.GetUser(author as SocketUser);
+                    var starCount = db.StarCount.Where(s => s.UserId == jifBotUser.UserId && s.ServerId == server.Id).FirstOrDefault();
+
+                    if (starCount == null)
                     {
-                        var jifBotUser = db.GetUser(author as SocketUser);
-                        var starCount = db.StarCount.Where(s => s.UserId == jifBotUser.UserId).FirstOrDefault();
+                        starCount = new StarCount { UserId = jifBotUser.UserId, ServerId = server.Id, Count = 0 };
+                        db.Add(starCount);
+                    }
 
-                        if (starCount == null)
-                        {
-                            starCount = new StarCount { UserId = jifBotUser.UserId, ServerId = server.Id, Count = 0 };
-                            db.Add(starCount);
-                        }
-
-                        starCount.Count++;
-                        db.SaveChanges();
-                        var msg = await server.GetTextChannel(serverConfig.StarChannelId).GetMessageAsync(serverConfig.StarMessageId) as IUserMessage;
-                        if (msg != null)
-                        {
-                            var embed = new StarBoardEmbedBuilder();
-                            embed.Populate(server);
-                            await msg.ModifyAsync(msg => msg.Embed = embed.Build());
-                        }
+                    starCount.Count++;
+                    db.SaveChanges();
+                    var msg = await server.GetTextChannel(serverConfig.StarChannelId).GetMessageAsync(serverConfig.StarMessageId) as IUserMessage;
+                    if (msg != null)
+                    {
+                        var embed = new StarBoardEmbedBuilder();
+                        embed.Populate(server);
+                        await msg.ModifyAsync(msg => msg.Embed = embed.Build());
                     }
                 }
             }
@@ -182,34 +180,28 @@ namespace JifBot
             }
 
             // Star Board
-            if (reaction.Emote.ToString() == "⭐" && (user.GuildPermissions.Administrator || !serverConfig.StarAdminRequired))
+            if (reaction.Emote.ToString() == "⭐")
             {
-                if (serverConfig.StarMessageId != 0 && serverConfig.StarChannelId != 0)
+                var author = (await reaction.Channel.GetMessageAsync(reaction.MessageId)).Author;
+                    
+                if (StarValid(serverConfig, author, user))
                 {
-                    var author = (await reaction.Channel.GetMessageAsync(reaction.MessageId)).Author;
-                    if (author.Id != reaction.UserId)
+                    var starCount = db.StarCount.Where(s => s.UserId == author.Id && s.ServerId == server.Id).FirstOrDefault();
+                    if (starCount == null)
+                        return;
+
+                    starCount.Count--;
+                    if (starCount.Count == 0)
+                        db.Remove(starCount);
+
+                    db.SaveChanges();
+
+                    var msg = await server.GetTextChannel(serverConfig.StarChannelId).GetMessageAsync(serverConfig.StarMessageId) as IUserMessage;
+                    if (msg != null)
                     {
-                        var starCount = db.StarCount.Where(s => s.UserId == author.Id).FirstOrDefault();
-                        if (starCount == null)
-                        {
-                            return;
-                        }
-
-                        starCount.Count--;
-                        if (starCount.Count == 0)
-                        {
-                            db.Remove(starCount);
-                        }
-
-                        db.SaveChanges();
-
-                        var msg = await server.GetTextChannel(serverConfig.StarChannelId).GetMessageAsync(serverConfig.StarMessageId) as IUserMessage;
-                        if (msg != null)
-                        {
-                            var embed = new StarBoardEmbedBuilder();
-                            embed.Populate(server);
-                            await msg.ModifyAsync(msg => msg.Embed = embed.Build());
-                        }
+                        var embed = new StarBoardEmbedBuilder();
+                        embed.Populate(server);
+                        await msg.ModifyAsync(msg => msg.Embed = embed.Build());
                     }
                 }
             }
@@ -239,6 +231,31 @@ namespace JifBot
 
                 await reactionHandler.ParseReactions(message);
             }
+        }
+
+        private bool StarValid(ServerConfig config, IUser author, SocketGuildUser user)
+        {
+            if (config.StarMessageId != 0 && config.StarChannelId != 0)
+            {
+                switch (config.StarPermissions)
+                {
+                    case "owner":
+                        if (user.Guild.OwnerId == user.Id)
+                            return true;
+                        break;
+                    case "admin":
+                        if (user.GuildPermissions.Administrator)
+                            if (author.Id != user.Id)
+                                return true;
+                        break;
+                    case "everyone":
+                    default:
+                        if (author.Id != user.Id)
+                            return true;
+                        break;
+                }
+            }
+            return false;
         }
     }
 }

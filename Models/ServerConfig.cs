@@ -15,6 +15,6 @@
         public ulong QotdRoleId { get; set; }
         public ulong StarMessageId { get; set; }
         public ulong StarChannelId { get; set; }
-        public bool StarAdminRequired { get; set; }
+        public string StarPermissions { get; set; }
     }
 }

@@ -400,8 +400,11 @@ namespace JifBot.Commands
             [Choice("Delete Board", "delete")]
             [Choice("Clear Board", "clear")]
             [Summary("action", "The action to take")] string action,
-            [Summary("channel", "The channel to place the Starboard in")] ITextChannel channel = null,
-            [Summary("admin-only", "Determines if stars or only counted for admins, or everybody.")] bool admin = true)
+            [Choice("Everyone", "everyone")]
+            [Choice("Admins Only", "admin")]
+            [Choice("Owner Only", "owner")]
+            [Summary("permissions", "Determines whose stars are tallied.")] string perms = "none",
+            [Summary("channel", "The channel to place the Starboard in")] ITextChannel channel = null)
         {
             if (channel == null)
                 channel = Context.Channel as ITextChannel;
@@ -426,7 +429,8 @@ namespace JifBot.Commands
 
                     config.StarChannelId = msg.Channel.Id;
                     config.StarMessageId = msg.Id;
-                    config.StarAdminRequired = admin;
+                    if (perms != "none")
+                        config.StarPermissions = perms;
                     db.SaveChanges();
 
                     if (boardMessage != null)
