@@ -20,7 +20,7 @@ namespace JifBot.Builders
 
                 foreach (var star in stars)
                 {
-                    if (count > 10)
+                    if (count > 12)
                         break;
 
                     var user = db.User.Where(u => u.UserId == star.UserId).FirstOrDefault();
