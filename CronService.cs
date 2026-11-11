@@ -73,7 +73,7 @@ namespace JifBot
                     
 
                     // Handle Qotds
-                    if (now.Hour == 9 && now.DayOfWeek != lastQotdDay)
+                    if (now.Hour == 18 && now.DayOfWeek != lastQotdDay)
                     {
                         lastQotdDay = now.DayOfWeek;
                         var servers = db.ServerConfig.AsQueryable().Where(s => s.QotdThreadId != 0).ToList();
