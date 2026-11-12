@@ -232,7 +232,7 @@ namespace JifBot.Interfaces
             {
                 set
                 {
-                    champion = championLookup[value.ToString()];
+                    champion = championLookup.ContainsKey(value.ToString()) ? championLookup[value.ToString()] : null;
                 }
             }
             public int championPoints { get; set; }
