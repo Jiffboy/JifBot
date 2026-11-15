@@ -539,7 +539,7 @@ namespace JifBot.Commands
 
             if (post.Comments.Count == 0)
             {
-                await RespondAsync("Could not find any posts. Please ensure your tags are properly formatted per convention!", ephemeral: true);
+                await FollowupAsync("Could not find any posts. Please ensure your tags are properly formatted per convention!", ephemeral: true);
                 return;
             }
 
