@@ -13,6 +13,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
+using System.Text.RegularExpressions;
 
 namespace JifBot.Commands
 {
@@ -525,6 +526,42 @@ namespace JifBot.Commands
             await RespondAsync(embed: embed.Build());
         }
 
+        [SlashCommand("goonthoughts", "Pulls a random comment from Rule 34 (proceed with caution).")]
+        public async Task GoonThoughts(
+        [Summary("tags", "Tags to find posts for. Defaults to none.")] string tags = "")
+        {
+            await DeferAsync();
+            var rule34 = new Rule34Interface();
+            var post = await rule34.GetComments(tags);
+            var embed = new JifBotEmbedBuilder();
+            var filter = new ProfanityFilter.ProfanityFilter();
+            Random rnd = new Random();
+
+            if (post.Comments.Count == 0)
+            {
+                await RespondAsync("Could not find any posts. Please ensure your tags are properly formatted per convention!", ephemeral: true);
+                return;
+            }
+
+            foreach(var comment in post.Comments)
+            {
+                var user = Regex.Replace(filter.CensorString(comment.Creator), @"\*+", censor => fruits[rnd.Next(fruits.Length)]);
+                var body = Regex.Replace(filter.CensorString(comment.Body), @"\*+", censor => fruits[rnd.Next(fruits.Length)]);
+                embed.AddField(user, body);
+            }
+
+            var tagAppend = "";
+            if(tags != "")
+            {
+                tagAppend = $"on \"{tags}\" ";
+            }
+
+            embed.Title = $"Some thoughts {tagAppend}from the goons of the internet";
+            embed.Description = $"as sampled by post {post.Post.Id}";
+            await FollowupAsync(embed: embed.Build());
+        }
+
+
         public string FormatMinutes(int minutes)
         {
             return $"{minutes / 60}h {minutes % 60}m";
@@ -549,6 +586,38 @@ namespace JifBot.Commands
 
             return mostUsed;
         }
+
+        private string[] fruits =
+        {
+            "Apple",
+            "Avocado",
+            "Banana",
+            "Blackberry",
+            "Blueberry",
+            "Cherry",
+            "Coconut",
+            "Cucumber",
+            "Grape",
+            "Grapefruit",
+            "Lemon",
+            "Lime",
+            "Mango",
+            "Melon",
+            "Cantaloupe",
+            "Watermelon",
+            "Orange",
+            "Tangerine",
+            "Papaya",
+            "Peach",
+            "Pear",
+            "Persimmon",
+            "Plum",
+            "Pineapple",
+            "Pomegranate",
+            "Raspberry",
+            "Salmonberry",
+            "Strawberry",
+        };
 
         class UrbanDictionaryDefinition
         {
