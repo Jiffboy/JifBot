@@ -535,6 +535,7 @@ namespace JifBot.Commands
             var post = await rule34.GetComments(tags);
             var embed = new JifBotEmbedBuilder();
             var filter = new ProfanityFilter.ProfanityFilter();
+            filter.AddProfanity("futa");
             Random rnd = new Random();
 
             if (post.Comments.Count == 0)
