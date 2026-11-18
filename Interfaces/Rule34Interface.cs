@@ -20,7 +20,7 @@ namespace JifBot.Interfaces
             var id = db.Variable.AsQueryable().Where(v => v.Name == "r34Id").First().Value;
             using (HttpClient client = new HttpClient())
             {
-                var response = await client.GetAsync($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&api_key={key}&user_id={id}&tags=-ai_generated {tags}");
+                var response = await client.GetAsync($"https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&api_key={key}&user_id={id}&limit=500&tags=-ai_generated sort:random {tags}");
 
                 string xmlResponse = await response.Content.ReadAsStringAsync();
                 XmlSerializer postSerializer = new XmlSerializer(typeof(PostResponse));
@@ -80,6 +80,9 @@ namespace JifBot.Interfaces
 
         [XmlAttribute("has_comments")]
         public string HasComments { get; set; }
+
+        [XmlAttribute("rating")]
+        public string Rating { get; set; }
     }
 
     [XmlRoot("comments")]

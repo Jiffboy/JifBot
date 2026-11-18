@@ -528,11 +528,17 @@ namespace JifBot.Commands
 
         [SlashCommand("goonthoughts", "Pulls a random comment from Rule 34 (proceed with caution).")]
         public async Task GoonThoughts(
-        [Summary("tags", "Tags to find posts for. Defaults to none.")] string tags = "")
+        [Summary("tags", "Tags to find posts for. Defaults to none.")] string tags = "",
+        [Summary("safeish-mode", "Searches only for posts rated as \"questionable\".")] bool safe = false)
         {
             await DeferAsync();
             var rule34 = new Rule34Interface();
-            var post = await rule34.GetComments(tags);
+            var tagAppend = "";
+            if(safe)
+            {
+                tagAppend = " rating:questionable";
+            }
+            var post = await rule34.GetComments(tags + tagAppend);
             var embed = new JifBotEmbedBuilder();
             var filter = new ProfanityFilter.ProfanityFilter();
             filter.AddProfanity("futa");
@@ -551,13 +557,13 @@ namespace JifBot.Commands
                 embed.AddField(user, body);
             }
 
-            var tagAppend = "";
+            var tagStr = "";
             if(tags != "")
             {
-                tagAppend = $"on \"{tags}\" ";
+                tagStr = $"on \"{tags}\" ";
             }
 
-            embed.Title = $"Some thoughts {tagAppend}from the goons of the internet";
+            embed.Title = $"Some thoughts {tagStr}from the goons of the internet";
             embed.Description = $"as sampled by post {post.Post.Id}";
             await FollowupAsync(embed: embed.Build());
         }
