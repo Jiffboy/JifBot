@@ -529,7 +529,7 @@ namespace JifBot.Commands
         [SlashCommand("goonthoughts", "Pulls a random comment from Rule 34 (proceed with caution).")]
         public async Task GoonThoughts(
         [Summary("tags", "Tags to find posts for. Defaults to none.")] string tags = "",
-        [Summary("danger-mode", "Searches only for posts rated as \"questionable\".")] bool danger = false)
+        [Summary("danger-mode", "Allows for searching for posts rated as \"explicit\".")] bool danger = false)
         {
             await DeferAsync();
             var rule34 = new Rule34Interface();
