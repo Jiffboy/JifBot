@@ -41,6 +41,7 @@ namespace JifBot.Models
         public virtual DbSet<Event> Event { get; set; }
         public virtual DbSet<EventRole> EventRole { get; set; }
         public virtual DbSet<EventParticipant> EventParticipant { get; set; }
+        public virtual DbSet<CheeseChaseTime> CheeseChaseTime { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -250,6 +251,11 @@ namespace JifBot.Models
             modelBuilder.Entity<EventParticipant>(entity =>
             {
                 entity.HasKey(e => e.Id);
+            });
+
+            modelBuilder.Entity<CheeseChaseTime>(entity =>
+            {
+                entity.HasNoKey();
             });
 
             OnModelCreatingPartial(modelBuilder);
