@@ -36,10 +36,10 @@ namespace JifBot.Commands
 
         private Dictionary<int, string> charEmoji = new Dictionary<int, string>
         {
-            { 0, "<:cc0:1574150436242460903>" },
-            { 1, "<:cc1:1574150431788245164>" },
-            { 2, "<:cc2:1574150437618192466>" },
-            { 3, "<:cc3:1574150433482604584>" }
+            { 0, "<:cc0:1574181784432812192>" },
+            { 1, "<:cc1:1574181781941264517>" },
+            { 2, "<:cc2:1574181785821122691>" },
+            { 3, "<:cc3:1574181783258402926>" }
         };
 
         private Dictionary<int, string> modeMap = new Dictionary<int, string>
