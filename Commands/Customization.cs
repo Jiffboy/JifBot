@@ -1,13 +1,14 @@
-﻿using System.Threading.Tasks;
-using System.Linq;
-using Discord;
+﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using JifBot.Models;
 using JifBot.Builders;
+using JifBot.Models;
 using JIfBot;
-using System.Text.RegularExpressions;
+using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace JifBot.Commands
 {
@@ -484,6 +485,22 @@ namespace JifBot.Commands
                     await RespondAsync("Board successfully cleared", ephemeral: true);
                     return;
             }
+        }
+
+        [SlashCommand("cheesemeup", "Generates a key to be used to connect with Cheese Chase.")]
+        public async Task CheeseMeUp()
+        {
+            var db = new BotBaseContext();
+            var user = db.GetUser(Context.User);
+            if (user.CheeseChaseKey == null || user.CheeseChaseKey == "")
+            {
+                const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+                string key = RandomNumberGenerator.GetString(chars, 8);
+                user.CheeseChaseKey = key;
+                db.SaveChanges();
+            }
+
+            await RespondAsync($"Your Cheese Chase key is\n```{user.CheeseChaseKey}```", ephemeral: true);
         }
 
         private ulong GetConfigValue(string field, ServerConfig config)
